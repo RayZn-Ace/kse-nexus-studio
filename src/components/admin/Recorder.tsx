@@ -511,6 +511,8 @@ export function Recorder() {
                     <div className="absolute inset-0 bg-[conic-gradient(at_50%_50%,_#1a1a1a_25%,_#2a2a2a_25%_50%,_#1a1a1a_50%_75%,_#2a2a2a_75%)] bg-[length:10px_10px]" />
                   ) : k === "blur" ? (
                     <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 to-zinc-900 blur-sm" />
+                  ) : PHOTO_BGS[k] ? (
+                    <img src={PHOTO_BGS[k]!} alt={BG_LABELS[k]} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
                     <img src={bgPreviews[k]} alt={BG_LABELS[k]} className="absolute inset-0 w-full h-full object-cover" />
                   )}
