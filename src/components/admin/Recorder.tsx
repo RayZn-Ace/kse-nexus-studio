@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageSegmenter, FilesetResolver } from "@mediapipe/tasks-vision";
+import { ArrayBufferTarget, Muxer } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ type BgKey =
   | "ember" | "grid" | "mesh" | "wall"
   | "studio" | "loft" | "podcast" | "lounge";
 type Position = "br" | "bl" | "tr" | "tl";
+type Mp4Recording = { stop: () => Promise<Blob> };
 
 const POS: Record<Position, string> = { br: "Unten Rechts", bl: "Unten Links", tr: "Oben Rechts", tl: "Oben Links" };
 
@@ -59,8 +61,10 @@ export function Recorder() {
   const segmenterRef = useRef<ImageSegmenter | null>(null);
   const rafRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const mp4RecordingRef = useRef<Mp4Recording | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const durationTimerRef = useRef<number | null>(null);
   const tickWorkerRef = useRef<Worker | null>(null);
 
   // Reusable offscreen canvases
