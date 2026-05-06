@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrayBufferTarget, Muxer } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trash2, Loader2, Film, Download, Share2, Copy, Check } from "lucide-react";
@@ -29,7 +30,7 @@ export function TutorialLibrary() {
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ stage: "fetch" | "save"; pct: number } | null>(null);
+  const [progress, setProgress] = useState<{ stage: "fetch" | "convert" | "save"; pct: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -132,11 +133,14 @@ export function TutorialLibrary() {
       } else {
         chunks.push(new Uint8Array(await res.arrayBuffer()));
       }
-      const extension = t.video_path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm";
       const blob = new Blob(chunks as BlobPart[]);
+      const needsMp4Conversion = !t.video_path.toLowerCase().endsWith(".mp4") && !blob.type.startsWith("video/mp4");
+      const downloadBlob = needsMp4Conversion
+        ? await convertPlayableVideoToMp4(blob, (pct) => setProgress({ stage: "convert", pct }))
+        : blob;
       setProgress({ stage: "save", pct: 100 });
-      saveBlob(blob, `${slug(t.title)}.${extension}`);
-      toast.success(`${extension.toUpperCase()}-Download gestartet`);
+      saveBlob(downloadBlob, `${slug(t.title)}.mp4`);
+      toast.success("MP4-Download gestartet");
     } catch (e: any) {
       console.error("Video download failed", e);
       toast.error(e.message ?? "Download fehlgeschlagen");
@@ -188,9 +192,7 @@ export function TutorialLibrary() {
                       {downloading === t.id ? (
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
-                          {progress
-                            ? `${progress.stage === "fetch" ? "Lade" : "Speichere"} ${progress.pct}%`
-                            : "…"}
+                          {progress ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "convert" ? "MP4" : "Speichere"} ${progress.pct}%` : "…"}
                         </>
                       ) : (
                         <>
