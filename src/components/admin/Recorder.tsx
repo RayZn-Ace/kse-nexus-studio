@@ -60,6 +60,8 @@ export function Recorder() {
   const rafRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const tickWorkerRef = useRef<Worker | null>(null);
 
   // Reusable offscreen canvases
   const camCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -235,7 +237,6 @@ export function Recorder() {
       const sv = screenVideoRef.current;
       const cv = camVideoRef.current;
       if (!sv || !cv || cv.videoWidth === 0) {
-        rafRef.current = requestAnimationFrame(render);
         return;
       }
       const sw = sv.videoWidth || 1920;
@@ -427,12 +428,25 @@ export function Recorder() {
       ctx.clip();
       ctx.drawImage(camC, x, y, camW, camH);
       ctx.restore();
-
-      rafRef.current = requestAnimationFrame(render);
     };
-    rafRef.current = requestAnimationFrame(render);
+
+    // Drive the render loop from a Web Worker setInterval so it keeps
+    // running even when the tab is in the background (rAF freezes there,
+    // which would stall canvas.captureStream and "hang" the recording).
+    const workerSrc = `let id=null;onmessage=(e)=>{if(e.data==='start'){clearInterval(id);id=setInterval(()=>postMessage(0),33);}else{clearInterval(id);id=null;}};`;
+    const blob = new Blob([workerSrc], { type: "application/javascript" });
+    const url = URL.createObjectURL(blob);
+    const worker = new Worker(url);
+    tickWorkerRef.current = worker;
+    worker.onmessage = () => render();
+    worker.postMessage("start");
+    // also kick once synchronously
+    render();
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      worker.postMessage("stop");
+      worker.terminate();
+      URL.revokeObjectURL(url);
+      tickWorkerRef.current = null;
     };
   }, [screenStream, camStream, shape, position, bg, size]);
 
@@ -448,8 +462,34 @@ export function Recorder() {
     const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
     const sysAudio = screenStream.getAudioTracks()[0];
     const micAudio = camStream.getAudioTracks()[0];
-    if (sysAudio) tracks.push(sysAudio);
-    if (micAudio) tracks.push(micAudio);
+
+    // Mix system audio + mic into ONE track via WebAudio.
+    // MediaRecorder reliably encodes only the first audio track in many
+    // browsers, so adding both separately causes silent recordings.
+    if (sysAudio || micAudio) {
+      try {
+        const AC: typeof AudioContext =
+          (window as any).AudioContext || (window as any).webkitAudioContext;
+        const ac = new AC();
+        audioCtxRef.current = ac;
+        const dest = ac.createMediaStreamDestination();
+        if (sysAudio) {
+          ac.createMediaStreamSource(new MediaStream([sysAudio])).connect(dest);
+        }
+        if (micAudio) {
+          const micSrc = ac.createMediaStreamSource(new MediaStream([micAudio]));
+          const gain = ac.createGain();
+          gain.gain.value = 1.0;
+          micSrc.connect(gain).connect(dest);
+        }
+        const mixed = dest.stream.getAudioTracks()[0];
+        if (mixed) tracks.push(mixed);
+      } catch (e) {
+        console.warn("Audio-Mixing fehlgeschlagen, fallback:", e);
+        if (micAudio) tracks.push(micAudio);
+        else if (sysAudio) tracks.push(sysAudio);
+      }
+    }
     const merged = new MediaStream(tracks);
 
     const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
@@ -462,6 +502,8 @@ export function Recorder() {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
       setLastBlob(blob);
       setPreviewUrl(URL.createObjectURL(blob));
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
     };
     rec.start(1000);
     recorderRef.current = rec;
