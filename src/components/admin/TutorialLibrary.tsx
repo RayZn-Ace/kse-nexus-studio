@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Loader2, Film, Download } from "lucide-react";
+import { Trash2, Loader2, Film, Download, Share2, Copy, Check } from "lucide-react";
 
 type Tutorial = {
   id: string;
@@ -15,6 +15,9 @@ export function TutorialLibrary() {
   const [items, setItems] = useState<Tutorial[]>([]);
   const [loading, setLoading] = useState(true);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
+  const [sharing, setSharing] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -59,6 +62,43 @@ export function TutorialLibrary() {
     load();
   };
 
+  const share = async (t: Tutorial) => {
+    setSharing(t.id);
+    try {
+      const token =
+        (crypto as any).randomUUID?.().replace(/-/g, "") ??
+        Math.random().toString(36).slice(2) + Date.now().toString(36);
+      const { error } = await supabase
+        .from("tutorial_shares")
+        .insert({ tutorial_id: t.id, token });
+      if (error) throw error;
+      const url = `${window.location.origin}/share/${token}`;
+      setShareUrl({ id: t.id, url });
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        toast.success("Share-Link kopiert");
+      } catch {
+        toast.success("Share-Link erstellt");
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "Share fehlgeschlagen");
+    } finally {
+      setSharing(null);
+    }
+  };
+
+  const copyShare = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
+
+  const ext = (path: string) => (path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm");
+
   return (
     <section>
       <div className="flex items-end justify-between mb-4">
@@ -93,16 +133,34 @@ export function TutorialLibrary() {
                 </p>
                 <div className="flex gap-1.5 mt-2">
                   {urls[t.video_path] && (
-                    <a href={urls[t.video_path]} download={`${t.title}.webm`}
+                    <a href={urls[t.video_path]} download={`${t.title}.${ext(t.video_path)}`}
                       className="flex-1 text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-card inline-flex items-center justify-center gap-1">
                       <Download className="w-3 h-3" /> Download
                     </a>
                   )}
+                  <button onClick={() => share(t)} disabled={sharing === t.id}
+                    className="text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-accent/10 hover:text-accent hover:border-accent/40 inline-flex items-center gap-1">
+                    {sharing === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
+                  </button>
                   <button onClick={() => remove(t)}
                     className="text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/40">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
+                {shareUrl?.id === t.id && (
+                  <div className="mt-2 flex items-center gap-1.5 bg-card/60 border border-border rounded-md p-1.5">
+                    <input
+                      readOnly
+                      value={shareUrl.url}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="flex-1 bg-transparent text-[10px] outline-none truncate"
+                    />
+                    <button onClick={() => copyShare(shareUrl.url)}
+                      className="p-1 rounded hover:bg-card text-muted-foreground hover:text-foreground">
+                      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
