@@ -99,6 +99,24 @@ export function TutorialLibrary() {
 
   const ext = (path: string) => (path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm");
 
+  const downloadVideo = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("fetch failed");
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
   return (
     <section>
       <div className="flex items-end justify-between mb-4">
@@ -133,10 +151,12 @@ export function TutorialLibrary() {
                 </p>
                 <div className="flex gap-1.5 mt-2">
                   {urls[t.video_path] && (
-                    <a href={urls[t.video_path]} download={`${t.title}.${ext(t.video_path)}`}
+                    <button
+                      type="button"
+                      onClick={() => downloadVideo(urls[t.video_path], `${t.title}.${ext(t.video_path)}`)}
                       className="flex-1 text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-card inline-flex items-center justify-center gap-1">
                       <Download className="w-3 h-3" /> Download
-                    </a>
+                    </button>
                   )}
                   <button onClick={() => share(t)} disabled={sharing === t.id}
                     className="text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-accent/10 hover:text-accent hover:border-accent/40 inline-flex items-center gap-1">
