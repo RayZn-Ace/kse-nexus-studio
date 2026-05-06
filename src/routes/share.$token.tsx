@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { getShare } from "@/server/shares.functions";
+import { getShare } from "@/functions/shares.functions";
 import { Download, Film } from "lucide-react";
 
 export const Route = createFileRoute("/share/$token")({
