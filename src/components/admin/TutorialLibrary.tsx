@@ -233,6 +233,77 @@ export function TutorialLibrary() {
   );
 }
 
+async function convertPlayableVideoToMp4(blob: Blob, onProgress: (pct: number) => void) {
+  const win = window as any;
+  if (!win.VideoEncoder) {
+    throw new Error("MP4-Konvertierung wird in diesem Browser nicht unterstützt. Bitte Chrome oder Edge nutzen.");
+  }
+
+  const url = URL.createObjectURL(blob);
+  const video = document.createElement("video");
+  video.src = url;
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  await new Promise<void>((resolve, reject) => {
+    video.onloadedmetadata = () => resolve();
+    video.onerror = () => reject(new Error("Video konnte nicht gelesen werden"));
+  });
+
+  const width = video.videoWidth || 1280;
+  const height = video.videoHeight || 720;
+  const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+  const config = await pickDownloadVideoConfig(win.VideoEncoder, width, height);
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target,
+    video: { codec: "avc", width, height, frameRate: 30 },
+    fastStart: "in-memory",
+    firstTimestampBehavior: "offset",
+  });
+  const encoder = new win.VideoEncoder({
+    output: (chunk: EncodedVideoChunk, meta?: EncodedVideoChunkMetadata) => muxer.addVideoChunk(chunk, meta),
+    error: (error: Error) => console.error("MP4 encoder error", error),
+  });
+  encoder.configure(config);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  let frame = 0;
+  const fps = 30;
+  for (let time = 0; time < duration; time += 1 / fps) {
+    video.currentTime = Math.min(time, duration);
+    await new Promise<void>((resolve) => (video.onseeked = () => resolve()));
+    ctx.drawImage(video, 0, 0, width, height);
+    const videoFrame = new VideoFrame(canvas, { timestamp: Math.round(time * 1_000_000), duration: Math.round(1_000_000 / fps) });
+    encoder.encode(videoFrame, { keyFrame: frame % 120 === 0 });
+    videoFrame.close();
+    frame += 1;
+    onProgress(Math.min(99, Math.round((time / duration) * 100)));
+  }
+
+  await encoder.flush();
+  encoder.close();
+  muxer.finalize();
+  URL.revokeObjectURL(url);
+  onProgress(100);
+  return new Blob([target.buffer], { type: "video/mp4" });
+}
+
+async function pickDownloadVideoConfig(VideoEncoderCtor: any, width: number, height: number) {
+  const configs = [
+    { codec: "avc1.42001f", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.4d0028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+  ];
+  for (const config of configs) {
+    const support = await VideoEncoderCtor.isConfigSupported(config).catch(() => null);
+    if (support?.supported) return support.config;
+  }
+  throw new Error("H.264-Encoding wird in diesem Browser nicht unterstützt");
+}
+
 function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "tutorial";
 }
