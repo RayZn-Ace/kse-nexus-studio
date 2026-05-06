@@ -1,22 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Video } from "lucide-react";
+import { Recorder } from "@/components/admin/Recorder";
+import { TutorialLibrary } from "@/components/admin/TutorialLibrary";
 
 export const Route = createFileRoute("/admin/tutorials")({ component: Tutorials });
 
 function Tutorials() {
   return (
-    <div className="p-8 max-w-4xl">
-      <h1 className="font-display text-2xl font-semibold mb-2">Tutorials</h1>
-      <p className="text-sm text-muted-foreground mb-8">Bildschirmaufnahmen mit Facecam — Bibliothek & Recorder.</p>
-      <div className="glass rounded-2xl p-10 text-center">
-        <Video className="w-10 h-10 text-accent mx-auto mb-3" />
-        <h2 className="font-semibold mb-1">Recorder kommt im nächsten Schritt</h2>
+    <div className="p-8 max-w-6xl space-y-10">
+      <header>
+        <h1 className="font-display text-2xl font-semibold mb-1">Tutorials</h1>
         <p className="text-sm text-muted-foreground">
-          Im nächsten Prompt baue ich den vollständigen Screen-Recorder mit Facecam-Maske
-          (Form, Position, Hintergrund) und KI-Personenfreistellung via MediaPipe — speichert
-          direkt in deine Cloud-Bibliothek.
+          Bildschirmaufnahme mit Facecam-Maske, Hintergrund-Freistellung und Cloud-Speicher.
         </p>
-      </div>
+      </header>
+      <Recorder />
+      <TutorialLibrary />
     </div>
   );
 }
