@@ -3,18 +3,13 @@ import { getShare } from "@/server/shares.functions";
 import { Download, Film } from "lucide-react";
 
 export const Route = createFileRoute("/share/$token")({
-  head: ({ loaderData }) => ({
+  head: () => ({
     meta: [
-      {
-        title: loaderData?.ok
-          ? `${loaderData.tutorial.title} — KSE Group`
-          : "Tutorial — KSE Group",
-      },
+      { title: "Tutorial — KSE Group" },
       { name: "robots", content: "noindex" },
       {
         name: "description",
-        content:
-          "Geteiltes Tutorial-Video von KSE Group. Sicher, privat, brandgesichert.",
+        content: "Geteiltes Tutorial-Video von KSE Group.",
       },
     ],
   }),
