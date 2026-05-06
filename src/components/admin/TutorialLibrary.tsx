@@ -3,25 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trash2, Loader2, Film, Download, Share2, Copy, Check } from "lucide-react";
 
-let ffmpegPromise: Promise<import("@ffmpeg/ffmpeg").FFmpeg> | null = null;
-
-async function getFfmpeg() {
-  if (!ffmpegPromise) {
-    ffmpegPromise = (async () => {
-      const [{ FFmpeg }, coreUrl, wasmUrl, workerUrl] = await Promise.all([
-        import("@ffmpeg/ffmpeg"),
-        import("@ffmpeg/core?url"),
-        import("@ffmpeg/core/wasm?url"),
-        import("@ffmpeg/ffmpeg/worker?url"),
-      ]);
-      const ffmpeg = new FFmpeg();
-      await ffmpeg.load({ coreURL: coreUrl.default, wasmURL: wasmUrl.default, classWorkerURL: workerUrl.default });
-      return ffmpeg;
-    })();
-  }
-  return ffmpegPromise;
-}
-
 function saveBlob(blob: Blob, filename: string) {
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -31,41 +12,6 @@ function saveBlob(blob: Blob, filename: string) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-}
-
-async function webmToMp4(blob: Blob, onProgress?: (pct: number, mode: "prepare" | "remux" | "transcode") => void) {
-  const ffmpeg = await getFfmpeg();
-  const inputName = `input-${Date.now()}.webm`;
-  const outputName = `output-${Date.now()}.mp4`;
-  const mode: "transcode" = "transcode";
-  const handler = ({ progress }: { progress: number }) => {
-    if (onProgress) onProgress(Math.max(1, Math.min(99, Math.round(progress * 100))), mode);
-  };
-  ffmpeg.on("progress", handler);
-  try {
-    onProgress?.(1, "prepare");
-    await ffmpeg.writeFile(inputName, new Uint8Array(await blob.arrayBuffer()));
-    onProgress?.(1, "transcode");
-    const code = await ffmpeg.exec([
-      "-i", inputName,
-      "-c:v", "libx264",
-      "-preset", "ultrafast",
-      "-pix_fmt", "yuv420p",
-      "-c:a", "aac",
-      "-b:a", "128k",
-      "-movflags", "+faststart",
-      outputName,
-    ]);
-    if (code !== 0) throw new Error("MP4-Konvertierung fehlgeschlagen");
-    const data = await ffmpeg.readFile(outputName);
-    const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
-    const copy = new Uint8Array(bytes.byteLength);
-    copy.set(bytes);
-    return new Blob([copy.buffer], { type: "video/mp4" });
-  } finally {
-    ffmpeg.off("progress", handler);
-    await Promise.allSettled([ffmpeg.deleteFile(inputName), ffmpeg.deleteFile(outputName)]);
-  }
 }
 
 type Tutorial = {
@@ -83,7 +29,7 @@ export function TutorialLibrary() {
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ stage: "fetch" | "prepare" | "remux" | "convert" | "save"; pct: number } | null>(null);
+  const [progress, setProgress] = useState<{ stage: "fetch" | "save"; pct: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -186,23 +132,14 @@ export function TutorialLibrary() {
       } else {
         chunks.push(new Uint8Array(await res.arrayBuffer()));
       }
+      const extension = t.video_path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm";
       const blob = new Blob(chunks as BlobPart[]);
-      let mp4Blob: Blob;
-      if (t.video_path.toLowerCase().endsWith(".mp4")) {
-        mp4Blob = blob;
-      } else {
-        setProgress({ stage: "prepare", pct: 1 });
-        mp4Blob = await webmToMp4(blob, (pct, mode) => {
-          const stage = mode === "prepare" ? "prepare" : mode === "remux" ? "remux" : "convert";
-          setProgress({ stage, pct });
-        });
-      }
       setProgress({ stage: "save", pct: 100 });
-      saveBlob(mp4Blob, `${slug(t.title)}.mp4`);
-      toast.success("MP4-Download gestartet");
+      saveBlob(blob, `${slug(t.title)}.${extension}`);
+      toast.success(`${extension.toUpperCase()}-Download gestartet`);
     } catch (e: any) {
-      console.error("MP4 download failed", e);
-      toast.error(e.message ?? "MP4-Download fehlgeschlagen");
+      console.error("Video download failed", e);
+      toast.error(e.message ?? "Download fehlgeschlagen");
     } finally {
       setDownloading(null);
       setProgress(null);
@@ -252,12 +189,12 @@ export function TutorialLibrary() {
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
                           {progress
-                            ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "prepare" ? "Bereite vor" : progress.stage === "remux" ? "Erstelle MP4" : progress.stage === "convert" ? "Konvertiere" : "Speichere"} ${progress.pct}%`
+                            ? `${progress.stage === "fetch" ? "Lade" : "Speichere"} ${progress.pct}%`
                             : "…"}
                         </>
                       ) : (
                         <>
-                          <Download className="w-3 h-3" /> MP4 Download
+                          <Download className="w-3 h-3" /> Download
                         </>
                       )}
                     </button>
