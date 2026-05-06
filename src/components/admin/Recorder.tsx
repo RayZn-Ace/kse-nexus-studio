@@ -494,14 +494,27 @@ export function Recorder() {
     }
     const merged = new MediaStream(tracks);
 
-    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
-      ? "video/webm;codecs=vp9,opus"
-      : "video/webm";
+    // Prefer MP4 (H.264 + AAC) so downloads / shares play everywhere
+    // (QuickTime, iOS, WhatsApp, …). Fall back to WebM if the browser
+    // can't encode MP4 directly.
+    const mp4Candidates = [
+      "video/mp4;codecs=h264,aac",
+      "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+      "video/mp4",
+    ];
+    const webmCandidates = ["video/webm;codecs=vp9,opus", "video/webm"];
+    const mime =
+      mp4Candidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
+      webmCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
+      "video/webm";
+    const isMp4 = mime.startsWith("video/mp4");
     const rec = new MediaRecorder(merged, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
     chunksRef.current = [];
     rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
     rec.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(chunksRef.current, {
+        type: isMp4 ? "video/mp4" : "video/webm",
+      });
       setLastBlob(blob);
       setPreviewUrl(URL.createObjectURL(blob));
       audioCtxRef.current?.close().catch(() => {});
@@ -509,6 +522,7 @@ export function Recorder() {
     };
     rec.start(1000);
     recorderRef.current = rec;
+    (recorderRef as any).mp4 = isMp4;
     setRecording(true);
     setDuration(0);
     const start = Date.now();
@@ -528,9 +542,10 @@ export function Recorder() {
     if (!title.trim()) return toast.error("Bitte Titel angeben");
     setUploading(true);
     try {
-      const path = `${user.id}/${Date.now()}-${slug(title)}.webm`;
+      const ext = lastBlob.type.startsWith("video/mp4") ? "mp4" : "webm";
+      const path = `${user.id}/${Date.now()}-${slug(title)}.${ext}`;
       const { error: upErr } = await supabase.storage.from("tutorials").upload(path, lastBlob, {
-        contentType: "video/webm", upsert: false,
+        contentType: lastBlob.type || "video/webm", upsert: false,
       });
       if (upErr) throw upErr;
       const { error: insErr } = await supabase.from("tutorials").insert({
@@ -673,7 +688,8 @@ export function Recorder() {
               {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
               In Bibliothek speichern
             </button>
-            <a href={previewUrl} download={`${slug(title || "tutorial")}.webm`}
+            <a href={previewUrl}
+              download={`${slug(title || "tutorial")}.${lastBlob?.type.startsWith("video/mp4") ? "mp4" : "webm"}`}
               className="px-4 py-2 rounded-lg border border-border text-xs hover:bg-card">Download</a>
           </div>
         </div>
