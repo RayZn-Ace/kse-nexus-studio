@@ -704,6 +704,124 @@ export function Recorder() {
   );
 }
 
+async function startMp4Recording(stream: MediaStream, width: number, height: number): Promise<Mp4Recording> {
+  const win = window as any;
+  const VideoEncoderCtor = win.VideoEncoder;
+  const AudioEncoderCtor = win.AudioEncoder;
+  const TrackProcessorCtor = win.MediaStreamTrackProcessor;
+
+  if (!VideoEncoderCtor || !TrackProcessorCtor) {
+    throw new Error("MP4-Aufnahme wird in diesem Browser nicht unterstützt");
+  }
+
+  const videoTrack = stream.getVideoTracks()[0];
+  const audioTrack = stream.getAudioTracks()[0];
+  if (!videoTrack) throw new Error("Keine Videospur gefunden");
+
+  const videoConfig = await pickVideoEncoderConfig(VideoEncoderCtor, width, height);
+  const audioSettings = audioTrack?.getSettings?.() ?? {};
+  const audioConfig = audioTrack && AudioEncoderCtor
+    ? await pickAudioEncoderConfig(AudioEncoderCtor, audioSettings)
+    : null;
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target,
+    video: { codec: "avc", width, height, frameRate: 30 },
+    audio: audioConfig ? {
+      codec: "aac",
+      numberOfChannels: audioConfig.numberOfChannels,
+      sampleRate: audioConfig.sampleRate,
+    } : undefined,
+    fastStart: "in-memory",
+    firstTimestampBehavior: "cross-track-offset",
+  });
+
+  let stopped = false;
+  let videoFrameCount = 0;
+  const videoEncoder = new VideoEncoderCtor({
+    output: (chunk: EncodedVideoChunk, meta?: EncodedVideoChunkMetadata) => muxer.addVideoChunk(chunk, meta),
+    error: (error: Error) => console.error("VideoEncoder error", error),
+  });
+  videoEncoder.configure(videoConfig);
+
+  const videoReader = new TrackProcessorCtor({ track: videoTrack }).readable.getReader();
+  const videoPump = (async () => {
+    while (!stopped) {
+      const { done, value } = await videoReader.read();
+      if (done || !value) break;
+      const frame = value as VideoFrame;
+      if (videoEncoder.state === "configured") {
+        videoEncoder.encode(frame, { keyFrame: videoFrameCount % 120 === 0 });
+        videoFrameCount += 1;
+      }
+      frame.close();
+    }
+  })();
+
+  let audioEncoder: AudioEncoder | null = null;
+  let audioReader: ReadableStreamDefaultReader<AudioData> | null = null;
+  let audioPump: Promise<void> | null = null;
+  if (audioTrack && audioConfig) {
+    audioEncoder = new AudioEncoderCtor({
+      output: (chunk: EncodedAudioChunk, meta?: EncodedAudioChunkMetadata) => muxer.addAudioChunk(chunk, meta),
+      error: (error: Error) => console.error("AudioEncoder error", error),
+    });
+    audioEncoder.configure(audioConfig);
+    audioReader = new TrackProcessorCtor({ track: audioTrack }).readable.getReader();
+    audioPump = (async () => {
+      while (!stopped) {
+        const { done, value } = await audioReader!.read();
+        if (done || !value) break;
+        if (audioEncoder?.state === "configured") audioEncoder.encode(value);
+        value.close();
+      }
+    })();
+  }
+
+  return {
+    stop: async () => {
+      stopped = true;
+      videoTrack.stop();
+      audioTrack?.stop();
+      await Promise.allSettled([
+        videoReader.cancel().catch(() => {}),
+        audioReader?.cancel().catch(() => {}),
+        videoPump,
+        audioPump,
+      ].filter(Boolean) as Promise<unknown>[]);
+      await videoEncoder.flush();
+      videoEncoder.close();
+      if (audioEncoder) {
+        await audioEncoder.flush();
+        audioEncoder.close();
+      }
+      muxer.finalize();
+      return new Blob([target.buffer], { type: "video/mp4" });
+    },
+  };
+}
+
+async function pickVideoEncoderConfig(VideoEncoderCtor: any, width: number, height: number) {
+  const configs = [
+    { codec: "avc1.42001f", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.4d0028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.640028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+  ];
+  for (const config of configs) {
+    const support = await VideoEncoderCtor.isConfigSupported(config).catch(() => null);
+    if (support?.supported) return support.config;
+  }
+  throw new Error("H.264-Encoding wird in diesem Browser nicht unterstützt");
+}
+
+async function pickAudioEncoderConfig(AudioEncoderCtor: any, settings: MediaTrackSettings) {
+  const sampleRate = typeof settings.sampleRate === "number" ? settings.sampleRate : 48000;
+  const numberOfChannels = typeof settings.channelCount === "number" ? settings.channelCount : 2;
+  const config = { codec: "mp4a.40.2", sampleRate, numberOfChannels, bitrate: 128_000 };
+  const support = await AudioEncoderCtor.isConfigSupported(config).catch(() => null);
+  return support?.supported ? support.config : null;
+}
+
 /* ─────────── Brand backgrounds (procedural canvas) ─────────── */
 
 function drawBrandBg(canvas: HTMLCanvasElement, key: BgKey) {
