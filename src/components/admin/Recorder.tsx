@@ -66,6 +66,11 @@ export function Recorder() {
   const personCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const bgCacheRef = useRef<{ key: string; canvas: HTMLCanvasElement } | null>(null);
+  // Mask pipeline canvases
+  const maskRawCanvasRef = useRef<HTMLCanvasElement | null>(null);   // raw per-frame mask
+  const maskSmoothCanvasRef = useRef<HTMLCanvasElement | null>(null); // temporally smoothed
+  const maskSoftCanvasRef = useRef<HTMLCanvasElement | null>(null);   // blurred for soft edge
+  const lastMaskTsRef = useRef(0);
 
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [camStream, setCamStream] = useState<MediaStream | null>(null);
@@ -216,8 +221,15 @@ export function Recorder() {
     const camC = (camCanvasRef.current ||= document.createElement("canvas"));
     const personC = (personCanvasRef.current ||= document.createElement("canvas"));
     const bgC = (bgCanvasRef.current ||= document.createElement("canvas"));
-    const camCtx = camC.getContext("2d", { willReadFrequently: true })!;
-    const personCtx = personC.getContext("2d", { willReadFrequently: true })!;
+    const maskRaw = (maskRawCanvasRef.current ||= document.createElement("canvas"));
+    const maskSmooth = (maskSmoothCanvasRef.current ||= document.createElement("canvas"));
+    const maskSoft = (maskSoftCanvasRef.current ||= document.createElement("canvas"));
+    const camCtx = camC.getContext("2d")!;
+    const personCtx = personC.getContext("2d")!;
+    const maskRawCtx = maskRaw.getContext("2d", { willReadFrequently: true })!;
+    const maskSmoothCtx = maskSmooth.getContext("2d")!;
+    const maskSoftCtx = maskSoft.getContext("2d")!;
+    let smoothInitialized = false;
 
     const render = () => {
       const sv = screenVideoRef.current;
@@ -237,8 +249,14 @@ export function Recorder() {
       // Cam framing
       const cw = cv.videoWidth || 640;
       const ch = cv.videoHeight || 480;
-      camC.width = cw; camC.height = ch;
-      personC.width = cw; personC.height = ch;
+      if (camC.width !== cw || camC.height !== ch) {
+        camC.width = cw; camC.height = ch;
+        personC.width = cw; personC.height = ch;
+        maskRaw.width = cw; maskRaw.height = ch;
+        maskSmooth.width = cw; maskSmooth.height = ch;
+        maskSoft.width = cw; maskSoft.height = ch;
+        smoothInitialized = false;
+      }
 
       // Mirror cam onto camC
       camCtx.save();
@@ -247,31 +265,66 @@ export function Recorder() {
       camCtx.drawImage(cv, 0, 0, cw, ch);
       camCtx.restore();
 
-      // Get person mask. In MediaPipe selfie segmenter:
-      //   category 0 = PERSON, 255 = BACKGROUND  (we keep PERSON pixels)
-      let mask: Uint8Array | undefined;
-      if (segmenterRef.current && bg !== "blur") {
-        // for blur we still need mask but handle below uniformly
-      }
+      // ── Get person mask (throttled to ~30 fps to avoid jitter on fast frames)
+      let haveMask = false;
       if (segmenterRef.current) {
-        try {
-          const result = segmenterRef.current.segmentForVideo(camC, performance.now());
-          mask = result.categoryMask?.getAsUint8Array();
-          result.close();
-        } catch {}
+        const now = performance.now();
+        if (now - lastMaskTsRef.current >= 30) {
+          lastMaskTsRef.current = now;
+          try {
+            const result = segmenterRef.current.segmentForVideo(camC, now);
+            const cat = result.categoryMask?.getAsUint8Array();
+            if (cat && cat.length === cw * ch) {
+              // Build raw alpha mask: person → 255, bg → 0
+              const id = maskRawCtx.createImageData(cw, ch);
+              const d = id.data;
+              for (let i = 0; i < cat.length; i++) {
+                const a = cat[i] === 0 ? 255 : 0;
+                const j = i * 4;
+                d[j] = 255; d[j + 1] = 255; d[j + 2] = 255; d[j + 3] = a;
+              }
+              maskRawCtx.putImageData(id, 0, 0);
+              haveMask = true;
+            }
+            result.close();
+          } catch {}
+        } else {
+          haveMask = smoothInitialized;
+        }
       }
 
-      // Build personC = camC with background pixels alpha=0
+      // ── Temporally smooth: maskSmooth = 0.7*prev + 0.3*new (EMA via alpha blend)
+      if (haveMask) {
+        if (!smoothInitialized) {
+          maskSmoothCtx.clearRect(0, 0, cw, ch);
+          maskSmoothCtx.drawImage(maskRaw, 0, 0);
+          smoothInitialized = true;
+        } else {
+          maskSmoothCtx.globalAlpha = 0.35;
+          maskSmoothCtx.globalCompositeOperation = "source-over";
+          maskSmoothCtx.drawImage(maskRaw, 0, 0);
+          maskSmoothCtx.globalAlpha = 1;
+        }
+
+        // ── Soft edge: blur the smoothed mask (GPU-accelerated canvas filter)
+        maskSoftCtx.save();
+        maskSoftCtx.clearRect(0, 0, cw, ch);
+        maskSoftCtx.filter = "blur(3px)";
+        maskSoftCtx.drawImage(maskSmooth, 0, 0);
+        maskSoftCtx.restore();
+      }
+
+      // ── Build personC = camC clipped to mask via destination-in (no per-pixel JS)
+      personCtx.save();
+      personCtx.globalCompositeOperation = "source-over";
       personCtx.clearRect(0, 0, cw, ch);
       personCtx.drawImage(camC, 0, 0);
-      if (mask) {
-        const img = personCtx.getImageData(0, 0, cw, ch);
-        for (let i = 0; i < mask.length; i++) {
-          // category 0 = person → keep. Anything else (255) → drop.
-          if (mask[i] !== 0) img.data[i * 4 + 3] = 0;
-        }
-        personCtx.putImageData(img, 0, 0);
+      if (smoothInitialized) {
+        personCtx.globalCompositeOperation = "destination-in";
+        personCtx.drawImage(maskSoft, 0, 0);
       }
+      personCtx.restore();
+      const mask = smoothInitialized; // truthy flag for downstream branches
 
       // Build the cam tile (background + person) into camC
       camCtx.clearRect(0, 0, cw, ch);
