@@ -88,7 +88,7 @@ export function TutorialLibrary() {
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ stage: "fetch" | "convert" | "save"; pct: number } | null>(null);
+  const [progress, setProgress] = useState<{ stage: "fetch" | "prepare" | "remux" | "convert" | "save"; pct: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -196,12 +196,17 @@ export function TutorialLibrary() {
       if (t.video_path.toLowerCase().endsWith(".mp4")) {
         mp4Blob = blob;
       } else {
-        setProgress({ stage: "convert", pct: 0 });
-        mp4Blob = await webmToMp4(blob, (pct) => setProgress({ stage: "convert", pct }));
+        setProgress({ stage: "prepare", pct: 1 });
+        mp4Blob = await webmToMp4(blob, (pct, mode) => {
+          const stage = mode === "prepare" ? "prepare" : mode === "remux" ? "remux" : "convert";
+          setProgress({ stage, pct });
+        });
       }
       setProgress({ stage: "save", pct: 100 });
       saveBlob(mp4Blob, `${slug(t.title)}.mp4`);
+      toast.success("MP4-Download gestartet");
     } catch (e: any) {
+      console.error("MP4 download failed", e);
       toast.error(e.message ?? "MP4-Download fehlgeschlagen");
     } finally {
       setDownloading(null);
@@ -252,7 +257,7 @@ export function TutorialLibrary() {
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
                           {progress
-                            ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "convert" ? "Konvertiere" : "Speichere"} ${progress.pct}%`
+                            ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "prepare" ? "Bereite vor" : progress.stage === "remux" ? "Erstelle MP4" : progress.stage === "convert" ? "Konvertiere" : "Speichere"} ${progress.pct}%`
                             : "…"}
                         </>
                       ) : (
