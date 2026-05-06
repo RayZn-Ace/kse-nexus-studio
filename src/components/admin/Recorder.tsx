@@ -293,23 +293,40 @@ export function Recorder() {
         }
       }
 
-      // ── Temporally smooth: maskSmooth = 0.7*prev + 0.3*new (EMA via alpha blend)
+      // ── Light temporal smoothing without trails:
+      // Replace the smoothed mask each frame, then blend a small amount of the
+      // previous mask in. This keeps edges stable but never leaves ghost trails.
       if (haveMask) {
         if (!smoothInitialized) {
+          maskSmoothCtx.globalCompositeOperation = "source-over";
+          maskSmoothCtx.globalAlpha = 1;
           maskSmoothCtx.clearRect(0, 0, cw, ch);
           maskSmoothCtx.drawImage(maskRaw, 0, 0);
           smoothInitialized = true;
         } else {
-          maskSmoothCtx.globalAlpha = 0.35;
+          // 1. Snapshot previous smoothed mask
+          maskSoftCtx.globalCompositeOperation = "source-over";
+          maskSoftCtx.globalAlpha = 1;
+          maskSoftCtx.filter = "none";
+          maskSoftCtx.clearRect(0, 0, cw, ch);
+          maskSoftCtx.drawImage(maskSmooth, 0, 0);
+          // 2. Reset smoothed to current raw mask
           maskSmoothCtx.globalCompositeOperation = "source-over";
+          maskSmoothCtx.globalAlpha = 1;
+          maskSmoothCtx.clearRect(0, 0, cw, ch);
           maskSmoothCtx.drawImage(maskRaw, 0, 0);
+          // 3. Blend a small amount of previous on top to dampen jitter
+          maskSmoothCtx.globalAlpha = 0.25;
+          maskSmoothCtx.drawImage(maskSoft, 0, 0);
           maskSmoothCtx.globalAlpha = 1;
         }
 
-        // ── Soft edge: blur the smoothed mask (GPU-accelerated canvas filter)
+        // Soft edge: blur the smoothed mask
         maskSoftCtx.save();
+        maskSoftCtx.globalCompositeOperation = "source-over";
+        maskSoftCtx.globalAlpha = 1;
         maskSoftCtx.clearRect(0, 0, cw, ch);
-        maskSoftCtx.filter = "blur(3px)";
+        maskSoftCtx.filter = "blur(2px)";
         maskSoftCtx.drawImage(maskSmooth, 0, 0);
         maskSoftCtx.restore();
       }
