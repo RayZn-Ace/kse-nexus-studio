@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef } from "react";
-import heroInk from "@/assets/hero-ink.jpg";
+import { InkCollision } from "@/components/InkCollision";
 import {
   Instagram, Mail, ArrowUpRight, Sparkles, Code2, Film, Rocket,
   Users, MessageSquare, Brain, Palette, ShieldAlert, MousePointer2,
@@ -9,9 +9,9 @@ import {
 
 export const Route = createFileRoute("/")({ component: Index });
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 const services = [
@@ -95,9 +95,7 @@ function Hero() {
   return (
     <section ref={ref} id="top" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <motion.div style={{ y, scale }} className="absolute inset-0 -z-10">
-        <img src={heroInk} alt="" width={1920} height={1080} className="w-full h-full object-cover opacity-70" />
-        <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background" />
+        <InkCollision />
       </motion.div>
 
       <motion.div style={{ opacity }} className="relative z-10 text-center px-6 max-w-5xl pt-32">
@@ -311,7 +309,8 @@ function CTA() {
           whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
           className="inline-flex items-center gap-3 bg-accent text-accent-foreground px-10 py-5 rounded-full text-lg font-semibold glow-orange"
         >
-          <Mail className="w-5 h-5" /> info@ksegroup.eu
+          <Mail className="w-5 h-5" />
+          <span>info@ksegroup.eu</span>
           <ArrowUpRight className="w-5 h-5" />
         </motion.a>
       </div>
