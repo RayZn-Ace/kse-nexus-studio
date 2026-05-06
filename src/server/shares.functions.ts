@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { resolveShare } from "./shares.server";
 
 export const getShare = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => {
@@ -8,5 +7,6 @@ export const getShare = createServerFn({ method: "GET" })
     return { token: d.token };
   })
   .handler(async ({ data }) => {
+    const { resolveShare } = await import("./shares.server");
     return resolveShare(data.token);
   });
