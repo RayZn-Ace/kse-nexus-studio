@@ -459,7 +459,7 @@ export function Recorder() {
   // Reset bg cache when bg type changes
   useEffect(() => { bgCacheRef.current = null; }, [bg]);
 
-  const startRecording = () => {
+  const startRecording = async () => {
     if (!canvasRef.current || !screenStream || !camStream) {
       toast.error("Bitte zuerst Kamera und Bildschirm starten");
       return;
@@ -498,47 +498,49 @@ export function Recorder() {
     }
     const merged = new MediaStream(tracks);
 
-    // Prefer MP4 (H.264 + AAC) so downloads / shares play everywhere
-    // (QuickTime, iOS, WhatsApp, …). Fall back to WebM if the browser
-    // can't encode MP4 directly.
-    const mp4Candidates = [
-      "video/mp4;codecs=h264,aac",
-      "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
-      "video/mp4",
-    ];
-    const webmCandidates = ["video/webm;codecs=vp9,opus", "video/webm"];
-    const mime =
-      mp4Candidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
-      webmCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
-      "video/webm";
-    const isMp4 = mime.startsWith("video/mp4");
-    const rec = new MediaRecorder(merged, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
-    chunksRef.current = [];
-    rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
-    rec.onstop = () => {
-      const blob = new Blob(chunksRef.current, {
-        type: isMp4 ? "video/mp4" : "video/webm",
-      });
-      setLastBlob(blob);
-      setPreviewUrl(URL.createObjectURL(blob));
-      audioCtxRef.current?.close().catch(() => {});
-      audioCtxRef.current = null;
-    };
-    rec.start(1000);
-    recorderRef.current = rec;
-    (recorderRef as any).mp4 = isMp4;
     setRecording(true);
     setDuration(0);
     const start = Date.now();
-    const tick = setInterval(() => {
-      if (rec.state !== "recording") return clearInterval(tick);
+    durationTimerRef.current = window.setInterval(() => {
       setDuration(Math.floor((Date.now() - start) / 1000));
     }, 500);
+
+    try {
+      mp4RecordingRef.current = await startMp4Recording(merged, canvasRef.current.width, canvasRef.current.height);
+      recorderRef.current = null;
+      toast.success("MP4-Aufnahme gestartet");
+    } catch (e) {
+      console.error("MP4 recording failed", e);
+      setRecording(false);
+      if (durationTimerRef.current) window.clearInterval(durationTimerRef.current);
+      durationTimerRef.current = null;
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
+      toast.error("Dieser Browser kann hier kein echtes MP4 aufnehmen. Bitte Chrome oder Edge nutzen.");
+    }
   };
 
-  const stopRecording = () => {
-    recorderRef.current?.stop();
+  const stopRecording = async () => {
     setRecording(false);
+    if (durationTimerRef.current) window.clearInterval(durationTimerRef.current);
+    durationTimerRef.current = null;
+    try {
+      if (mp4RecordingRef.current) {
+        const blob = await mp4RecordingRef.current.stop();
+        setLastBlob(blob);
+        setPreviewUrl(URL.createObjectURL(blob));
+        toast.success("MP4 fertig");
+      } else {
+        recorderRef.current?.stop();
+      }
+    } catch (e: any) {
+      console.error("MP4 stop failed", e);
+      toast.error(e.message ?? "MP4 konnte nicht fertiggestellt werden");
+    } finally {
+      mp4RecordingRef.current = null;
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
   };
 
   const upload = async () => {
