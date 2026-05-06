@@ -132,23 +132,14 @@ export function TutorialLibrary() {
       } else {
         chunks.push(new Uint8Array(await res.arrayBuffer()));
       }
+      const extension = t.video_path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm";
       const blob = new Blob(chunks as BlobPart[]);
-      let mp4Blob: Blob;
-      if (t.video_path.toLowerCase().endsWith(".mp4")) {
-        mp4Blob = blob;
-      } else {
-        setProgress({ stage: "prepare", pct: 1 });
-        mp4Blob = await webmToMp4(blob, (pct, mode) => {
-          const stage = mode === "prepare" ? "prepare" : mode === "remux" ? "remux" : "convert";
-          setProgress({ stage, pct });
-        });
-      }
       setProgress({ stage: "save", pct: 100 });
-      saveBlob(mp4Blob, `${slug(t.title)}.mp4`);
-      toast.success("MP4-Download gestartet");
+      saveBlob(blob, `${slug(t.title)}.${extension}`);
+      toast.success(`${extension.toUpperCase()}-Download gestartet`);
     } catch (e: any) {
-      console.error("MP4 download failed", e);
-      toast.error(e.message ?? "MP4-Download fehlgeschlagen");
+      console.error("Video download failed", e);
+      toast.error(e.message ?? "Download fehlgeschlagen");
     } finally {
       setDownloading(null);
       setProgress(null);
@@ -198,12 +189,12 @@ export function TutorialLibrary() {
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
                           {progress
-                            ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "prepare" ? "Bereite vor" : progress.stage === "remux" ? "Erstelle MP4" : progress.stage === "convert" ? "Konvertiere" : "Speichere"} ${progress.pct}%`
+                            ? `${progress.stage === "fetch" ? "Lade" : "Speichere"} ${progress.pct}%`
                             : "…"}
                         </>
                       ) : (
                         <>
-                          <Download className="w-3 h-3" /> MP4 Download
+                          <Download className="w-3 h-3" /> Download
                         </>
                       )}
                     </button>
