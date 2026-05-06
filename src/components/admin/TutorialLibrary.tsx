@@ -37,7 +37,7 @@ async function webmToMp4(blob: Blob, onProgress?: (pct: number, mode: "prepare" 
   const ffmpeg = await getFfmpeg();
   const inputName = `input-${Date.now()}.webm`;
   const outputName = `output-${Date.now()}.mp4`;
-  let mode: "remux" | "transcode" = "remux";
+  const mode: "transcode" = "transcode";
   const handler = ({ progress }: { progress: number }) => {
     if (onProgress) onProgress(Math.max(1, Math.min(99, Math.round(progress * 100))), mode);
   };
@@ -45,22 +45,17 @@ async function webmToMp4(blob: Blob, onProgress?: (pct: number, mode: "prepare" 
   try {
     onProgress?.(1, "prepare");
     await ffmpeg.writeFile(inputName, new Uint8Array(await blob.arrayBuffer()));
-    onProgress?.(5, "remux");
-    let code = await ffmpeg.exec(["-i", inputName, "-c", "copy", "-movflags", "+faststart", outputName]);
-    if (code !== 0) {
-      mode = "transcode";
-      onProgress?.(1, "transcode");
-      await ffmpeg.deleteFile(outputName).catch(() => undefined);
-      code = await ffmpeg.exec([
-        "-i", inputName,
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
-        "-movflags", "+faststart",
-        outputName,
-      ]);
-    }
+    onProgress?.(1, "transcode");
+    const code = await ffmpeg.exec([
+      "-i", inputName,
+      "-c:v", "libx264",
+      "-preset", "ultrafast",
+      "-pix_fmt", "yuv420p",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-movflags", "+faststart",
+      outputName,
+    ]);
     if (code !== 0) throw new Error("MP4-Konvertierung fehlgeschlagen");
     const data = await ffmpeg.readFile(outputName);
     const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
