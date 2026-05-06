@@ -1,15 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageSegmenter, FilesetResolver } from "@mediapipe/tasks-vision";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Circle, Square, Sparkles, Play, Square as Stop, Upload, Loader2, Camera, Monitor } from "lucide-react";
+import {
+  Circle, Square, Sparkles, Play, Square as Stop, Upload, Loader2,
+  Camera, Monitor, Mic, RefreshCw,
+} from "lucide-react";
 
 type Shape = "circle" | "square" | "blob";
-type BgMode = "transparent" | "blur" | "color" | "brand";
+type BgKey = "transparent" | "blur" | "ember" | "grid" | "mesh" | "wall";
 type Position = "br" | "bl" | "tr" | "tl";
 
 const POS: Record<Position, string> = { br: "Unten Rechts", bl: "Unten Links", tr: "Oben Rechts", tl: "Oben Links" };
+
+const BG_LABELS: Record<BgKey, string> = {
+  transparent: "Freigestellt",
+  blur: "Blur",
+  ember: "KSE Ember",
+  grid: "Dark Grid",
+  mesh: "Gradient Mesh",
+  wall: "Logo Wall",
+};
 
 export function Recorder() {
   const { user } = useAuth();
@@ -20,7 +32,12 @@ export function Recorder() {
   const rafRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const offCamRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Reusable offscreen canvases
+  const camCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const personCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const bgCacheRef = useRef<{ key: string; canvas: HTMLCanvasElement } | null>(null);
 
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [camStream, setCamStream] = useState<MediaStream | null>(null);
@@ -32,11 +49,31 @@ export function Recorder() {
 
   const [shape, setShape] = useState<Shape>("circle");
   const [position, setPosition] = useState<Position>("br");
-  const [bgMode, setBgMode] = useState<BgMode>("transparent");
+  const [bg, setBg] = useState<BgKey>("transparent");
   const [size, setSize] = useState(260);
   const [title, setTitle] = useState("");
 
-  // Init MediaPipe segmenter
+  // Devices
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [videoId, setVideoId] = useState<string>("");
+  const [audioId, setAudioId] = useState<string>("");
+
+  const refreshDevices = async () => {
+    try {
+      const list = await navigator.mediaDevices.enumerateDevices();
+      setVideoDevices(list.filter((d) => d.kind === "videoinput"));
+      setAudioDevices(list.filter((d) => d.kind === "audioinput"));
+    } catch {}
+  };
+
+  useEffect(() => {
+    refreshDevices();
+    navigator.mediaDevices?.addEventListener?.("devicechange", refreshDevices);
+    return () => navigator.mediaDevices?.removeEventListener?.("devicechange", refreshDevices);
+  }, []);
+
+  // Init segmenter
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -66,12 +103,28 @@ export function Recorder() {
     };
   }, []);
 
-  const startCam = async () => {
+  const stopCam = () => {
+    camStream?.getTracks().forEach((t) => t.stop());
+    setCamStream(null);
+    camVideoRef.current = null;
+  };
+
+  const startCam = async (vId?: string, aId?: string) => {
     try {
-      const s = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
+      stopCam();
+      const constraints: MediaStreamConstraints = {
+        video: {
+          width: 640,
+          height: 480,
+          deviceId: vId ? { exact: vId } : undefined,
+        },
+        audio: {
+          deviceId: aId ? { exact: aId } : undefined,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      };
+      const s = await navigator.mediaDevices.getUserMedia(constraints);
       setCamStream(s);
       const v = document.createElement("video");
       v.srcObject = s;
@@ -79,10 +132,25 @@ export function Recorder() {
       v.playsInline = true;
       await v.play();
       camVideoRef.current = v;
+      // Pull device IDs after permission so labels are populated
+      const vt = s.getVideoTracks()[0]?.getSettings().deviceId ?? "";
+      const at = s.getAudioTracks()[0]?.getSettings().deviceId ?? "";
+      if (vt && !videoId) setVideoId(vt);
+      if (at && !audioId) setAudioId(at);
+      refreshDevices();
     } catch (e) {
-      toast.error("Kamera-Zugriff verweigert");
+      console.error(e);
+      toast.error("Kamera/Mikro-Zugriff verweigert");
     }
   };
+
+  // Switch when dropdown changes (only if cam already running)
+  useEffect(() => {
+    if (camStream && (videoId || audioId)) {
+      startCam(videoId, audioId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoId, audioId]);
 
   const startScreen = async () => {
     try {
@@ -98,7 +166,7 @@ export function Recorder() {
       await v.play();
       screenVideoRef.current = v;
       s.getVideoTracks()[0].onended = () => stopAll();
-    } catch (e) {
+    } catch {
       toast.error("Bildschirmfreigabe abgebrochen");
     }
   };
@@ -112,18 +180,21 @@ export function Recorder() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
   };
 
-  // Compose loop
+  // Render loop
   useEffect(() => {
     if (!screenStream || !camStream) return;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    const off = (offCamRef.current ||= document.createElement("canvas"));
-    const offCtx = off.getContext("2d", { willReadFrequently: true })!;
+    const camC = (camCanvasRef.current ||= document.createElement("canvas"));
+    const personC = (personCanvasRef.current ||= document.createElement("canvas"));
+    const bgC = (bgCanvasRef.current ||= document.createElement("canvas"));
+    const camCtx = camC.getContext("2d", { willReadFrequently: true })!;
+    const personCtx = personC.getContext("2d", { willReadFrequently: true })!;
 
     const render = () => {
       const sv = screenVideoRef.current;
       const cv = camVideoRef.current;
-      if (!sv || !cv) {
+      if (!sv || !cv || cv.videoWidth === 0) {
         rafRef.current = requestAnimationFrame(render);
         return;
       }
@@ -132,12 +203,87 @@ export function Recorder() {
       if (canvas.width !== sw) canvas.width = sw;
       if (canvas.height !== sh) canvas.height = sh;
 
-      // Background = screen
+      // Screen as background
       ctx.drawImage(sv, 0, 0, sw, sh);
 
-      // Camera framing
+      // Cam framing
       const cw = cv.videoWidth || 640;
       const ch = cv.videoHeight || 480;
+      camC.width = cw; camC.height = ch;
+      personC.width = cw; personC.height = ch;
+
+      // Mirror cam onto camC
+      camCtx.save();
+      camCtx.translate(cw, 0);
+      camCtx.scale(-1, 1);
+      camCtx.drawImage(cv, 0, 0, cw, ch);
+      camCtx.restore();
+
+      // Get person mask. In MediaPipe selfie segmenter:
+      //   category 0 = PERSON, 255 = BACKGROUND  (we keep PERSON pixels)
+      let mask: Uint8Array | undefined;
+      if (segmenterRef.current && bg !== "blur") {
+        // for blur we still need mask but handle below uniformly
+      }
+      if (segmenterRef.current) {
+        try {
+          const result = segmenterRef.current.segmentForVideo(camC, performance.now());
+          mask = result.categoryMask?.getAsUint8Array();
+          result.close();
+        } catch {}
+      }
+
+      // Build personC = camC with background pixels alpha=0
+      personCtx.clearRect(0, 0, cw, ch);
+      personCtx.drawImage(camC, 0, 0);
+      if (mask) {
+        const img = personCtx.getImageData(0, 0, cw, ch);
+        for (let i = 0; i < mask.length; i++) {
+          // category 0 = person → keep. Anything else (255) → drop.
+          if (mask[i] !== 0) img.data[i * 4 + 3] = 0;
+        }
+        personCtx.putImageData(img, 0, 0);
+      }
+
+      // Build the cam tile (background + person) into camC
+      camCtx.clearRect(0, 0, cw, ch);
+      if (bg === "transparent") {
+        if (mask) {
+          camCtx.drawImage(personC, 0, 0);
+        } else {
+          // fallback: original cam if no mask
+          camCtx.save();
+          camCtx.translate(cw, 0);
+          camCtx.scale(-1, 1);
+          camCtx.drawImage(cv, 0, 0, cw, ch);
+          camCtx.restore();
+        }
+      } else if (bg === "blur") {
+        // Blurred cam as bg, sharp person on top
+        camCtx.save();
+        camCtx.filter = "blur(18px) brightness(0.85)";
+        camCtx.translate(cw, 0);
+        camCtx.scale(-1, 1);
+        camCtx.drawImage(cv, 0, 0, cw, ch);
+        camCtx.restore();
+        camCtx.filter = "none";
+        if (mask) camCtx.drawImage(personC, 0, 0);
+      } else {
+        // Brand backgrounds — cached procedural canvas
+        const cache = bgCacheRef.current;
+        const key = `${bg}:${cw}x${ch}`;
+        let bgCanvas = cache?.key === key ? cache.canvas : null;
+        if (!bgCanvas) {
+          bgC.width = cw; bgC.height = ch;
+          drawBrandBg(bgC, bg);
+          bgCanvas = bgC;
+          bgCacheRef.current = { key, canvas: bgC };
+        }
+        camCtx.drawImage(bgCanvas, 0, 0);
+        if (mask) camCtx.drawImage(personC, 0, 0);
+      }
+
+      // Place onto main canvas with shape clip
       const camW = size * (sw / 1920);
       const camH = camW * (ch / cw);
       const margin = 40 * (sw / 1920);
@@ -145,131 +291,27 @@ export function Recorder() {
       let y = sh - camH - margin;
       if (position === "bl") x = margin;
       if (position === "tr") y = margin;
-      if (position === "tl") {
-        x = margin;
-        y = margin;
-      }
+      if (position === "tl") { x = margin; y = margin; }
 
-      // Render cam to offscreen with segmentation
-      off.width = cw;
-      off.height = ch;
-
-      const drawCamFrame = () => {
-        if (bgMode === "transparent" && segmenterRef.current) {
-          // mirror cam
-          offCtx.save();
-          offCtx.translate(cw, 0);
-          offCtx.scale(-1, 1);
-          offCtx.drawImage(cv, 0, 0, cw, ch);
-          offCtx.restore();
-
-          try {
-            const result = segmenterRef.current.segmentForVideo(off, performance.now());
-            const mask = result.categoryMask?.getAsUint8Array();
-            if (mask) {
-              const img = offCtx.getImageData(0, 0, cw, ch);
-              for (let i = 0; i < mask.length; i++) {
-                // category 0 = background in selfie segmenter
-                if (mask[i] === 0) img.data[i * 4 + 3] = 0;
-              }
-              offCtx.putImageData(img, 0, 0);
-            }
-            result.close();
-          } catch {}
-        } else if (bgMode === "blur") {
-          offCtx.save();
-          offCtx.filter = "blur(20px)";
-          offCtx.translate(cw, 0);
-          offCtx.scale(-1, 1);
-          offCtx.drawImage(cv, 0, 0, cw, ch);
-          offCtx.restore();
-          // Foreground person on top (segmented)
-          if (segmenterRef.current) {
-            const tmp = document.createElement("canvas");
-            tmp.width = cw;
-            tmp.height = ch;
-            const tctx = tmp.getContext("2d")!;
-            tctx.save();
-            tctx.translate(cw, 0);
-            tctx.scale(-1, 1);
-            tctx.drawImage(cv, 0, 0, cw, ch);
-            tctx.restore();
-            try {
-              const result = segmenterRef.current.segmentForVideo(tmp, performance.now());
-              const mask = result.categoryMask?.getAsUint8Array();
-              if (mask) {
-                const img = tctx.getImageData(0, 0, cw, ch);
-                for (let i = 0; i < mask.length; i++) {
-                  if (mask[i] === 0) img.data[i * 4 + 3] = 0;
-                }
-                tctx.putImageData(img, 0, 0);
-                offCtx.drawImage(tmp, 0, 0);
-              }
-              result.close();
-            } catch {}
-          }
-        } else {
-          // color / brand fill background, person on top
-          const fill = bgMode === "brand" ? "#ff5722" : "#0a0a0a";
-          offCtx.fillStyle = fill;
-          offCtx.fillRect(0, 0, cw, ch);
-          if (segmenterRef.current) {
-            const tmp = document.createElement("canvas");
-            tmp.width = cw;
-            tmp.height = ch;
-            const tctx = tmp.getContext("2d")!;
-            tctx.save();
-            tctx.translate(cw, 0);
-            tctx.scale(-1, 1);
-            tctx.drawImage(cv, 0, 0, cw, ch);
-            tctx.restore();
-            try {
-              const result = segmenterRef.current.segmentForVideo(tmp, performance.now());
-              const mask = result.categoryMask?.getAsUint8Array();
-              if (mask) {
-                const img = tctx.getImageData(0, 0, cw, ch);
-                for (let i = 0; i < mask.length; i++) {
-                  if (mask[i] === 0) img.data[i * 4 + 3] = 0;
-                }
-                tctx.putImageData(img, 0, 0);
-                offCtx.drawImage(tmp, 0, 0);
-              }
-              result.close();
-            } catch {}
-          } else {
-            offCtx.save();
-            offCtx.translate(cw, 0);
-            offCtx.scale(-1, 1);
-            offCtx.drawImage(cv, 0, 0, cw, ch);
-            offCtx.restore();
-          }
-        }
-      };
-
-      drawCamFrame();
-
-      // Apply shape clip when drawing onto main canvas
       ctx.save();
+      // Drop shadow
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 12;
       ctx.beginPath();
       if (shape === "circle") {
         ctx.ellipse(x + camW / 2, y + camH / 2, camW / 2, camH / 2, 0, 0, Math.PI * 2);
       } else if (shape === "square") {
-        const r = 24 * (sw / 1920);
-        roundRect(ctx, x, y, camW, camH, r);
+        roundRect(ctx, x, y, camW, camH, 24 * (sw / 1920));
       } else {
-        // blob
         blobPath(ctx, x, y, camW, camH);
       }
       ctx.closePath();
-      // soft shadow
-      ctx.shadowColor = "rgba(0,0,0,0.4)";
-      ctx.shadowBlur = 30;
-      ctx.shadowOffsetY = 10;
       ctx.fillStyle = "rgba(0,0,0,0.001)";
       ctx.fill();
       ctx.shadowColor = "transparent";
       ctx.clip();
-      ctx.drawImage(off, x, y, camW, camH);
+      ctx.drawImage(camC, x, y, camW, camH);
       ctx.restore();
 
       rafRef.current = requestAnimationFrame(render);
@@ -278,7 +320,10 @@ export function Recorder() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [screenStream, camStream, shape, position, bgMode, size]);
+  }, [screenStream, camStream, shape, position, bg, size]);
+
+  // Reset bg cache when bg type changes
+  useEffect(() => { bgCacheRef.current = null; }, [bg]);
 
   const startRecording = () => {
     if (!canvasRef.current || !screenStream || !camStream) {
@@ -322,29 +367,20 @@ export function Recorder() {
 
   const upload = async () => {
     if (!lastBlob || !user) return;
-    if (!title.trim()) {
-      toast.error("Bitte Titel angeben");
-      return;
-    }
+    if (!title.trim()) return toast.error("Bitte Titel angeben");
     setUploading(true);
     try {
       const path = `${user.id}/${Date.now()}-${slug(title)}.webm`;
       const { error: upErr } = await supabase.storage.from("tutorials").upload(path, lastBlob, {
-        contentType: "video/webm",
-        upsert: false,
+        contentType: "video/webm", upsert: false,
       });
       if (upErr) throw upErr;
       const { error: insErr } = await supabase.from("tutorials").insert({
-        title: title.trim(),
-        video_path: path,
-        duration_seconds: duration || null,
-        created_by: user.id,
+        title: title.trim(), video_path: path, duration_seconds: duration || null, created_by: user.id,
       });
       if (insErr) throw insErr;
       toast.success("Tutorial gespeichert");
-      setLastBlob(null);
-      setPreviewUrl(null);
-      setTitle("");
+      setLastBlob(null); setPreviewUrl(null); setTitle("");
       window.dispatchEvent(new Event("tutorials:refresh"));
     } catch (e: any) {
       toast.error(e.message ?? "Upload fehlgeschlagen");
@@ -354,10 +390,11 @@ export function Recorder() {
   };
 
   const ready = screenStream && camStream;
+  const bgPreviews = useMemo(() => buildBgPreviews(), []);
 
   return (
     <section className="space-y-5">
-      <div className="grid lg:grid-cols-[1fr_280px] gap-5">
+      <div className="grid lg:grid-cols-[1fr_320px] gap-5">
         <div className="glass rounded-2xl overflow-hidden aspect-video relative bg-black/60">
           <canvas ref={canvasRef} className="w-full h-full object-contain" />
           {!ready && (
@@ -367,7 +404,7 @@ export function Recorder() {
                   Starte zuerst Kamera & Bildschirm — dann erscheint hier die Live-Vorschau mit Maske.
                 </p>
                 <div className="flex justify-center gap-2">
-                  <button onClick={startCam} className="text-xs px-3 py-2 rounded-lg bg-card hover:bg-card/80 border border-border inline-flex items-center gap-1.5">
+                  <button onClick={() => startCam(videoId, audioId)} className="text-xs px-3 py-2 rounded-lg bg-card hover:bg-card/80 border border-border inline-flex items-center gap-1.5">
                     <Camera className="w-3.5 h-3.5" /> Kamera
                   </button>
                   <button onClick={startScreen} className="text-xs px-3 py-2 rounded-lg bg-card hover:bg-card/80 border border-border inline-flex items-center gap-1.5">
@@ -384,7 +421,27 @@ export function Recorder() {
           )}
         </div>
 
-        <div className="glass rounded-2xl p-5 space-y-5 text-sm">
+        <div className="glass rounded-2xl p-5 space-y-4 text-sm max-h-[640px] overflow-y-auto">
+          <Group label={<><Camera className="w-3 h-3 inline mr-1" /> Kamera</>}>
+            <div className="flex gap-1.5">
+              <select value={videoId} onChange={(e) => setVideoId(e.target.value)}
+                className="flex-1 bg-card border border-border rounded-md px-2 py-1.5 text-xs">
+                {videoDevices.length === 0 && <option value="">Standard</option>}
+                {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Kamera ${d.deviceId.slice(0, 4)}`}</option>)}
+              </select>
+              <button onClick={refreshDevices} title="Geräte neu laden" className="p-1.5 rounded-md border border-border hover:bg-card">
+                <RefreshCw className="w-3 h-3" />
+              </button>
+            </div>
+          </Group>
+          <Group label={<><Mic className="w-3 h-3 inline mr-1" /> Mikrofon</>}>
+            <select value={audioId} onChange={(e) => setAudioId(e.target.value)}
+              className="w-full bg-card border border-border rounded-md px-2 py-1.5 text-xs">
+              {audioDevices.length === 0 && <option value="">Standard</option>}
+              {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mikro ${d.deviceId.slice(0, 4)}`}</option>)}
+            </select>
+          </Group>
+
           <Group label="Form">
             <div className="grid grid-cols-3 gap-1.5">
               <Pill active={shape === "circle"} onClick={() => setShape("circle")}><Circle className="w-3.5 h-3.5" />Rund</Pill>
@@ -400,11 +457,22 @@ export function Recorder() {
             </div>
           </Group>
           <Group label="Hintergrund">
-            <div className="grid grid-cols-2 gap-1.5">
-              <Pill active={bgMode === "transparent"} onClick={() => setBgMode("transparent")}>Freigestellt</Pill>
-              <Pill active={bgMode === "blur"} onClick={() => setBgMode("blur")}>Blur</Pill>
-              <Pill active={bgMode === "color"} onClick={() => setBgMode("color")}>Schwarz</Pill>
-              <Pill active={bgMode === "brand"} onClick={() => setBgMode("brand")}>KSE Orange</Pill>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(Object.keys(BG_LABELS) as BgKey[]).map((k) => (
+                <button key={k} onClick={() => setBg(k)}
+                  className={`relative rounded-md overflow-hidden border text-[10px] aspect-[4/3] ${
+                    bg === k ? "border-accent ring-1 ring-accent" : "border-border"
+                  }`}>
+                  {k === "transparent" ? (
+                    <div className="absolute inset-0 bg-[conic-gradient(at_50%_50%,_#1a1a1a_25%,_#2a2a2a_25%_50%,_#1a1a1a_50%_75%,_#2a2a2a_75%)] bg-[length:10px_10px]" />
+                  ) : k === "blur" ? (
+                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 to-zinc-900 blur-sm" />
+                  ) : (
+                    <img src={bgPreviews[k]} alt={BG_LABELS[k]} className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                  <span className="absolute bottom-0.5 left-1 right-1 text-white drop-shadow truncate">{BG_LABELS[k]}</span>
+                </button>
+              ))}
             </div>
           </Group>
           <Group label={`Größe (${size}px)`}>
@@ -454,7 +522,124 @@ export function Recorder() {
   );
 }
 
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
+/* ─────────── Brand backgrounds (procedural canvas) ─────────── */
+
+function drawBrandBg(canvas: HTMLCanvasElement, key: BgKey) {
+  const ctx = canvas.getContext("2d")!;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (key === "ember") {
+    // Deep charcoal with warm orange radial glow + KSE wordmark
+    const g = ctx.createRadialGradient(w * 0.7, h * 0.4, 10, w * 0.5, h * 0.5, Math.max(w, h));
+    g.addColorStop(0, "#ff6a3d");
+    g.addColorStop(0.35, "#a8381a");
+    g.addColorStop(1, "#0a0a0a");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    drawNoise(ctx, w, h, 0.08);
+    drawWordmark(ctx, w, h, "rgba(255,255,255,0.06)", "rgba(255,255,255,0.18)");
+  } else if (key === "grid") {
+    ctx.fillStyle = "#0a0a0a"; ctx.fillRect(0, 0, w, h);
+    const step = Math.max(28, Math.floor(w / 28));
+    ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (let y = 0; y < h; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    // Vignette
+    const v = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.7);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,0.7)");
+    ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+    // Accent corner
+    const ag = ctx.createLinearGradient(0, h, w * 0.6, h * 0.4);
+    ag.addColorStop(0, "rgba(255,87,34,0.55)"); ag.addColorStop(1, "rgba(255,87,34,0)");
+    ctx.fillStyle = ag; ctx.fillRect(0, 0, w, h);
+    drawWordmark(ctx, w, h, "rgba(255,255,255,0.05)", "rgba(255,87,34,0.5)");
+  } else if (key === "mesh") {
+    // Smooth gradient mesh
+    const blobs = [
+      { x: 0.2, y: 0.3, c: "#ff5722", a: 0.85 },
+      { x: 0.85, y: 0.2, c: "#7c3aed", a: 0.6 },
+      { x: 0.7, y: 0.85, c: "#0ea5e9", a: 0.55 },
+      { x: 0.1, y: 0.9, c: "#f59e0b", a: 0.5 },
+    ];
+    ctx.fillStyle = "#0a0a0a"; ctx.fillRect(0, 0, w, h);
+    blobs.forEach((b) => {
+      const g = ctx.createRadialGradient(b.x * w, b.y * h, 0, b.x * w, b.y * h, w * 0.55);
+      g.addColorStop(0, hexAlpha(b.c, b.a));
+      g.addColorStop(1, hexAlpha(b.c, 0));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    });
+    drawNoise(ctx, w, h, 0.05);
+    drawWordmark(ctx, w, h, "rgba(255,255,255,0.08)", "rgba(255,255,255,0.22)");
+  } else if (key === "wall") {
+    ctx.fillStyle = "#0d0d0d"; ctx.fillRect(0, 0, w, h);
+    // Repeating diagonal "KSE" pattern
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(-Math.PI / 12);
+    ctx.translate(-w / 2, -h / 2);
+    ctx.font = `${Math.floor(h * 0.18)}px "Space Grotesk", system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    const txt = "KSE  GROUP  ";
+    const lineH = Math.floor(h * 0.22);
+    for (let y = -lineH; y < h + lineH * 2; y += lineH) {
+      let row = "";
+      while (ctx.measureText(row).width < w * 1.6) row += txt;
+      ctx.fillText(row, -w * 0.2, y);
+    }
+    ctx.restore();
+    // Brand glow
+    const g = ctx.createRadialGradient(w * 0.5, h * 0.5, 10, w * 0.5, h * 0.5, w * 0.7);
+    g.addColorStop(0, "rgba(255,87,34,0.3)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  }
+}
+
+function drawWordmark(ctx: CanvasRenderingContext2D, w: number, h: number, kseColor: string, groupColor: string) {
+  ctx.save();
+  ctx.font = `700 ${Math.floor(h * 0.22)}px "Space Grotesk", system-ui, sans-serif`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillStyle = kseColor;
+  ctx.fillText("KSE", w / 2 - w * 0.08, h / 2);
+  ctx.font = `300 ${Math.floor(h * 0.16)}px "Inter", system-ui, sans-serif`;
+  ctx.fillStyle = groupColor;
+  ctx.fillText("GROUP", w / 2 + w * 0.13, h / 2 + h * 0.01);
+  ctx.restore();
+}
+
+function drawNoise(ctx: CanvasRenderingContext2D, w: number, h: number, alpha: number) {
+  const id = ctx.getImageData(0, 0, w, h);
+  const d = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 255 * alpha;
+    d[i] = clamp(d[i] + n);
+    d[i + 1] = clamp(d[i + 1] + n);
+    d[i + 2] = clamp(d[i + 2] + n);
+  }
+  ctx.putImageData(id, 0, 0);
+}
+const clamp = (v: number) => Math.max(0, Math.min(255, v));
+const hexAlpha = (hex: string, a: number) => {
+  const m = hex.replace("#", "");
+  const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+};
+
+function buildBgPreviews(): Record<string, string> {
+  if (typeof document === "undefined") return {};
+  const out: Record<string, string> = {};
+  (["ember", "grid", "mesh", "wall"] as BgKey[]).forEach((k) => {
+    const c = document.createElement("canvas");
+    c.width = 160; c.height = 120;
+    drawBrandBg(c, k);
+    out[k] = c.toDataURL("image/png");
+  });
+  return out;
+}
+
+/* ─────────── UI bits ─────────── */
+
+function Group({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
       <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">{label}</p>
@@ -462,7 +647,6 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
-
 function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick}
@@ -474,34 +658,23 @@ function Pill({ active, onClick, children }: { active: boolean; onClick: () => v
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
 }
-
 function blobPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  const cx = x + w / 2;
-  const cy = y + h / 2;
-  const rx = w / 2;
-  const ry = h / 2;
-  // Organic blob via bezier
+  const cx = x + w / 2, cy = y + h / 2, rx = w / 2, ry = h / 2;
   ctx.moveTo(cx, y);
   ctx.bezierCurveTo(cx + rx * 0.9, y, x + w, cy - ry * 0.6, x + w, cy);
   ctx.bezierCurveTo(x + w, cy + ry * 0.9, cx + rx * 0.6, y + h, cx, y + h);
   ctx.bezierCurveTo(cx - rx * 0.9, y + h, x, cy + ry * 0.6, x, cy);
   ctx.bezierCurveTo(x, cy - ry * 0.9, cx - rx * 0.6, y, cx, y);
 }
-
 function formatTime(s: number) {
   const m = Math.floor(s / 60);
   return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
-
 function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "tutorial";
 }
