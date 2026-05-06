@@ -297,17 +297,33 @@ export function Recorder() {
         camCtx.filter = "none";
         if (mask) camCtx.drawImage(personC, 0, 0);
       } else {
-        // Brand backgrounds — cached procedural canvas
         const cache = bgCacheRef.current;
         const key = `${bg}:${cw}x${ch}`;
         let bgCanvas = cache?.key === key ? cache.canvas : null;
-        if (!bgCanvas) {
-          bgC.width = cw; bgC.height = ch;
-          drawBrandBg(bgC, bg);
-          bgCanvas = bgC;
-          bgCacheRef.current = { key, canvas: bgC };
+        const photoSrc = PHOTO_BGS[bg];
+        if (photoSrc) {
+          const img = loadPhoto(photoSrc);
+          if (img.complete && img.naturalWidth > 0) {
+            if (!bgCanvas) {
+              bgC.width = cw; bgC.height = ch;
+              drawCover(bgC.getContext("2d")!, img, cw, ch);
+              bgCanvas = bgC;
+              bgCacheRef.current = { key, canvas: bgC };
+            }
+            camCtx.drawImage(bgCanvas, 0, 0);
+          } else {
+            camCtx.fillStyle = "#0a0a0a";
+            camCtx.fillRect(0, 0, cw, ch);
+          }
+        } else {
+          if (!bgCanvas) {
+            bgC.width = cw; bgC.height = ch;
+            drawBrandBg(bgC, bg);
+            bgCanvas = bgC;
+            bgCacheRef.current = { key, canvas: bgC };
+          }
+          camCtx.drawImage(bgCanvas, 0, 0);
         }
-        camCtx.drawImage(bgCanvas, 0, 0);
         if (mask) camCtx.drawImage(personC, 0, 0);
       }
 
