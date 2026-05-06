@@ -32,8 +32,12 @@ function saveBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
 }
 
-async function webmToMp4(blob: Blob) {
+async function webmToMp4(blob: Blob, onProgress?: (pct: number) => void) {
   const ffmpeg = await getFfmpeg();
+  const handler = ({ progress }: { progress: number }) => {
+    if (onProgress) onProgress(Math.max(0, Math.min(100, Math.round(progress * 100))));
+  };
+  ffmpeg.on("progress", handler);
   await ffmpeg.writeFile("input.webm", new Uint8Array(await blob.arrayBuffer()));
   const code = await ffmpeg.exec([
     "-i", "input.webm",
@@ -44,6 +48,7 @@ async function webmToMp4(blob: Blob) {
     "-movflags", "faststart",
     "output.mp4",
   ]);
+  ffmpeg.off("progress", handler);
   if (code !== 0) throw new Error("MP4-Konvertierung fehlgeschlagen");
   const data = await ffmpeg.readFile("output.mp4");
   await Promise.allSettled([ffmpeg.deleteFile("input.webm"), ffmpeg.deleteFile("output.mp4")]);
@@ -68,6 +73,7 @@ export function TutorialLibrary() {
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ stage: "fetch" | "convert" | "save"; pct: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -150,16 +156,41 @@ export function TutorialLibrary() {
 
   const downloadVideo = async (url: string, t: Tutorial) => {
     setDownloading(t.id);
+    setProgress({ stage: "fetch", pct: 0 });
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("fetch failed");
-      const blob = await res.blob();
-      const mp4Blob = t.video_path.toLowerCase().endsWith(".mp4") ? blob : await webmToMp4(blob);
+      const total = Number(res.headers.get("content-length") || 0);
+      const reader = res.body?.getReader();
+      const chunks: Uint8Array[] = [];
+      let loaded = 0;
+      if (reader) {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.length;
+          if (total) setProgress({ stage: "fetch", pct: Math.round((loaded / total) * 100) });
+        }
+      } else {
+        chunks.push(new Uint8Array(await res.arrayBuffer()));
+      }
+      const blob = new Blob(chunks as BlobPart[]);
+      let mp4Blob: Blob;
+      if (t.video_path.toLowerCase().endsWith(".mp4")) {
+        mp4Blob = blob;
+      } else {
+        setProgress({ stage: "convert", pct: 0 });
+        mp4Blob = await webmToMp4(blob, (pct) => setProgress({ stage: "convert", pct }));
+      }
+      setProgress({ stage: "save", pct: 100 });
       saveBlob(mp4Blob, `${slug(t.title)}.mp4`);
     } catch (e: any) {
       toast.error(e.message ?? "MP4-Download fehlgeschlagen");
     } finally {
       setDownloading(null);
+      setProgress(null);
     }
   };
 
@@ -202,7 +233,18 @@ export function TutorialLibrary() {
                       onClick={() => downloadVideo(urls[t.video_path], t)}
                       disabled={downloading === t.id}
                       className="flex-1 text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-card inline-flex items-center justify-center gap-1 disabled:opacity-50">
-                      {downloading === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} MP4 Download
+                      {downloading === t.id ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          {progress
+                            ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "convert" ? "Konvertiere" : "Speichere"} ${progress.pct}%`
+                            : "…"}
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3 h-3" /> MP4 Download
+                        </>
+                      )}
                     </button>
                   )}
                   <button onClick={() => share(t)} disabled={sharing === t.id}
