@@ -7,9 +7,16 @@ import {
   Circle, Square, Sparkles, Play, Square as Stop, Upload, Loader2,
   Camera, Monitor, Mic, RefreshCw,
 } from "lucide-react";
+import bgNeonStudio from "@/assets/recorder-bg-neon-studio.jpg";
+import bgNeonLoft from "@/assets/recorder-bg-neon-loft.jpg";
+import bgNeonPodcast from "@/assets/recorder-bg-neon-podcast.jpg";
+import bgNeonLounge from "@/assets/recorder-bg-neon-lounge.jpg";
 
 type Shape = "circle" | "square" | "blob";
-type BgKey = "transparent" | "blur" | "ember" | "grid" | "mesh" | "wall";
+type BgKey =
+  | "transparent" | "blur"
+  | "ember" | "grid" | "mesh" | "wall"
+  | "studio" | "loft" | "podcast" | "lounge";
 type Position = "br" | "bl" | "tr" | "tl";
 
 const POS: Record<Position, string> = { br: "Unten Rechts", bl: "Unten Links", tr: "Oben Rechts", tl: "Oben Links" };
@@ -21,7 +28,28 @@ const BG_LABELS: Record<BgKey, string> = {
   grid: "Dark Grid",
   mesh: "Gradient Mesh",
   wall: "Logo Wall",
+  studio: "Neon Studio",
+  loft: "Neon Loft",
+  podcast: "Neon Podcast",
+  lounge: "Neon Lounge",
 };
+
+const PHOTO_BGS: Partial<Record<BgKey, string>> = {
+  studio: bgNeonStudio,
+  loft: bgNeonLoft,
+  podcast: bgNeonPodcast,
+  lounge: bgNeonLounge,
+};
+
+const photoImageCache: Record<string, HTMLImageElement> = {};
+function loadPhoto(src: string) {
+  if (photoImageCache[src]) return photoImageCache[src];
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = src;
+  photoImageCache[src] = img;
+  return img;
+}
 
 export function Recorder() {
   const { user } = useAuth();
