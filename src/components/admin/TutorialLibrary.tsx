@@ -47,7 +47,10 @@ async function webmToMp4(blob: Blob) {
   if (code !== 0) throw new Error("MP4-Konvertierung fehlgeschlagen");
   const data = await ffmpeg.readFile("output.mp4");
   await Promise.allSettled([ffmpeg.deleteFile("input.webm"), ffmpeg.deleteFile("output.mp4")]);
-  return new Blob([data], { type: "video/mp4" });
+  const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return new Blob([copy.buffer], { type: "video/mp4" });
 }
 
 type Tutorial = {
@@ -232,4 +235,8 @@ export function TutorialLibrary() {
       )}
     </section>
   );
+}
+
+function slug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "tutorial";
 }
