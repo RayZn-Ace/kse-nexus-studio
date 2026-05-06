@@ -1,7 +1,8 @@
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const resolveShare = createServerOnlyFn(async (token: string) => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
   const { data: share, error } = await supabaseAdmin
     .from("tutorial_shares")
     .select("id, tutorial_id, expires_at")
