@@ -76,11 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "KSE Group — New Media, Social Media, Webdesign" },
       { name: "description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
       { name: "author", content: "KSE Group" },
-      { property: "og:title", content: "KSE Group — New Media Agentur" },
-      { property: "og:description", content: "Ihre Experten für New Media, Social Media, Marketing, Artists Management & Webdesign." },
+      { property: "og:title", content: "KSE Group — New Media, Social Media, Webdesign" },
+      { property: "og:description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "KSE Group — New Media, Social Media, Webdesign" },
+      { name: "twitter:description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4" },
     ],
     links: [
       {
