@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrayBufferTarget, Muxer } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trash2, Loader2, Film, Download, Share2, Copy, Check } from "lucide-react";
@@ -29,7 +30,7 @@ export function TutorialLibrary() {
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ stage: "fetch" | "save"; pct: number } | null>(null);
+  const [progress, setProgress] = useState<{ stage: "fetch" | "convert" | "save"; pct: number } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -132,11 +133,14 @@ export function TutorialLibrary() {
       } else {
         chunks.push(new Uint8Array(await res.arrayBuffer()));
       }
-      const extension = t.video_path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm";
       const blob = new Blob(chunks as BlobPart[]);
+      const needsMp4Conversion = !t.video_path.toLowerCase().endsWith(".mp4") && !blob.type.startsWith("video/mp4");
+      const downloadBlob = needsMp4Conversion
+        ? await convertPlayableVideoToMp4(blob, (pct) => setProgress({ stage: "convert", pct }))
+        : blob;
       setProgress({ stage: "save", pct: 100 });
-      saveBlob(blob, `${slug(t.title)}.${extension}`);
-      toast.success(`${extension.toUpperCase()}-Download gestartet`);
+      saveBlob(downloadBlob, `${slug(t.title)}.mp4`);
+      toast.success("MP4-Download gestartet");
     } catch (e: any) {
       console.error("Video download failed", e);
       toast.error(e.message ?? "Download fehlgeschlagen");
@@ -188,9 +192,7 @@ export function TutorialLibrary() {
                       {downloading === t.id ? (
                         <>
                           <Loader2 className="w-3 h-3 animate-spin" />
-                          {progress
-                            ? `${progress.stage === "fetch" ? "Lade" : "Speichere"} ${progress.pct}%`
-                            : "…"}
+                          {progress ? `${progress.stage === "fetch" ? "Lade" : progress.stage === "convert" ? "MP4" : "Speichere"} ${progress.pct}%` : "…"}
                         </>
                       ) : (
                         <>
@@ -229,6 +231,77 @@ export function TutorialLibrary() {
       )}
     </section>
   );
+}
+
+async function convertPlayableVideoToMp4(blob: Blob, onProgress: (pct: number) => void) {
+  const win = window as any;
+  if (!win.VideoEncoder) {
+    throw new Error("MP4-Konvertierung wird in diesem Browser nicht unterstützt. Bitte Chrome oder Edge nutzen.");
+  }
+
+  const url = URL.createObjectURL(blob);
+  const video = document.createElement("video");
+  video.src = url;
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  await new Promise<void>((resolve, reject) => {
+    video.onloadedmetadata = () => resolve();
+    video.onerror = () => reject(new Error("Video konnte nicht gelesen werden"));
+  });
+
+  const width = (video.videoWidth || 1280) & ~1;
+  const height = (video.videoHeight || 720) & ~1;
+  const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+  const config = await pickDownloadVideoConfig(win.VideoEncoder, width, height);
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target,
+    video: { codec: "avc", width, height, frameRate: 30 },
+    fastStart: "in-memory",
+    firstTimestampBehavior: "offset",
+  });
+  const encoder = new win.VideoEncoder({
+    output: (chunk: EncodedVideoChunk, meta?: EncodedVideoChunkMetadata) => muxer.addVideoChunk(chunk, meta),
+    error: (error: Error) => console.error("MP4 encoder error", error),
+  });
+  encoder.configure(config);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  let frame = 0;
+  const fps = 30;
+  for (let time = 0; time < duration; time += 1 / fps) {
+    video.currentTime = Math.min(time, duration);
+    await new Promise<void>((resolve) => (video.onseeked = () => resolve()));
+    ctx.drawImage(video, 0, 0, width, height);
+    const videoFrame = new VideoFrame(canvas, { timestamp: Math.round(time * 1_000_000), duration: Math.round(1_000_000 / fps) });
+    encoder.encode(videoFrame, { keyFrame: frame % 120 === 0 });
+    videoFrame.close();
+    frame += 1;
+    onProgress(Math.min(99, Math.round((time / duration) * 100)));
+  }
+
+  await encoder.flush();
+  encoder.close();
+  muxer.finalize();
+  URL.revokeObjectURL(url);
+  onProgress(100);
+  return new Blob([target.buffer], { type: "video/mp4" });
+}
+
+async function pickDownloadVideoConfig(VideoEncoderCtor: any, width: number, height: number) {
+  const configs = [
+    { codec: "avc1.42001f", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.4d0028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+  ];
+  for (const config of configs) {
+    const support = await VideoEncoderCtor.isConfigSupported(config).catch(() => null);
+    if (support?.supported) return support.config;
+  }
+  throw new Error("H.264-Encoding wird in diesem Browser nicht unterstützt");
 }
 
 function slug(s: string) {

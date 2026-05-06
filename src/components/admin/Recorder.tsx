@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageSegmenter, FilesetResolver } from "@mediapipe/tasks-vision";
+import { ArrayBufferTarget, Muxer } from "mp4-muxer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ type BgKey =
   | "ember" | "grid" | "mesh" | "wall"
   | "studio" | "loft" | "podcast" | "lounge";
 type Position = "br" | "bl" | "tr" | "tl";
+type Mp4Recording = { stop: () => Promise<Blob> };
 
 const POS: Record<Position, string> = { br: "Unten Rechts", bl: "Unten Links", tr: "Oben Rechts", tl: "Oben Links" };
 
@@ -59,8 +61,10 @@ export function Recorder() {
   const segmenterRef = useRef<ImageSegmenter | null>(null);
   const rafRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const mp4RecordingRef = useRef<Mp4Recording | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const durationTimerRef = useRef<number | null>(null);
   const tickWorkerRef = useRef<Worker | null>(null);
 
   // Reusable offscreen canvases
@@ -455,7 +459,7 @@ export function Recorder() {
   // Reset bg cache when bg type changes
   useEffect(() => { bgCacheRef.current = null; }, [bg]);
 
-  const startRecording = () => {
+  const startRecording = async () => {
     if (!canvasRef.current || !screenStream || !camStream) {
       toast.error("Bitte zuerst Kamera und Bildschirm starten");
       return;
@@ -494,47 +498,49 @@ export function Recorder() {
     }
     const merged = new MediaStream(tracks);
 
-    // Prefer MP4 (H.264 + AAC) so downloads / shares play everywhere
-    // (QuickTime, iOS, WhatsApp, …). Fall back to WebM if the browser
-    // can't encode MP4 directly.
-    const mp4Candidates = [
-      "video/mp4;codecs=h264,aac",
-      "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
-      "video/mp4",
-    ];
-    const webmCandidates = ["video/webm;codecs=vp9,opus", "video/webm"];
-    const mime =
-      mp4Candidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
-      webmCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ??
-      "video/webm";
-    const isMp4 = mime.startsWith("video/mp4");
-    const rec = new MediaRecorder(merged, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
-    chunksRef.current = [];
-    rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
-    rec.onstop = () => {
-      const blob = new Blob(chunksRef.current, {
-        type: isMp4 ? "video/mp4" : "video/webm",
-      });
-      setLastBlob(blob);
-      setPreviewUrl(URL.createObjectURL(blob));
-      audioCtxRef.current?.close().catch(() => {});
-      audioCtxRef.current = null;
-    };
-    rec.start(1000);
-    recorderRef.current = rec;
-    (recorderRef as any).mp4 = isMp4;
     setRecording(true);
     setDuration(0);
     const start = Date.now();
-    const tick = setInterval(() => {
-      if (rec.state !== "recording") return clearInterval(tick);
+    durationTimerRef.current = window.setInterval(() => {
       setDuration(Math.floor((Date.now() - start) / 1000));
     }, 500);
+
+    try {
+      mp4RecordingRef.current = await startMp4Recording(merged, canvasRef.current.width, canvasRef.current.height);
+      recorderRef.current = null;
+      toast.success("MP4-Aufnahme gestartet");
+    } catch (e) {
+      console.error("MP4 recording failed", e);
+      setRecording(false);
+      if (durationTimerRef.current) window.clearInterval(durationTimerRef.current);
+      durationTimerRef.current = null;
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
+      toast.error("Dieser Browser kann hier kein echtes MP4 aufnehmen. Bitte Chrome oder Edge nutzen.");
+    }
   };
 
-  const stopRecording = () => {
-    recorderRef.current?.stop();
+  const stopRecording = async () => {
     setRecording(false);
+    if (durationTimerRef.current) window.clearInterval(durationTimerRef.current);
+    durationTimerRef.current = null;
+    try {
+      if (mp4RecordingRef.current) {
+        const blob = await mp4RecordingRef.current.stop();
+        setLastBlob(blob);
+        setPreviewUrl(URL.createObjectURL(blob));
+        toast.success("MP4 fertig");
+      } else {
+        recorderRef.current?.stop();
+      }
+    } catch (e: any) {
+      console.error("MP4 stop failed", e);
+      toast.error(e.message ?? "MP4 konnte nicht fertiggestellt werden");
+    } finally {
+      mp4RecordingRef.current = null;
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
   };
 
   const upload = async () => {
@@ -696,6 +702,131 @@ export function Recorder() {
       )}
     </section>
   );
+}
+
+async function startMp4Recording(stream: MediaStream, width: number, height: number): Promise<Mp4Recording> {
+  const win = window as any;
+  const VideoEncoderCtor = win.VideoEncoder;
+  const AudioEncoderCtor = win.AudioEncoder;
+  const TrackProcessorCtor = win.MediaStreamTrackProcessor;
+
+  if (!VideoEncoderCtor || !TrackProcessorCtor) {
+    throw new Error("MP4-Aufnahme wird in diesem Browser nicht unterstützt");
+  }
+
+  const videoTrack = stream.getVideoTracks()[0];
+  const audioTrack = stream.getAudioTracks()[0];
+  if (!videoTrack) throw new Error("Keine Videospur gefunden");
+
+  const mp4Width = width - (width % 2);
+  const mp4Height = height - (height % 2);
+  const videoConfig = await pickVideoEncoderConfig(VideoEncoderCtor, mp4Width, mp4Height);
+  const audioSettings = audioTrack?.getSettings?.() ?? {};
+  const audioConfig = audioTrack && AudioEncoderCtor
+    ? await pickAudioEncoderConfig(AudioEncoderCtor, audioSettings)
+    : null;
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target,
+    video: { codec: "avc", width: mp4Width, height: mp4Height, frameRate: 30 },
+    audio: audioConfig ? {
+      codec: "aac",
+      numberOfChannels: audioConfig.numberOfChannels,
+      sampleRate: audioConfig.sampleRate,
+    } : undefined,
+    fastStart: "in-memory",
+    firstTimestampBehavior: "cross-track-offset",
+  });
+
+  let stopped = false;
+  let videoFrameCount = 0;
+  const videoEncoder = new VideoEncoderCtor({
+    output: (chunk: EncodedVideoChunk, meta?: EncodedVideoChunkMetadata) => muxer.addVideoChunk(chunk, meta),
+    error: (error: Error) => console.error("VideoEncoder error", error),
+  });
+  videoEncoder.configure(videoConfig);
+
+  const videoReader = new TrackProcessorCtor({ track: videoTrack }).readable.getReader();
+  const videoPump = (async () => {
+    while (!stopped) {
+      const { done, value } = await videoReader.read();
+      if (done || !value) break;
+      const frame = value as VideoFrame;
+      if (videoEncoder.state === "configured") {
+        const encodeFrame = frame.codedWidth === mp4Width && frame.codedHeight === mp4Height
+          ? frame
+          : new VideoFrame(frame, { visibleRect: { x: 0, y: 0, width: mp4Width, height: mp4Height } });
+        videoEncoder.encode(encodeFrame, { keyFrame: videoFrameCount % 120 === 0 });
+        if (encodeFrame !== frame) encodeFrame.close();
+        videoFrameCount += 1;
+      }
+      frame.close();
+    }
+  })();
+
+  let audioEncoder: AudioEncoder | null = null;
+  let audioReader: ReadableStreamDefaultReader<AudioData> | null = null;
+  let audioPump: Promise<void> | null = null;
+  if (audioTrack && audioConfig) {
+    const encoder = new AudioEncoderCtor({
+      output: (chunk: EncodedAudioChunk, meta?: EncodedAudioChunkMetadata) => muxer.addAudioChunk(chunk, meta),
+      error: (error: Error) => console.error("AudioEncoder error", error),
+    });
+    encoder.configure(audioConfig);
+    audioEncoder = encoder;
+    audioReader = new TrackProcessorCtor({ track: audioTrack }).readable.getReader();
+    audioPump = (async () => {
+      while (!stopped) {
+        const { done, value } = await audioReader!.read();
+        if (done || !value) break;
+        if (encoder.state === "configured") encoder.encode(value);
+        value.close();
+      }
+    })();
+  }
+
+  return {
+    stop: async () => {
+      stopped = true;
+      videoTrack.stop();
+      audioTrack?.stop();
+      await Promise.allSettled([
+        videoReader.cancel().catch(() => {}),
+        audioReader?.cancel().catch(() => {}),
+        videoPump,
+        audioPump,
+      ].filter(Boolean) as Promise<unknown>[]);
+      await videoEncoder.flush();
+      videoEncoder.close();
+      if (audioEncoder) {
+        await audioEncoder.flush();
+        audioEncoder.close();
+      }
+      muxer.finalize();
+      return new Blob([target.buffer], { type: "video/mp4" });
+    },
+  };
+}
+
+async function pickVideoEncoderConfig(VideoEncoderCtor: any, width: number, height: number) {
+  const configs = [
+    { codec: "avc1.42001f", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.4d0028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+    { codec: "avc1.640028", width, height, bitrate: 5_000_000, framerate: 30, avc: { format: "avc" } },
+  ];
+  for (const config of configs) {
+    const support = await VideoEncoderCtor.isConfigSupported(config).catch(() => null);
+    if (support?.supported) return support.config;
+  }
+  throw new Error("H.264-Encoding wird in diesem Browser nicht unterstützt");
+}
+
+async function pickAudioEncoderConfig(AudioEncoderCtor: any, settings: MediaTrackSettings) {
+  const sampleRate = typeof settings.sampleRate === "number" ? settings.sampleRate : 48000;
+  const numberOfChannels = typeof settings.channelCount === "number" ? settings.channelCount : 2;
+  const config = { codec: "mp4a.40.2", sampleRate, numberOfChannels, bitrate: 128_000 };
+  const support = await AudioEncoderCtor.isConfigSupported(config).catch(() => null);
+  return support?.supported ? support.config : null;
 }
 
 /* ─────────── Brand backgrounds (procedural canvas) ─────────── */
