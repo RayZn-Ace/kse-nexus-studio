@@ -7,9 +7,16 @@ import {
   Circle, Square, Sparkles, Play, Square as Stop, Upload, Loader2,
   Camera, Monitor, Mic, RefreshCw,
 } from "lucide-react";
+import bgNeonStudio from "@/assets/recorder-bg-neon-studio.jpg";
+import bgNeonLoft from "@/assets/recorder-bg-neon-loft.jpg";
+import bgNeonPodcast from "@/assets/recorder-bg-neon-podcast.jpg";
+import bgNeonLounge from "@/assets/recorder-bg-neon-lounge.jpg";
 
 type Shape = "circle" | "square" | "blob";
-type BgKey = "transparent" | "blur" | "ember" | "grid" | "mesh" | "wall";
+type BgKey =
+  | "transparent" | "blur"
+  | "ember" | "grid" | "mesh" | "wall"
+  | "studio" | "loft" | "podcast" | "lounge";
 type Position = "br" | "bl" | "tr" | "tl";
 
 const POS: Record<Position, string> = { br: "Unten Rechts", bl: "Unten Links", tr: "Oben Rechts", tl: "Oben Links" };
@@ -21,7 +28,28 @@ const BG_LABELS: Record<BgKey, string> = {
   grid: "Dark Grid",
   mesh: "Gradient Mesh",
   wall: "Logo Wall",
+  studio: "Neon Studio",
+  loft: "Neon Loft",
+  podcast: "Neon Podcast",
+  lounge: "Neon Lounge",
 };
+
+const PHOTO_BGS: Partial<Record<BgKey, string>> = {
+  studio: bgNeonStudio,
+  loft: bgNeonLoft,
+  podcast: bgNeonPodcast,
+  lounge: bgNeonLounge,
+};
+
+const photoImageCache: Record<string, HTMLImageElement> = {};
+function loadPhoto(src: string) {
+  if (photoImageCache[src]) return photoImageCache[src];
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = src;
+  photoImageCache[src] = img;
+  return img;
+}
 
 export function Recorder() {
   const { user } = useAuth();
@@ -269,17 +297,33 @@ export function Recorder() {
         camCtx.filter = "none";
         if (mask) camCtx.drawImage(personC, 0, 0);
       } else {
-        // Brand backgrounds — cached procedural canvas
         const cache = bgCacheRef.current;
         const key = `${bg}:${cw}x${ch}`;
         let bgCanvas = cache?.key === key ? cache.canvas : null;
-        if (!bgCanvas) {
-          bgC.width = cw; bgC.height = ch;
-          drawBrandBg(bgC, bg);
-          bgCanvas = bgC;
-          bgCacheRef.current = { key, canvas: bgC };
+        const photoSrc = PHOTO_BGS[bg];
+        if (photoSrc) {
+          const img = loadPhoto(photoSrc);
+          if (img.complete && img.naturalWidth > 0) {
+            if (!bgCanvas) {
+              bgC.width = cw; bgC.height = ch;
+              drawCover(bgC.getContext("2d")!, img, cw, ch);
+              bgCanvas = bgC;
+              bgCacheRef.current = { key, canvas: bgC };
+            }
+            camCtx.drawImage(bgCanvas, 0, 0);
+          } else {
+            camCtx.fillStyle = "#0a0a0a";
+            camCtx.fillRect(0, 0, cw, ch);
+          }
+        } else {
+          if (!bgCanvas) {
+            bgC.width = cw; bgC.height = ch;
+            drawBrandBg(bgC, bg);
+            bgCanvas = bgC;
+            bgCacheRef.current = { key, canvas: bgC };
+          }
+          camCtx.drawImage(bgCanvas, 0, 0);
         }
-        camCtx.drawImage(bgCanvas, 0, 0);
         if (mask) camCtx.drawImage(personC, 0, 0);
       }
 
@@ -467,6 +511,8 @@ export function Recorder() {
                     <div className="absolute inset-0 bg-[conic-gradient(at_50%_50%,_#1a1a1a_25%,_#2a2a2a_25%_50%,_#1a1a1a_50%_75%,_#2a2a2a_75%)] bg-[length:10px_10px]" />
                   ) : k === "blur" ? (
                     <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 to-zinc-900 blur-sm" />
+                  ) : PHOTO_BGS[k] ? (
+                    <img src={PHOTO_BGS[k]!} alt={BG_LABELS[k]} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                   ) : (
                     <img src={bgPreviews[k]} alt={BG_LABELS[k]} className="absolute inset-0 w-full h-full object-cover" />
                   )}
@@ -617,6 +663,19 @@ function drawNoise(ctx: CanvasRenderingContext2D, w: number, h: number, alpha: n
     d[i + 2] = clamp(d[i + 2] + n);
   }
   ctx.putImageData(id, 0, 0);
+}
+function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const cr = w / h;
+  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+  if (ir > cr) {
+    sw = img.naturalHeight * cr;
+    sx = (img.naturalWidth - sw) / 2;
+  } else {
+    sh = img.naturalWidth / cr;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 }
 const clamp = (v: number) => Math.max(0, Math.min(255, v));
 const hexAlpha = (hex: string, a: number) => {
