@@ -662,6 +662,19 @@ function drawNoise(ctx: CanvasRenderingContext2D, w: number, h: number, alpha: n
   }
   ctx.putImageData(id, 0, 0);
 }
+function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const cr = w / h;
+  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+  if (ir > cr) {
+    sw = img.naturalHeight * cr;
+    sx = (img.naturalWidth - sw) / 2;
+  } else {
+    sh = img.naturalWidth / cr;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+}
 const clamp = (v: number) => Math.max(0, Math.min(255, v));
 const hexAlpha = (hex: string, a: number) => {
   const m = hex.replace("#", "");
