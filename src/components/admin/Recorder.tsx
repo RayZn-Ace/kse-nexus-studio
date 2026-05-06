@@ -17,7 +17,7 @@ export function Recorder() {
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const camVideoRef = useRef<HTMLVideoElement | null>(null);
   const segmenterRef = useRef<ImageSegmenter | null>(null);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const offCamRef = useRef<HTMLCanvasElement | null>(null);
