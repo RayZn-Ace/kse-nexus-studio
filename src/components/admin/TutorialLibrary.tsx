@@ -250,8 +250,8 @@ async function convertPlayableVideoToMp4(blob: Blob, onProgress: (pct: number) =
     video.onerror = () => reject(new Error("Video konnte nicht gelesen werden"));
   });
 
-  const width = video.videoWidth || 1280;
-  const height = video.videoHeight || 720;
+  const width = (video.videoWidth || 1280) & ~1;
+  const height = (video.videoHeight || 720) & ~1;
   const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
   const config = await pickDownloadVideoConfig(win.VideoEncoder, width, height);
   const target = new ArrayBufferTarget();
