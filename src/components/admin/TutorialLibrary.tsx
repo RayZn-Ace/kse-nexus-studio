@@ -3,6 +3,56 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trash2, Loader2, Film, Download, Share2, Copy, Check } from "lucide-react";
 
+let ffmpegPromise: Promise<import("@ffmpeg/ffmpeg").FFmpeg> | null = null;
+
+async function getFfmpeg() {
+  if (!ffmpegPromise) {
+    ffmpegPromise = (async () => {
+      const [{ FFmpeg }, coreUrl, wasmUrl] = await Promise.all([
+        import("@ffmpeg/ffmpeg"),
+        import("@ffmpeg/core?url"),
+        import("@ffmpeg/core/wasm?url"),
+      ]);
+      const ffmpeg = new FFmpeg();
+      await ffmpeg.load({ coreURL: coreUrl.default, wasmURL: wasmUrl.default });
+      return ffmpeg;
+    })();
+  }
+  return ffmpegPromise;
+}
+
+function saveBlob(blob: Blob, filename: string) {
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+}
+
+async function webmToMp4(blob: Blob) {
+  const ffmpeg = await getFfmpeg();
+  await ffmpeg.writeFile("input.webm", new Uint8Array(await blob.arrayBuffer()));
+  const code = await ffmpeg.exec([
+    "-i", "input.webm",
+    "-c:v", "libx264",
+    "-preset", "veryfast",
+    "-pix_fmt", "yuv420p",
+    "-c:a", "aac",
+    "-movflags", "faststart",
+    "output.mp4",
+  ]);
+  if (code !== 0) throw new Error("MP4-Konvertierung fehlgeschlagen");
+  const data = await ffmpeg.readFile("output.mp4");
+  await Promise.allSettled([ffmpeg.deleteFile("input.webm"), ffmpeg.deleteFile("output.mp4")]);
+  const bytes = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return new Blob([copy.buffer], { type: "video/mp4" });
+}
+
 type Tutorial = {
   id: string;
   title: string;
@@ -17,6 +67,7 @@ export function TutorialLibrary() {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [shareUrl, setShareUrl] = useState<{ id: string; url: string } | null>(null);
   const [sharing, setSharing] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = async () => {
@@ -97,23 +148,18 @@ export function TutorialLibrary() {
     } catch {}
   };
 
-  const ext = (path: string) => (path.toLowerCase().endsWith(".mp4") ? "mp4" : "webm");
-
-  const downloadVideo = async (url: string, filename: string) => {
+  const downloadVideo = async (url: string, t: Tutorial) => {
+    setDownloading(t.id);
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error("fetch failed");
       const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch {
-      window.open(url, "_blank");
+      const mp4Blob = t.video_path.toLowerCase().endsWith(".mp4") ? blob : await webmToMp4(blob);
+      saveBlob(mp4Blob, `${slug(t.title)}.mp4`);
+    } catch (e: any) {
+      toast.error(e.message ?? "MP4-Download fehlgeschlagen");
+    } finally {
+      setDownloading(null);
     }
   };
 
@@ -153,9 +199,10 @@ export function TutorialLibrary() {
                   {urls[t.video_path] && (
                     <button
                       type="button"
-                      onClick={() => downloadVideo(urls[t.video_path], `${t.title}.${ext(t.video_path)}`)}
-                      className="flex-1 text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-card inline-flex items-center justify-center gap-1">
-                      <Download className="w-3 h-3" /> Download
+                      onClick={() => downloadVideo(urls[t.video_path], t)}
+                      disabled={downloading === t.id}
+                      className="flex-1 text-[11px] px-2 py-1.5 rounded-md border border-border hover:bg-card inline-flex items-center justify-center gap-1 disabled:opacity-50">
+                      {downloading === t.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} MP4 Download
                     </button>
                   )}
                   <button onClick={() => share(t)} disabled={sharing === t.id}
@@ -188,4 +235,8 @@ export function TutorialLibrary() {
       )}
     </section>
   );
+}
+
+function slug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "tutorial";
 }
