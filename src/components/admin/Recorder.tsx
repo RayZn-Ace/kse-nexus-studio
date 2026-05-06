@@ -270,7 +270,7 @@ export function Recorder() {
       let haveMask = false;
       if (segmenterRef.current) {
         const now = performance.now();
-        if (now - lastMaskTsRef.current >= 30) {
+        if (now - lastMaskTsRef.current >= 50) {
           lastMaskTsRef.current = now;
           try {
             const result = segmenterRef.current.segmentForVideo(camC, now);
@@ -433,7 +433,9 @@ export function Recorder() {
     // Drive the render loop from a Web Worker setInterval so it keeps
     // running even when the tab is in the background (rAF freezes there,
     // which would stall canvas.captureStream and "hang" the recording).
-    const workerSrc = `let id=null;onmessage=(e)=>{if(e.data==='start'){clearInterval(id);id=setInterval(()=>postMessage(0),33);}else{clearInterval(id);id=null;}};`;
+    // ~60fps tick so screen capture stays smooth during scrolling / video
+    // playback. Segmentation is independently throttled below to ~20fps.
+    const workerSrc = `let id=null;onmessage=(e)=>{if(e.data==='start'){clearInterval(id);id=setInterval(()=>postMessage(0),16);}else{clearInterval(id);id=null;}};`;
     const blob = new Blob([workerSrc], { type: "application/javascript" });
     const url = URL.createObjectURL(blob);
     const worker = new Worker(url);
@@ -458,7 +460,7 @@ export function Recorder() {
       toast.error("Bitte zuerst Kamera und Bildschirm starten");
       return;
     }
-    const canvasStream = canvasRef.current.captureStream(30);
+    const canvasStream = canvasRef.current.captureStream(60);
     const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
     const sysAudio = screenStream.getAudioTracks()[0];
     const micAudio = camStream.getAudioTracks()[0];
