@@ -718,7 +718,9 @@ async function startMp4Recording(stream: MediaStream, width: number, height: num
   const audioTrack = stream.getAudioTracks()[0];
   if (!videoTrack) throw new Error("Keine Videospur gefunden");
 
-  const videoConfig = await pickVideoEncoderConfig(VideoEncoderCtor, width, height);
+  const mp4Width = width - (width % 2);
+  const mp4Height = height - (height % 2);
+  const videoConfig = await pickVideoEncoderConfig(VideoEncoderCtor, mp4Width, mp4Height);
   const audioSettings = audioTrack?.getSettings?.() ?? {};
   const audioConfig = audioTrack && AudioEncoderCtor
     ? await pickAudioEncoderConfig(AudioEncoderCtor, audioSettings)
@@ -726,7 +728,7 @@ async function startMp4Recording(stream: MediaStream, width: number, height: num
   const target = new ArrayBufferTarget();
   const muxer = new Muxer({
     target,
-    video: { codec: "avc", width, height, frameRate: 30 },
+    video: { codec: "avc", width: mp4Width, height: mp4Height, frameRate: 30 },
     audio: audioConfig ? {
       codec: "aac",
       numberOfChannels: audioConfig.numberOfChannels,
@@ -751,7 +753,11 @@ async function startMp4Recording(stream: MediaStream, width: number, height: num
       if (done || !value) break;
       const frame = value as VideoFrame;
       if (videoEncoder.state === "configured") {
-        videoEncoder.encode(frame, { keyFrame: videoFrameCount % 120 === 0 });
+        const encodeFrame = frame.codedWidth === mp4Width && frame.codedHeight === mp4Height
+          ? frame
+          : new VideoFrame(frame, { visibleRect: { x: 0, y: 0, width: mp4Width, height: mp4Height } });
+        videoEncoder.encode(encodeFrame, { keyFrame: videoFrameCount % 120 === 0 });
+        if (encodeFrame !== frame) encodeFrame.close();
         videoFrameCount += 1;
       }
       frame.close();
