@@ -762,17 +762,18 @@ async function startMp4Recording(stream: MediaStream, width: number, height: num
   let audioReader: ReadableStreamDefaultReader<AudioData> | null = null;
   let audioPump: Promise<void> | null = null;
   if (audioTrack && audioConfig) {
-    audioEncoder = new AudioEncoderCtor({
+    const encoder = new AudioEncoderCtor({
       output: (chunk: EncodedAudioChunk, meta?: EncodedAudioChunkMetadata) => muxer.addAudioChunk(chunk, meta),
       error: (error: Error) => console.error("AudioEncoder error", error),
     });
-    audioEncoder.configure(audioConfig);
+    encoder.configure(audioConfig);
+    audioEncoder = encoder;
     audioReader = new TrackProcessorCtor({ track: audioTrack }).readable.getReader();
     audioPump = (async () => {
       while (!stopped) {
         const { done, value } = await audioReader!.read();
         if (done || !value) break;
-        if (audioEncoder?.state === "configured") audioEncoder.encode(value);
+        if (encoder.state === "configured") encoder.encode(value);
         value.close();
       }
     })();
