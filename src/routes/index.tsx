@@ -428,29 +428,81 @@ function ServiceCard({
     <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
       <motion.article
         style={{ opacity, x: tx }}
-        className="relative w-full h-[70vh] border border-foreground/20 p-8 md:p-10 flex flex-col justify-between hover:border-[color:var(--accent)] transition-colors"
+        className="relative w-full h-[70vh] border border-foreground/20 flex flex-row overflow-hidden hover:border-[color:var(--accent)] transition-colors"
         data-cursor="accent"
       >
-        <div className="flex items-start justify-between">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">/ Service</span>
+        {/* Thin accent top border */}
+        <span
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{ background: "#e8ff00" }}
+        />
+
+        {/* LEFT PANEL — big number + grid pattern */}
+        <div className="relative w-2/5 h-full border-r border-foreground/15 overflow-hidden flex items-center justify-center">
+          {/* SVG grid pattern, stroke only */}
+          <svg
+            aria-hidden
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity: 0.05 }}
+          >
+            <defs>
+              <pattern id={`grid-${s.n}`} width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#e8ff00" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#grid-${s.n})`} />
+          </svg>
+          {/* Animated diagonal line */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, transparent 48%, rgba(232,255,0,0.08) 50%, transparent 52%)",
+              backgroundSize: "200% 200%",
+            }}
+            animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
           <span
-            className="font-black"
-            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", color: "#e8ff00", letterSpacing: "-0.04em" }}
+            className="relative font-black leading-none select-none"
+            style={{
+              fontSize: "20vw",
+              color: "#e8ff00",
+              opacity: 0.08,
+              letterSpacing: "-0.06em",
+            }}
           >
             {s.n}
           </span>
+          <span className="absolute top-6 left-6 text-[11px] uppercase tracking-[0.4em] text-foreground/50">
+            / {s.n}
+          </span>
         </div>
-        <div>
-          <h3
-            className="font-black mb-5"
-            style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
-          >
-            {s.title}
-          </h3>
-          <p className="text-foreground/65 text-sm md:text-base leading-relaxed max-w-sm">{s.body}</p>
-          <a href="#contact" className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase">
-            Anfragen →
-          </a>
+
+        {/* RIGHT PANEL — content */}
+        <div className="relative w-3/5 h-full p-8 md:p-10 flex flex-col justify-between">
+          <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">
+            / Service
+          </span>
+          <div>
+            <h3
+              className="font-black mb-5"
+              style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+            >
+              {s.title}
+            </h3>
+            <p className="text-foreground/65 text-sm md:text-base leading-relaxed max-w-sm">
+              {s.body}
+            </p>
+            <a
+              href="#contact"
+              className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase"
+            >
+              Anfragen →
+            </a>
+          </div>
         </div>
       </motion.article>
     </div>
