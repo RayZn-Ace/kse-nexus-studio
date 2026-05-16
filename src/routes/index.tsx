@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { HeroCanvas } from "@/components/HeroCanvas";
+import { CharacterAssembly } from "@/components/CharacterAssembly";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -322,6 +323,11 @@ function PinnedWord() {
           justifyContent: "center",
         }}
       >
+        {/* Scroll-driven SVG background (behind everything) */}
+        <CharacterAssembly progress={scrollYProgress} />
+
+        {/* Existing content sits above the background */}
+        <div style={{ position: "relative", zIndex: 1, width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         {/* Top-left label */}
         <div
           className="absolute top-8 left-6 text-[10px] uppercase tracking-[0.4em]"
@@ -369,6 +375,7 @@ function PinnedWord() {
             </span>
           ))}
         </h2>
+        </div>
       </div>
     </section>
   );
