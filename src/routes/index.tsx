@@ -139,13 +139,20 @@ function Hero() {
 }
 
 /* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
+import type { MotionValue } from "framer-motion";
+
+function RevealWord({ progress, range, children }: { progress: MotionValue<number>; range: [number, number]; children: string }) {
+  const opacity = useTransform(progress, range, [0.15, 1]);
+  return <motion.span style={{ opacity }} className="inline-block mr-[0.25em]">{children}</motion.span>;
+}
+
+const WHY_TEXT =
+  "Dein Brand verändert sich. Bau nicht nur eine Präsenz — bau das, was als Nächstes kommt. Wir helfen dir, mit Klarheit, Mut und dem richtigen Team an deiner Seite, einfach vorwärts zu gehen.";
+const WHY_WORDS = WHY_TEXT.split(" ");
+
 function Why() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.4"] });
-  const text =
-    "Dein Brand verändert sich. Bau nicht nur eine Präsenz — bau das, was als Nächstes kommt. Wir helfen dir, mit Klarheit, Mut und dem richtigen Team an deiner Seite, einfach vorwärts zu gehen.";
-  const words = text.split(" ");
-
   return (
     <section id="why" ref={ref} className="relative py-40 px-6 bg-background">
       <div className="max-w-5xl mx-auto">
@@ -156,15 +163,10 @@ function Why() {
           Warum KSE
         </motion.p>
         <p className="font-display text-3xl md:text-5xl lg:text-6xl leading-[1.15] tracking-tight">
-          {words.map((w, i) => {
-            const start = i / words.length;
-            const end = start + 1 / words.length;
-            const opacity = useTransform(scrollYProgress, [start, end], [0.15, 1]);
-            return (
-              <motion.span key={i} style={{ opacity }} className="inline-block mr-[0.25em]">
-                {w}
-              </motion.span>
-            );
+          {WHY_WORDS.map((w, i) => {
+            const start = i / WHY_WORDS.length;
+            const end = Math.min(1, start + 1.5 / WHY_WORDS.length);
+            return <RevealWord key={i} progress={scrollYProgress} range={[start, end]}>{w}</RevealWord>;
           })}
         </p>
       </div>
