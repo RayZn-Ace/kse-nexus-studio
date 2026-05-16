@@ -142,6 +142,7 @@ export function CinemaScroll() {
           <Scene
             key={i}
             src={sc.src}
+            poster={sc.poster}
             index={i}
             count={SCENES.length}
             progress={progress}
