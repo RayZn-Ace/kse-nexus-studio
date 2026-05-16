@@ -254,56 +254,121 @@ function Hero() {
 function PinnedWord() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  // Counter ticks alongside the pinned headline
-  const counter = useTransform(scrollYProgress, (v) => String(Math.round(v * 100)).padStart(3, "0"));
-  // Reveal bar fills L→R
-  const fillX = useTransform(scrollYProgress, [0, 1], ["-100%", "0%"]);
+
+  // Live scroll counter (top-right)
+  const counter = useTransform(scrollYProgress, (v) =>
+    String(Math.round(v * 100)).padStart(3, "0"),
+  );
+
+  // 8 reveal steps × 0.125 each across the 600vh container
+  const words: { text: string; accent?: boolean; dash?: boolean; lineBreakBefore?: boolean }[] = [
+    { text: "WIR" },
+    { text: "BAUEN" },
+    { text: "KEINE" },
+    { text: "MARKEN." },
+    { text: "—", dash: true, lineBreakBefore: true },
+    { text: "WIR" },
+    { text: "BAUEN" },
+    { text: "CHARAKTER.", accent: true },
+  ];
+
+  const ranges: [number, number, number][] = [
+    [0, 0.05, 0.125],
+    [0.125, 0.175, 0.25],
+    [0.25, 0.3, 0.375],
+    [0.375, 0.425, 0.5],
+    [0.5, 0.55, 0.625],
+    [0.625, 0.675, 0.75],
+    [0.75, 0.8, 0.875],
+    [0.875, 0.925, 1],
+  ];
+
+  // Build all transforms up-front (hooks must be called unconditionally)
+  const o0 = useTransform(scrollYProgress, ranges[0], [0, 1, 1]);
+  const o1 = useTransform(scrollYProgress, ranges[1], [0, 1, 1]);
+  const o2 = useTransform(scrollYProgress, ranges[2], [0, 1, 1]);
+  const o3 = useTransform(scrollYProgress, ranges[3], [0, 1, 1]);
+  const o4 = useTransform(scrollYProgress, ranges[4], [0, 1, 1]);
+  const o5 = useTransform(scrollYProgress, ranges[5], [0, 1, 1]);
+  const o6 = useTransform(scrollYProgress, ranges[6], [0, 1, 1]);
+  const o7 = useTransform(scrollYProgress, ranges[7], [0, 1, 1]);
+  const opacities = [o0, o1, o2, o3, o4, o5, o6, o7];
+
+  const y0 = useTransform(scrollYProgress, ranges[0], [30, 0, 0]);
+  const y1 = useTransform(scrollYProgress, ranges[1], [30, 0, 0]);
+  const y2 = useTransform(scrollYProgress, ranges[2], [30, 0, 0]);
+  const y3 = useTransform(scrollYProgress, ranges[3], [30, 0, 0]);
+  const y4 = useTransform(scrollYProgress, ranges[4], [30, 0, 0]);
+  const y5 = useTransform(scrollYProgress, ranges[5], [30, 0, 0]);
+  const y6 = useTransform(scrollYProgress, ranges[6], [30, 0, 0]);
+  const y7 = useTransform(scrollYProgress, ranges[7], [30, 0, 0]);
+  const ys = [y0, y1, y2, y3, y4, y5, y6, y7];
 
   return (
-    <section ref={ref} id="manifesto" className="relative h-[260vh] border-t border-foreground/15">
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        {/* Top label row */}
-        <div className="absolute top-8 left-6 right-6 flex justify-between text-[10px] uppercase tracking-[0.4em] text-foreground/50">
-          <span>// Pinned · Manifest</span>
-          <motion.span style={{ color: "#e8ff00" }}>{counter}</motion.span>
+    <section
+      ref={ref}
+      id="manifesto"
+      className="relative bg-black border-t border-foreground/15"
+      style={{ height: "600vh" }}
+    >
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {/* Top-left label */}
+        <div
+          className="absolute top-8 left-6 text-[10px] uppercase tracking-[0.4em]"
+          style={{ color: "#e8ff00" }}
+        >
+          // MANIFEST
+        </div>
+        {/* Top-right scroll counter */}
+        <div
+          className="absolute top-8 right-6 text-[10px] uppercase tracking-[0.4em]"
+          style={{ color: "#e8ff00" }}
+        >
+          <motion.span>{counter}</motion.span>
+          <span className="text-foreground/40"> / 100</span>
         </div>
 
-        {/* The word */}
-        <div className="relative px-4">
-          <h2
-            className="font-black leading-[0.82] text-center"
-            style={{ fontSize: "clamp(5rem, 22vw, 22rem)", letterSpacing: "-0.06em" }}
-          >
-            CHARAKTER
-          </h2>
-
-          {/* Accent fill bar */}
-          <div className="relative mx-auto mt-10 h-px w-[min(900px,80%)] overflow-hidden bg-foreground/15">
-            <motion.div style={{ x: fillX, background: "#e8ff00" }} className="absolute inset-0" />
-          </div>
-
-          {/* Sub statement, line-by-line */}
-          <div className="mt-12 mx-auto max-w-3xl text-center text-[15px] md:text-lg leading-[1.55] tracking-tight text-foreground/80">
-            {[
-              "Marken werden vergessen.",
-              "Charakter bleibt.",
-              "Deshalb arbeiten wir an dem Teil,",
-              "der nicht kopiert werden kann.",
-            ].map((line, i) => (
-              <span key={i} className="block overflow-hidden">
-                <motion.span
-                  className="inline-block"
-                  initial={{ y: "110%" }}
-                  whileInView={{ y: "0%" }}
-                  viewport={{ once: true, margin: "-15%" }}
-                  transition={{ duration: 0.9, ease: EASE, delay: i * 0.1 }}
-                >
-                  {line}
-                </motion.span>
-              </span>
-            ))}
-          </div>
-        </div>
+        {/* Word stage */}
+        <h2
+          className="font-black px-4 text-center"
+          style={{
+            fontSize: "clamp(5rem, 10vw, 9rem)",
+            fontWeight: 900,
+            letterSpacing: "-0.03em",
+            color: "#f0ede8",
+            lineHeight: 1.05,
+            maxWidth: "92vw",
+          }}
+        >
+          {words.map((w, i) => (
+            <span key={i}>
+              {w.lineBreakBefore && <br />}
+              <motion.span
+                style={{
+                  opacity: opacities[i],
+                  y: ys[i],
+                  display: "inline-block",
+                  marginRight: "0.25em",
+                  color: w.accent ? "#e8ff00" : w.dash ? "#e8ff00" : "#f0ede8",
+                  fontSize: w.dash ? "0.5em" : undefined,
+                  verticalAlign: w.dash ? "middle" : undefined,
+                }}
+              >
+                {w.text}
+              </motion.span>
+            </span>
+          ))}
+        </h2>
       </div>
     </section>
   );
