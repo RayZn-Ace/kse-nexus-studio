@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 function NotFoundComponent() {
   return (
@@ -121,6 +122,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SmoothScroll />
       <Outlet />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>

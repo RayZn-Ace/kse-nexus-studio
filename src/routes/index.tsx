@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform, useSpring, type Variants } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, type Variants, type MotionValue } from "framer-motion";
 import { useRef } from "react";
 import {
   Instagram, Mail, ArrowUpRight, Sparkles, Code2, Film, Rocket,
@@ -138,9 +138,19 @@ function Hero() {
   );
 }
 
-/* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
-import type { MotionValue } from "framer-motion";
+/* ───────────────────────── SCROLL PROGRESS BAR ───────────────────────── */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
+  return (
+    <motion.div
+      style={{ scaleX }}
+      className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-gradient-to-r from-accent via-primary to-accent"
+    />
+  );
+}
 
+/* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
 function RevealWord({ progress, range, children }: { progress: MotionValue<number>; range: [number, number]; children: string }) {
   const opacity = useTransform(progress, range, [0.15, 1]);
   return <motion.span style={{ opacity }} className="inline-block mr-[0.25em]">{children}</motion.span>;
@@ -341,43 +351,72 @@ function Why() {
   );
 }
 
-/* ───────────────────────── LIFESTYLE STRIP (parallax images) ───────────────────────── */
+/* ───────────────────────── LIFESTYLE (pinned horizontal scroll) ───────────────────────── */
+const lifestylePanels = [
+  { img: lifestyle1, kicker: "01 — Identität", title: "Marken, die man fühlt." },
+  { img: lifestyle2, kicker: "02 — Fortschritt", title: "Bewegung statt Stillstand." },
+  { img: lifestyle3, kicker: "03 — Resonanz", title: "Reichweite ist nicht genug." },
+];
+
 function Lifestyle() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y1 = useTransform(scrollYProgress, [0, 1], ["20%", "-30%"]);
-  const y2 = useTransform(scrollYProgress, [0, 1], ["10%", "-15%"]);
-  const y3 = useTransform(scrollYProgress, [0, 1], ["30%", "-40%"]);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  // 3 panels → translate the track from 0% to -66.66%
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-66.666%"]);
+  const xSmooth = useSpring(x, { stiffness: 90, damping: 22, mass: 0.5 });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 overflow-hidden bg-background">
-      <div className="max-w-7xl mx-auto">
-        <motion.h2
-          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
-          className="font-display text-4xl md:text-7xl font-semibold tracking-tight max-w-3xl mb-20"
-        >
-          Hier geht's nicht nur ums <span className="italic text-gradient">Marketing.</span>
-        </motion.h2>
-
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          <motion.div style={{ y: y1 }} className="col-span-6 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden">
-            <img src={lifestyle1} alt="Content creation studio" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
-          </motion.div>
-          <motion.div style={{ y: y2 }} className="col-span-6 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden md:mt-24">
-            <img src={lifestyle2} alt="Web design at work" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
-          </motion.div>
-          <motion.div style={{ y: y3 }} className="col-span-12 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden">
-            <img src={lifestyle3} alt="Film production" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
-          </motion.div>
+    <section ref={ref} className="relative h-[320vh] bg-black">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        {/* heading overlay */}
+        <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-10 pt-24 md:pt-28 pointer-events-none">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.9 }}
+            className="font-display text-3xl md:text-5xl font-semibold tracking-tight max-w-2xl text-white"
+          >
+            Hier geht's nicht nur ums <span className="italic text-gradient">Marketing.</span>
+          </motion.h2>
+          <p className="mt-3 font-mono text-[10px] md:text-xs uppercase tracking-[0.4em] text-white/50">
+            ◆ scroll →
+          </p>
         </div>
 
-        <motion.p
-          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
-          className="text-muted-foreground text-base md:text-lg max-w-2xl mt-20 leading-relaxed"
-        >
-          Es geht um <span className="text-foreground font-medium">Identität</span>. Um Fortschritt. Darum, gehört zu werden.
-          Du suchst nicht nur Reichweite — du suchst Resonanz. Genau die finden wir für dich.
-        </motion.p>
+        {/* horizontal track */}
+        <motion.div style={{ x: xSmooth }} className="flex h-full w-[300%]">
+          {lifestylePanels.map((p, i) => (
+            <div key={i} className="relative w-1/3 h-full shrink-0 px-4 md:px-10 flex items-center">
+              <div className="relative w-full h-[78%] rounded-3xl overflow-hidden">
+                <img
+                  src={p.img}
+                  alt={p.title}
+                  width={1280}
+                  height={1600}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-7 md:p-12">
+                  <p className="font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase text-accent mb-3">
+                    {p.kicker}
+                  </p>
+                  <h3 className="font-display text-3xl md:text-6xl font-semibold tracking-tight text-white max-w-md leading-[1.05]">
+                    {p.title}
+                  </h3>
+                </div>
+                {/* panel index HUD */}
+                <div className="absolute top-6 right-6 font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase text-white/60">
+                  0{i + 1} / 03
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* progress line */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[40vw] max-w-md h-px bg-white/20 overflow-hidden">
+          <motion.div style={{ scaleX: scrollYProgress }} className="origin-left h-full bg-accent" />
+        </div>
       </div>
     </section>
   );
@@ -391,52 +430,82 @@ const services = [
   { img: svcBoost, title: "Web & Social Boost", tag: "04 — Reach", desc: "Gezielte Kampagnen für maximale Reichweite, mehr Traffic und stärkere Online-Sichtbarkeit.", icon: Rocket },
 ];
 
+function ServiceStackCard({ s, index, total }: { s: typeof services[number]; index: number; total: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  // each card scales down + fades slightly when the next slides over
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.88]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, -2]);
+  const topOffset = `${8 + index * 2}vh`;
+
+  return (
+    <div
+      ref={ref}
+      className="sticky h-screen flex items-center justify-center px-4 md:px-8"
+      style={{ top: topOffset }}
+    >
+      <motion.a
+        href="#contact"
+        style={{ scale, opacity, rotate }}
+        className="group relative w-full max-w-6xl aspect-[16/10] md:aspect-[16/9] rounded-3xl overflow-hidden block shadow-2xl"
+      >
+        <img
+          src={s.img}
+          alt={s.title}
+          width={1920}
+          height={1080}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
+        <div className="absolute inset-0 p-8 md:p-14 flex flex-col justify-between">
+          <div className="flex items-center justify-between font-mono text-[10px] md:text-xs uppercase tracking-[0.35em] text-white/70">
+            <span>{s.tag}</span>
+            <span>0{index + 1} / 0{total}</span>
+          </div>
+          <div className="max-w-2xl">
+            <s.icon className="w-7 h-7 md:w-9 md:h-9 text-accent mb-5" />
+            <h3 className="font-display text-4xl md:text-7xl font-semibold text-white tracking-tight mb-4 leading-[0.98]">
+              {s.title}
+            </h3>
+            <p className="text-white/80 text-sm md:text-lg max-w-xl mb-6 leading-relaxed">{s.desc}</p>
+            <span className="inline-flex items-center gap-2 text-white text-sm font-semibold border-b border-white/40 pb-1">
+              Mehr erfahren <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            </span>
+          </div>
+        </div>
+      </motion.a>
+    </div>
+  );
+}
+
 function Services() {
   return (
-    <section id="services" className="relative py-32 px-6 bg-background">
-      <div className="max-w-7xl mx-auto">
-        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
+    <section id="services" className="relative bg-background">
+      {/* intro */}
+      <div className="px-6 pt-32 pb-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
             <p className="text-accent uppercase tracking-[0.4em] text-[11px] mb-4 font-semibold">Services</p>
             <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
               Wie KSE dich<br /><span className="italic text-gradient">durchstarten</span> lässt.
             </h2>
-          </div>
+          </motion.div>
           <p className="text-muted-foreground text-sm md:text-base max-w-sm">
             Vier Disziplinen. Ein Team. Eine Mission: deine Marke zur ersten Wahl machen.
           </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-5 md:gap-7">
-          {services.map((s, i) => (
-            <motion.a
-              href="#contact"
-              key={s.title}
-              initial={{ opacity: 0, y: 80 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.9, delay: (i % 2) * 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative aspect-[4/5] md:aspect-[5/6] rounded-3xl overflow-hidden block"
-            >
-              <img src={s.img} alt={s.title} width={1280} height={960} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1200ms] ease-out" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-              <div className="absolute inset-0 p-7 md:p-10 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/70 text-[11px] tracking-[0.3em] uppercase">{s.tag}</span>
-                  <s.icon className="w-5 h-5 text-white/80" />
-                </div>
-                <div>
-                  <h3 className="font-display text-3xl md:text-5xl font-semibold text-white tracking-tight mb-3 leading-[1.05]">{s.title}</h3>
-                  <p className="text-white/75 text-sm md:text-base max-w-md mb-5 leading-relaxed">{s.desc}</p>
-                  <span className="inline-flex items-center gap-2 text-white text-sm font-semibold">
-                    Mehr erfahren <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  </span>
-                </div>
-              </div>
-            </motion.a>
-          ))}
         </div>
       </div>
+
+      {/* stacking cards */}
+      <div className="relative">
+        {services.map((s, i) => (
+          <ServiceStackCard key={s.title} s={s} index={i} total={services.length} />
+        ))}
+      </div>
+      {/* spacer so last card has room before next section */}
+      <div className="h-[20vh]" />
     </section>
   );
 }
@@ -641,6 +710,7 @@ function Footer() {
 function Index() {
   return (
     <main className="relative bg-background overflow-x-hidden">
+      <ScrollProgress />
       <Header />
       <Hero />
       <Manifesto />
