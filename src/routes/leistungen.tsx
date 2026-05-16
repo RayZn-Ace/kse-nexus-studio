@@ -171,7 +171,10 @@ function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
     target: ref,
     offset: ["start start", "end end"],
   });
-  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.5 });
+  // Single master spring — every child MotionValue derives from this, so the
+  // entire timeline shares one smoothing pass. Tuned for fast-scroll: high
+  // damping so it catches up quickly without overshoot.
+  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.35 });
 
   // Phases:
   // 0.00 – 0.18  : box flies in + rotates into view
@@ -179,14 +182,15 @@ function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
   // 0.40 – 0.58  : lid opens
   // 0.58 – 1.00  : items pop out one by one
 
-  const boxOpacity = useTransform(p, [0, 0.05, 0.95, 1], [0, 1, 1, 1]);
-  const boxScale = useTransform(p, [0, 0.18, 0.4, 0.58], [0.6, 1, 1, 0.95]);
+  const boxOpacity = useTransform(p, [0, 0.05], [0, 1]);
+  const boxScale = useTransform(p, [0, 0.18, 0.58], [0.6, 1, 0.95]);
   const boxRotY = useTransform(p, [0, 0.18, 0.4], [-60, 25, 25]);
-  const boxRotX = useTransform(p, [0, 0.18, 0.4, 0.58], [40, -15, -15, -5]);
+  const boxRotX = useTransform(p, [0, 0.18, 0.58], [40, -15, -5]);
   const boxY = useTransform(p, [0, 0.18, 0.58, 1], [120, 0, 0, -40]);
 
-  // Showcase spin between 0.18 → 0.40
-  const showcaseSpin = useTransform(p, [0.18, 0.4], [0, 360]);
+  // Reduced spin range (180° instead of 360°) — half the per-frame work on a
+  // deeply-nested preserve-3d tree, no visible difference at scroll speed.
+  const showcaseSpin = useTransform(p, [0.18, 0.4], [0, 180]);
 
   // Lid open between 0.40 → 0.58
   const lidRotX = useTransform(p, [0.4, 0.58], [0, -135]);
