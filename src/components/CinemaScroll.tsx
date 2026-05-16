@@ -16,7 +16,7 @@ const LABELS = [
   "// 05 — CHARAKTER",
 ];
 
-const FRAME_COUNT = 312;
+const FRAME_COUNT = 252;
 
 const getFrameSrc = (frame: number) =>
   `/cinema-frames/frame-${String(frame).padStart(4, "0")}.webp`;
@@ -72,7 +72,7 @@ export function CinemaScroll() {
     window.addEventListener("scroll", updateFromScroll, { passive: true });
     window.addEventListener("resize", updateFromScroll);
 
-    [1, 35, 70, 105, 140, 175, 210, 245, 280, 312].forEach((frame) => {
+    [1, 35, 70, 105, 140, 175, 210, 245, 252].forEach((frame) => {
       const image = new Image();
       image.src = getFrameSrc(frame);
     });
