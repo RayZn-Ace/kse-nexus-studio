@@ -512,16 +512,45 @@ function ServiceCard({
 /* ───────────── about (stat / paragraph two-column) ───────────── */
 
 const STATS = [
-  { n: "08+", label: "Jahre Praxis", body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover." },
-  { n: "120", label: "Projekte realisiert", body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant." },
-  { n: "01", label: "Mission", body: "Charakter sichtbar machen. Konsequent. Ohne Templates, ohne Copy-Paste-Marketing." },
+  { value: 8, suffix: "+", label: "Jahre Praxis", body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover." },
+  { value: 120, suffix: "+", label: "Projekte realisiert", body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant." },
+  { value: 1, suffix: " MISSION", pad: 2, label: "Fokus", body: "Charakter sichtbar machen. Konsequent. Ohne Templates, ohne Copy-Paste-Marketing." },
 ];
+
+/** Counts 0 → target when scrolled into view (~1.5s, 60fps). Once only. */
+function CountUp({ to, pad = 0, suffix = "" }: { to: number; pad?: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15%" });
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const duration = 1500;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(to * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to]);
+  const text = pad ? String(val).padStart(pad, "0") : String(val);
+  return (
+    <span ref={ref}>
+      {text}
+      {suffix}
+    </span>
+  );
+}
 
 function About() {
   return (
     <section id="about" className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44">
-      {/* Section header */}
-      <div className="max-w-6xl mx-auto mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      {/* Heading */}
+      <div className="max-w-6xl mx-auto mb-12">
         <h2
           className="font-black leading-[0.85]"
           style={{ fontSize: "clamp(2.5rem, 7vw, 7rem)", letterSpacing: "-0.05em" }}
@@ -530,7 +559,22 @@ function About() {
           <br />
           <Scramble text="KSE / Group" />
         </h2>
-        <p className="max-w-md text-foreground/70 text-sm md:text-base leading-relaxed">
+      </div>
+
+      {/* Accent horizontal rule */}
+      <div className="max-w-6xl mx-auto">
+        <div className="h-px w-full" style={{ background: "#e8ff00" }} />
+      </div>
+
+      {/* Two-column: pull quote + body */}
+      <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24">
+        <p
+          className="font-black tracking-tight"
+          style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
+        >
+          Charakter sichtbar machen.
+        </p>
+        <p className="text-foreground/75 text-base md:text-lg leading-relaxed self-center">
           Gegründet von Kay Engelmann — Medien- und Kommunikationswissenschaftler, ex-Köln,
           jetzt Hannover. Wir arbeiten mit Marken, die nicht austauschbar sein wollen.
         </p>
@@ -540,7 +584,7 @@ function About() {
       <div className="max-w-6xl mx-auto grid gap-px bg-foreground/15 border border-foreground/15">
         {STATS.map((s, i) => (
           <motion.div
-            key={s.n}
+            key={s.label}
             initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-15%" }}
@@ -552,7 +596,7 @@ function About() {
                 className="font-black"
                 style={{ fontSize: "clamp(4rem, 12vw, 11rem)", letterSpacing: "-0.06em", lineHeight: 0.85 }}
               >
-                {s.n}
+                <CountUp to={s.value} pad={s.pad ?? 0} suffix={s.suffix} />
               </div>
               <div className="mt-3 text-[11px] uppercase tracking-[0.4em] text-foreground/50">{s.label}</div>
             </div>
