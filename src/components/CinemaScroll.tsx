@@ -84,6 +84,7 @@ export function CinemaScroll() {
             v.currentTime = 0;
           }}
           onCanPlayThrough={() => setReady(true)}
+          onLoadedData={() => setReady(true)}
           style={{
             position: "absolute",
             inset: 0,
