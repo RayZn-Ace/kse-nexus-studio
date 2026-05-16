@@ -8,7 +8,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import BackgroundCanvas from "@/components/BackgroundCanvas";
+import VillaBuilder from "@/components/VillaBuilder";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -756,8 +756,8 @@ function Footer() {
 function Index() {
   return (
     <main className="relative text-foreground" style={{ background: "transparent" }}>
-      {/* Single ambient background canvas — time-based, runs at 60fps */}
-      <BackgroundCanvas />
+      {/* Scroll-driven villa builder canvas */}
+      <VillaBuilder />
 
       {/* All page content sits above the cinema layer */}
       <div className="relative" style={{ zIndex: 10 }}>
