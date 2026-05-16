@@ -330,13 +330,13 @@ function PinnedWord() {
           // MANIFEST
         </div>
         {/* Top-right scroll counter */}
-        <motion.div
+        <div
           className="absolute top-8 right-6 text-[10px] uppercase tracking-[0.4em]"
           style={{ color: "#e8ff00" }}
         >
-          {counter}
+          <motion.span>{counter}</motion.span>
           <span className="text-foreground/40"> / 100</span>
-        </motion.div>
+        </div>
 
         {/* Word stage */}
         <h2
