@@ -322,35 +322,23 @@ function UnpackedItem({
   total: number;
   progress: MotionValue<number>;
 }) {
-  // Items emerge continuously between 0.55 and 1.0 with HEAVY overlap so the
-  // motion reads as a smooth flow, not 4 separate pops.
+  // `progress` is already a spring (parent). Derive plain transforms from it —
+  // no per-item useSpring (stacking springs causes phase-lag jitter on fast
+  // scroll). Items overlap heavily so 4 motions read as one continuous flow.
   const windowStart = 0.55;
   const windowEnd = 1.0;
-  const stride = (windowEnd - windowStart) / (total + 1.2); // smaller stride → more overlap
+  const stride = (windowEnd - windowStart) / (total + 1.2);
   const start = windowStart + i * stride;
-  const dur = stride * 2.6; // each item animates over a long range (overlapping siblings)
+  const dur = stride * 2.6;
   const end = Math.min(start + dur, windowEnd);
   const mid = start + (end - start) * 0.55;
 
-  // Start state: deep inside the box (right side of screen, below center, tiny, tilted back)
-  // End state: settled in its slot (0,0,1,0)
-  const rawOpacity = useTransform(progress, [start, start + (end - start) * 0.25, end], [0, 1, 1]);
-  const rawX = useTransform(progress, [start, end], [180, 0]);
-  const rawY = useTransform(progress, [start, mid, end], [-220 + i * 8, -40, 0]);
-  const rawScale = useTransform(progress, [start, mid, end], [0.35, 0.92, 1]);
-  const rawRotX = useTransform(progress, [start, end], [-65, 0]);
-  const rawRotY = useTransform(progress, [start, end], [25, 0]);
-  const rawBlur = useTransform(progress, [start, mid], [6, 0]);
-
-  // Per-item spring smoothing so any scroll jitter is absorbed.
-  const spring = { stiffness: 70, damping: 22, mass: 0.6 };
-  const opacity = useSpring(rawOpacity, spring);
-  const x = useSpring(rawX, spring);
-  const y = useSpring(rawY, spring);
-  const scale = useSpring(rawScale, spring);
-  const rotateX = useSpring(rawRotX, spring);
-  const rotateY = useSpring(rawRotY, spring);
-  const filter = useTransform(rawBlur, (b) => `blur(${b}px)`);
+  const opacity = useTransform(progress, [start, start + (end - start) * 0.22, end], [0, 1, 1]);
+  const x = useTransform(progress, [start, end], [180, 0]);
+  const y = useTransform(progress, [start, mid, end], [-200 + i * 6, -36, 0]);
+  const scale = useTransform(progress, [start, mid, end], [0.4, 0.94, 1]);
+  const rotateX = useTransform(progress, [start, end], [-55, 0]);
+  const rotateY = useTransform(progress, [start, end], [22, 0]);
 
   return (
     <motion.div
@@ -361,14 +349,14 @@ function UnpackedItem({
         scale,
         rotateX,
         rotateY,
-        filter,
         transformPerspective: 1200,
         transformOrigin: "100% 0%",
-        background: "rgba(10,10,10,0.82)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        // solid bg + no backdrop-filter: backdrop-filter forces a per-frame
+        // composite of everything behind it (4 layers × 60fps = jank)
+        background: "rgb(10,10,10)",
         borderLeft: `2px solid ${ACCENT}`,
         willChange: "transform, opacity",
+        backfaceVisibility: "hidden",
       }}
       className="px-5 py-4 border border-foreground/15"
     >
