@@ -710,6 +710,7 @@ function Footer() {
 function Index() {
   return (
     <main className="relative bg-background overflow-x-hidden">
+      <ScrollProgress />
       <Header />
       <Hero />
       <Manifesto />
