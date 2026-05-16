@@ -353,8 +353,7 @@ function UnpackedItem({
   // rotateY: subtle, matches box tilt
   const rotateY = useTransform(progress, [start, end], [-12, 0]);
   // skewY: perspective squish while emerging — the "verzerrt rauskommen" feel
-  const rawSkew = useTransform(progress, [start, mid, end], [14, 4, 0]);
-  const skewY = useTransform(rawSkew, (v) => `${v}deg`);
+  const skewY = useTransform(progress, [start, mid, end], [14, 4, 0]);
 
   return (
     <motion.div
