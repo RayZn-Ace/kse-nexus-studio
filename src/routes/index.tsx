@@ -482,7 +482,7 @@ function HorizontalServices() {
               <SplitReveal text="bauen." delay={0.15} />
             </h2>
             <p className="mt-6 max-w-sm text-sm text-foreground/60 uppercase tracking-[0.25em]">
-              Vier Disziplinen. Ein Team. Eine Mission.
+              Vier Disziplinen. Ein Team. Null Ausreden.
             </p>
           </div>
 
@@ -630,8 +630,8 @@ const STATS = [
     value: 1,
     suffix: "",
     pad: 2,
-    label: "Mission. Kein Konzern.",
-    body: "Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.",
+    label: "Fokus. Kein Konzern.",
+    body: "Ein Team, das dich beim Vornamen kennt. Kein Account Manager, kein Ticket-System, kein Wartezimmer. Du schreibst Kay — Kay antwortet.",
   },
 ];
 
