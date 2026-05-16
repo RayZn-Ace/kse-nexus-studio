@@ -220,7 +220,7 @@ function Hero() {
         >
           Wir bauen keine Marken.
           <br />
-          <span className="text-foreground">Wir bauen Charakter.</span>
+          <span className="text-foreground">Wir bauen Charakter!</span>
         </motion.p>
       </motion.div>
 
@@ -266,7 +266,7 @@ function PinnedWord() {
     { text: "—", dash: true, lineBreakBefore: true },
     { text: "WIR" },
     { text: "BAUEN" },
-    { text: "CHARAKTER.", accent: true },
+    { text: "CHARAKTER!", accent: true },
   ];
 
   const ranges: [number, number, number][] = [
