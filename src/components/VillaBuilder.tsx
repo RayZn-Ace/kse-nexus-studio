@@ -11,8 +11,10 @@ export default function VillaBuilder() {
     if (!video) return;
 
     video.pause();
+    let currentTime = 0;
+    let lastApplied = -1;
 
-    const onScroll = () => {
+    const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       const duration = video.duration || 10;
@@ -21,34 +23,40 @@ export default function VillaBuilder() {
 
     const tick = () => {
       if (video.readyState >= 2) {
-        const current = video.currentTime;
         const target = targetTimeRef.current;
-        // Smooth lerp toward target time
-        const next = current + (target - current) * 0.12;
-        if (Math.abs(target - current) > 0.005) {
-          try {
-            video.currentTime = next;
-          } catch {}
+        // Smooth ease toward target
+        currentTime += (target - currentTime) * 0.18;
+        // Only seek when diff is meaningful (~1 frame at 30fps = 0.033s)
+        if (Math.abs(currentTime - lastApplied) > 0.033) {
+          // fastSeek: skip to nearest keyframe, way smoother than currentTime
+          if (typeof (video as any).fastSeek === 'function') {
+            (video as any).fastSeek(currentTime);
+          } else {
+            video.currentTime = currentTime;
+          }
+          lastApplied = currentTime;
         }
       }
       rafRef.current = requestAnimationFrame(tick);
     };
 
     const onLoaded = () => {
-      onScroll();
-      video.currentTime = targetTimeRef.current;
+      readScroll();
+      currentTime = targetTimeRef.current;
+      video.currentTime = currentTime;
+      lastApplied = currentTime;
     };
 
     video.addEventListener('loadedmetadata', onLoaded);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    onScroll();
+    window.addEventListener('scroll', readScroll, { passive: true });
+    window.addEventListener('resize', readScroll);
+    readScroll();
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('scroll', readScroll);
+      window.removeEventListener('resize', readScroll);
       video.removeEventListener('loadedmetadata', onLoaded);
     };
   }, []);
