@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/leistungen")({
   head: () => ({
@@ -96,9 +97,10 @@ const PACKAGES: Pkg[] = [
 /* ───────────── header (mini, page-scoped) ───────────── */
 
 function PageHeader() {
+  const [open, setOpen] = useState(false);
   return (
-    <header className="fixed top-0 left-0 right-0 z-[70] mix-blend-difference">
-      <div className="flex items-center justify-between px-6 md:px-10 py-5 text-[11px] tracking-[0.3em] uppercase font-medium">
+    <header className="fixed top-0 left-0 right-0 z-[70]">
+      <div className="flex items-center justify-between px-5 md:px-10 py-4 md:py-5 text-[11px] tracking-[0.3em] uppercase font-medium mix-blend-difference">
         <Link to="/" className="link-underline font-black tracking-[-0.04em] text-[15px]">
           KSE / GROUP
         </Link>
@@ -111,6 +113,28 @@ function PageHeader() {
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
         </a>
+        <button
+          aria-label="Menü"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
+        >
+          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`} />
+          <span className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
+          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+        </button>
+      </div>
+      <div
+        className={`md:hidden overflow-hidden transition-[max-height] duration-500 ease-[cubic-bezier(.77,0,.175,1)] ${open ? "max-h-[420px]" : "max-h-0"}`}
+        style={{ background: "#0a0a0a", borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none" }}
+      >
+        <nav className="flex flex-col gap-5 px-6 py-8 text-[13px] tracking-[0.3em] uppercase">
+          <Link to="/" hash="manifesto" onClick={() => setOpen(false)}>Manifest</Link>
+          <Link to="/leistungen" onClick={() => setOpen(false)} style={{ color: ACCENT }}>Leistungen</Link>
+          <Link to="/" hash="about" onClick={() => setOpen(false)}>Über</Link>
+          <Link to="/" hash="contact" onClick={() => setOpen(false)}>Kontakt</Link>
+          <a href="mailto:info@ksegroup.eu" style={{ color: ACCENT }}>info@ksegroup.eu →</a>
+        </nav>
       </div>
     </header>
   );
@@ -166,6 +190,8 @@ function Intro() {
 /* ───────────── unbox section ───────────── */
 
 function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
+  const isMobile = useIsMobile();
+  if (isMobile) return <UnboxSectionMobile pkg={pkg} index={index} />;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -310,6 +336,76 @@ function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
             />
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────── mobile unbox: simpler vertical reveal ───────────── */
+
+function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
+  return (
+    <section className="relative border-b border-foreground/15 px-5 py-20">
+      <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-4">
+        // Paket {pkg.n} · {String(index + 1).padStart(2, "0")} von 04
+      </div>
+      <h2
+        className="font-black leading-[0.85] tracking-tight mb-4"
+        style={{ fontSize: "clamp(2.2rem, 10vw, 3.6rem)", letterSpacing: "-0.04em" }}
+      >
+        {pkg.title}
+      </h2>
+      <p className="text-base text-foreground/75 mb-3">{pkg.kicker}</p>
+      <p className="text-sm text-foreground/55 leading-relaxed mb-5">{pkg.intro}</p>
+      <div className="text-[11px] uppercase tracking-[0.35em] mb-8" style={{ color: ACCENT }}>
+        {pkg.price}
+      </div>
+
+      {/* mini "package" header */}
+      <div
+        className="relative border flex items-center justify-center mb-6 mx-auto"
+        style={{
+          width: "100%",
+          maxWidth: 320,
+          height: 140,
+          background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
+          borderColor: "rgba(232,255,0,0.25)",
+        }}
+      >
+        <div className="text-center">
+          <div className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
+            Paket {pkg.n}
+          </div>
+          <div className="font-black mt-2" style={{ fontSize: "1.4rem", letterSpacing: "-0.03em" }}>
+            {pkg.title}
+          </div>
+          <span aria-hidden className="block w-10 h-px mx-auto mt-2" style={{ background: ACCENT }} />
+          <div className="text-[10px] uppercase tracking-[0.3em] text-foreground/40 mt-2">
+            Inhalt: 4 Module
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {pkg.items.map((it, i) => (
+          <motion.div
+            key={it.label}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-10%" }}
+            transition={{ duration: 0.6, ease: EASE, delay: i * 0.08 }}
+            className="px-5 py-4 border border-foreground/15"
+            style={{ background: "rgb(10,10,10)", borderLeft: `2px solid ${ACCENT}` }}
+          >
+            <div className="flex items-baseline gap-3">
+              <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="font-semibold text-base tracking-tight">{it.label}</h3>
+            </div>
+            <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">{it.detail}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
