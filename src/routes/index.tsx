@@ -8,7 +8,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { CinemaScroll } from "@/components/CinemaScroll";
+import BackgroundCanvas from "@/components/BackgroundCanvas";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -756,8 +756,8 @@ function Footer() {
 function Index() {
   return (
     <main className="relative text-foreground" style={{ background: "transparent" }}>
-      {/* Global photoreal cinema sequence — drives every scroll position */}
-      <CinemaScroll />
+      {/* Single ambient background canvas — time-based, runs at 60fps */}
+      <BackgroundCanvas />
 
       {/* All page content sits above the cinema layer */}
       <div className="relative" style={{ zIndex: 10 }}>
