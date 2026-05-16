@@ -8,7 +8,6 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { CharacterAssembly } from "@/components/CharacterAssembly";
 import { CinemaScroll } from "@/components/CinemaScroll";
 
 export const Route = createFileRoute("/")({ component: Index });
@@ -320,9 +319,6 @@ function PinnedWord() {
           justifyContent: "center",
         }}
       >
-        {/* Scroll-driven SVG background (behind everything) */}
-        <CharacterAssembly progress={scrollYProgress} />
-
         {/* Existing content sits above the background */}
         <div style={{ position: "relative", zIndex: 1, width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         {/* Top-left label */}
