@@ -259,45 +259,10 @@ function PinnedWord() {
     String(Math.round(v * 100)).padStart(3, "0"),
   );
 
-  // 7 reveal steps across the 600vh container
-  const words: { text: string; accent?: boolean; lineBreakBefore?: boolean }[] = [
-    { text: "WIR" },
-    { text: "BAUEN" },
-    { text: "KEINE" },
-    { text: "MARKEN." },
-    { text: "WIR", lineBreakBefore: true },
-    { text: "BAUEN" },
-    { text: "CHARAKTER!", accent: true },
-  ];
-
-  const ranges: [number, number, number][] = [
-    [0, 0.05, 0.14],
-    [0.14, 0.19, 0.28],
-    [0.28, 0.33, 0.42],
-    [0.42, 0.47, 0.56],
-    [0.56, 0.61, 0.7],
-    [0.7, 0.75, 0.84],
-    [0.84, 0.89, 1],
-  ];
-
-  // Build all transforms up-front (hooks must be called unconditionally)
-  const o0 = useTransform(scrollYProgress, ranges[0], [0, 1, 1]);
-  const o1 = useTransform(scrollYProgress, ranges[1], [0, 1, 1]);
-  const o2 = useTransform(scrollYProgress, ranges[2], [0, 1, 1]);
-  const o3 = useTransform(scrollYProgress, ranges[3], [0, 1, 1]);
-  const o4 = useTransform(scrollYProgress, ranges[4], [0, 1, 1]);
-  const o5 = useTransform(scrollYProgress, ranges[5], [0, 1, 1]);
-  const o6 = useTransform(scrollYProgress, ranges[6], [0, 1, 1]);
-  const opacities = [o0, o1, o2, o3, o4, o5, o6];
-
-  const y0 = useTransform(scrollYProgress, ranges[0], [30, 0, 0]);
-  const y1 = useTransform(scrollYProgress, ranges[1], [30, 0, 0]);
-  const y2 = useTransform(scrollYProgress, ranges[2], [30, 0, 0]);
-  const y3 = useTransform(scrollYProgress, ranges[3], [30, 0, 0]);
-  const y4 = useTransform(scrollYProgress, ranges[4], [30, 0, 0]);
-  const y5 = useTransform(scrollYProgress, ranges[5], [30, 0, 0]);
-  const y6 = useTransform(scrollYProgress, ranges[6], [30, 0, 0]);
-  const ys = [y0, y1, y2, y3, y4, y5, y6];
+  const lineOneOpacity = useTransform(scrollYProgress, [0, 0.08, 1], [0, 1, 1]);
+  const lineOneY = useTransform(scrollYProgress, [0, 0.08, 1], [30, 0, 0]);
+  const lineTwoOpacity = useTransform(scrollYProgress, [0.08, 0.16, 1], [0, 1, 1]);
+  const lineTwoY = useTransform(scrollYProgress, [0.08, 0.16, 1], [30, 0, 0]);
 
   return (
     <section
