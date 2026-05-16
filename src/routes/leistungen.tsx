@@ -322,26 +322,53 @@ function UnpackedItem({
   total: number;
   progress: MotionValue<number>;
 }) {
-  // Items appear between 0.60 and 0.98, staggered.
-  const span = (0.98 - 0.6) / total;
-  const start = 0.6 + i * span;
-  const end = start + span * 0.9;
+  // Items emerge continuously between 0.55 and 1.0 with HEAVY overlap so the
+  // motion reads as a smooth flow, not 4 separate pops.
+  const windowStart = 0.55;
+  const windowEnd = 1.0;
+  const stride = (windowEnd - windowStart) / (total + 1.2); // smaller stride → more overlap
+  const start = windowStart + i * stride;
+  const dur = stride * 2.6; // each item animates over a long range (overlapping siblings)
+  const end = Math.min(start + dur, windowEnd);
+  const mid = start + (end - start) * 0.55;
 
-  const opacity = useTransform(progress, [start, end], [0, 1]);
-  const y = useTransform(progress, [start, end], [40, 0]);
-  const rotX = useTransform(progress, [start, end], [-30, 0]);
+  // Start state: deep inside the box (right side of screen, below center, tiny, tilted back)
+  // End state: settled in its slot (0,0,1,0)
+  const rawOpacity = useTransform(progress, [start, start + (end - start) * 0.25, end], [0, 1, 1]);
+  const rawX = useTransform(progress, [start, end], [180, 0]);
+  const rawY = useTransform(progress, [start, mid, end], [-220 + i * 8, -40, 0]);
+  const rawScale = useTransform(progress, [start, mid, end], [0.35, 0.92, 1]);
+  const rawRotX = useTransform(progress, [start, end], [-65, 0]);
+  const rawRotY = useTransform(progress, [start, end], [25, 0]);
+  const rawBlur = useTransform(progress, [start, mid], [6, 0]);
+
+  // Per-item spring smoothing so any scroll jitter is absorbed.
+  const spring = { stiffness: 70, damping: 22, mass: 0.6 };
+  const opacity = useSpring(rawOpacity, spring);
+  const x = useSpring(rawX, spring);
+  const y = useSpring(rawY, spring);
+  const scale = useSpring(rawScale, spring);
+  const rotateX = useSpring(rawRotX, spring);
+  const rotateY = useSpring(rawRotY, spring);
+  const filter = useTransform(rawBlur, (b) => `blur(${b}px)`);
 
   return (
     <motion.div
       style={{
         opacity,
+        x,
         y,
-        rotateX: rotX,
-        transformPerspective: 1000,
-        background: "rgba(10,10,10,0.78)",
+        scale,
+        rotateX,
+        rotateY,
+        filter,
+        transformPerspective: 1200,
+        transformOrigin: "100% 0%",
+        background: "rgba(10,10,10,0.82)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         borderLeft: `2px solid ${ACCENT}`,
+        willChange: "transform, opacity",
       }}
       className="px-5 py-4 border border-foreground/15"
     >
