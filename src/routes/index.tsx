@@ -482,7 +482,7 @@ function HorizontalServices() {
               <SplitReveal text="bauen." delay={0.15} />
             </h2>
             <p className="mt-6 max-w-sm text-sm text-foreground/60 uppercase tracking-[0.25em]">
-              Vier Disziplinen. Ein Team. Eine Mission.
+              Vier Disziplinen. Ein Team. Null Ausreden.
             </p>
           </div>
 
@@ -630,8 +630,8 @@ const STATS = [
     value: 1,
     suffix: "",
     pad: 2,
-    label: "Mission. Kein Konzern.",
-    body: "Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.",
+    label: "Fokus. Kein Konzern.",
+    body: "Ein Team, das dich beim Vornamen kennt. Kein Account Manager, kein Ticket-System, kein Wartezimmer. Du schreibst Kay — Kay antwortet.",
   },
 ];
 
@@ -691,10 +691,10 @@ function About() {
           className="font-black tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
-          Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.
+          Wir bauen Marken, an denen man nicht vorbeiscrollen kann.
         </p>
         <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
-          Kay Engelmann hat KSE gegründet, weil er zu viele mittelmäßige Marken in einer Welt gesehen hat, die außergewöhnliche Menschen versteckt. Wir arbeiten nicht mit jedem. Wir arbeiten mit den richtigen — Restaurants, die eine Geschichte verdienen. Handwerker, die unterschätzt werden. Musik-Acts, die gehört werden sollten. Influencer, die mehr sind als ihr Feed. Wenn du willst, dass man dich vergisst: wir sind nicht für dich.
+          KSE ist kein Dienstleister, der Abgabetermine erfüllt. Wir sind das Team, das dafür sorgt, dass dein Name fällt, wenn du nicht im Raum bist. Strategie, Design, Content, Performance — aus einer Hand, ohne Agentur-Theater, ohne Praktikanten an deinem Projekt. Wir nehmen wenige Kunden im Jahr. Dafür liefern wir Arbeit, die Wettbewerber nervös macht. Wenn du willst, dass man dich übersieht: such dir jemand anderen.
         </p>
       </div>
 
@@ -749,7 +749,7 @@ function Contact() {
         </h2>
 
         <div className="mb-4 text-[12px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Bereit aufzuhören, unsichtbar zu sein?
+          Schreib uns — bevor es dein Wettbewerb tut.
         </div>
 
         <a
@@ -798,7 +798,7 @@ function Contact() {
           className="mt-6 text-[10px] uppercase tracking-[0.35em]"
           style={{ color: "rgba(240,237,232,0.4)" }}
         >
-          Erstgespräch kostenlos · Antwort innerhalb von 24h · Kein Pitch, kein Bullshit — nur ein echtes Gespräch.
+          Erstgespräch kostenlos · Antwort in unter 24h · Kein Sales-Pitch — nur Klartext, ob wir zueinander passen.
         </div>
       </div>
     </section>
