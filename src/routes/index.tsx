@@ -760,7 +760,7 @@ function Index() {
       <VillaBuilder />
 
       {/* All page content sits above the cinema layer */}
-      <div className="relative" style={{ zIndex: 10 }}>
+      <div className="relative" style={{ zIndex: 1 }}>
       <ScrollProgress />
       <Header />
       <Hero />
