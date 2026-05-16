@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, type Variants, type MotionValue } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Instagram, Mail, ArrowUpRight, Sparkles, Code2, Film, Rocket,
   Users, MessageSquare, Brain, Palette, ShieldAlert,
