@@ -1,5 +1,4 @@
-import { useScroll, useMotionValueEvent } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Fullscreen fixed background: ONE continuous drone flight video
@@ -17,35 +16,34 @@ const LABELS = [
   "// 05 — CHARAKTER",
 ];
 
-const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4";
-const VIDEO_FPS = 24;
+const FRAME_COUNT = 252;
+
+const getFrameSrc = (frame: number) =>
+  `/cinema-frames/frame-${String(frame).padStart(4, "0")}.webp`;
 
 export function CinemaScroll() {
-  const { scrollYProgress } = useScroll();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const durationRef = useRef(10.041667);
   const pendingProgressRef = useRef(0);
-  const lastTimeRef = useRef(-1);
+  const lastFrameRef = useRef(1);
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const hudRef = useRef<HTMLDivElement | null>(null);
-  const [ready, setReady] = useState(false);
+
+  const readScrollProgress = () => {
+    const doc = document.documentElement;
+    const max = Math.max(1, doc.scrollHeight - window.innerHeight);
+    return Math.max(0, Math.min(1, window.scrollY / max));
+  };
 
   const flushSeek = () => {
     rafRef.current = null;
-    const video = videoRef.current;
-    if (!video || !ready) return;
+    const img = imageRef.current;
+    if (!img) return;
 
-    const duration = Number.isFinite(video.duration) ? video.duration : durationRef.current;
-    const maxTime = Math.max(0, duration - 0.05);
-    const frame = 1 / VIDEO_FPS;
-    const target = Math.round(pendingProgressRef.current * maxTime * VIDEO_FPS) / VIDEO_FPS;
-    const clamped = Math.max(0, Math.min(maxTime, target));
+    const frame = Math.max(1, Math.min(FRAME_COUNT, Math.round(1 + pendingProgressRef.current * (FRAME_COUNT - 1))));
 
-    if (Math.abs(lastTimeRef.current - clamped) >= frame * 0.75) {
-      try {
-        video.currentTime = clamped;
-        lastTimeRef.current = clamped;
-      } catch {}
+    if (lastFrameRef.current !== frame) {
+      img.src = getFrameSrc(frame);
+      lastFrameRef.current = frame;
     }
   };
 
@@ -56,21 +54,33 @@ export function CinemaScroll() {
     }
   };
 
-  useMotionValueEvent(scrollYProgress, "change", (progress) => {
-    scheduleSeek(progress);
-
-    const hud = hudRef.current;
-    if (hud) {
-      const pct = String(Math.round(progress * 100)).padStart(3, "0");
-      const label = LABELS[Math.min(LABELS.length - 1, Math.floor(progress * LABELS.length))];
-      hud.dataset.label = label;
-      hud.dataset.pct = pct;
-    }
-  });
-
   useEffect(() => {
+    const updateFromScroll = () => {
+      const progress = readScrollProgress();
+      scheduleSeek(progress);
+
+      const hud = hudRef.current;
+      if (hud) {
+        const pct = String(Math.round(progress * 100)).padStart(3, "0");
+        const label = LABELS[Math.min(LABELS.length - 1, Math.floor(progress * LABELS.length))];
+        hud.dataset.label = label;
+        hud.dataset.pct = pct;
+      }
+    };
+
+    updateFromScroll();
+    window.addEventListener("scroll", updateFromScroll, { passive: true });
+    window.addEventListener("resize", updateFromScroll);
+
+    [1, 35, 70, 105, 140, 175, 210, 245, 252].forEach((frame) => {
+      const image = new Image();
+      image.src = getFrameSrc(frame);
+    });
+
     return () => {
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("scroll", updateFromScroll);
+      window.removeEventListener("resize", updateFromScroll);
     };
   }, []);
 
@@ -86,19 +96,11 @@ export function CinemaScroll() {
         background: "#000",
       }}
     >
-        <video
-          ref={videoRef}
-          src={SCRUB_VIDEO_SRC}
-          muted
-          playsInline
-          preload="auto"
-          onLoadedMetadata={(e) => {
-            const v = e.currentTarget;
-            durationRef.current = Number.isFinite(v.duration) ? v.duration : durationRef.current;
-            v.pause();
-            setReady(true);
-            scheduleSeek(scrollYProgress.get());
-          }}
+        <img
+          ref={imageRef}
+          src={getFrameSrc(1)}
+          alt=""
+          draggable={false}
           style={{
             position: "absolute",
             inset: 0,
