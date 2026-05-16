@@ -1,4 +1,5 @@
-import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, type MotionValue } from "framer-motion";
+import { useEffect, useRef } from "react";
 import v1 from "@/assets/scene-1-space.mp4.asset.json";
 import v2 from "@/assets/scene-2-clouds.mp4.asset.json";
 import v3 from "@/assets/scene-3-hannover-aerial.mp4.asset.json";
@@ -42,15 +43,8 @@ function Scene({
   count: number;
   progress: MotionValue<number>;
 }) {
-  // Even windows; each scene held for ~ 1/count of total scroll, with overlap at both ends.
   const step = 1 / count;
   const start = index * step;
-  // Wide crossfade — each scene fades in/out over ~60% of its window,
-  // so adjacent scenes are always blending into each other (no hard cuts).
-  const peakIn = start + step * 0.6;
-  const peakOut = start + step * 0.4 + step; // extends into next scene
-  const end = start + step * 1.6;
-
   const fadeIn = start - step * 0.6;
   const fadeOut = start + step * 1.6;
   const opacityStops = [fadeIn, start + step * 0.5, fadeOut];
@@ -66,6 +60,32 @@ function Scene({
   const scale = useTransform(progress, [fadeIn, fadeOut], [1.05, 1.15]);
   const y = useTransform(progress, [fadeIn, fadeOut], ["-1.5%", "1.5%"]);
 
+  // Scroll-scrubbed video: currentTime is driven by scroll progress within
+  // this scene's window. No autoplay/loop — video only "plays" while scrolling.
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.pause();
+    // Hint the browser this is non-playing media we'll seek manually.
+    try { (v as any).preservesPitch = false; } catch {}
+  }, []);
+
+  useMotionValueEvent(progress, "change", (p) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const dur = v.duration;
+    if (!dur || !isFinite(dur)) return;
+    // Map [start, start+step] of global progress to [0, dur] of this clip.
+    const local = Math.max(0, Math.min(1, (p - start) / step));
+    const t = local * (dur - 0.05);
+    // Avoid spamming the decoder with tiny changes.
+    if (Math.abs(v.currentTime - t) > 0.03) {
+      v.currentTime = t;
+    }
+  });
+
   return (
     <motion.div
       aria-hidden
@@ -76,7 +96,7 @@ function Scene({
         willChange: "opacity, transform",
       }}
     >
-      {/* Background video — continuously animated, loops forever */}
+      {/* Background video — scroll-scrubbed (only advances while user scrolls) */}
       <motion.div
         style={{
           position: "absolute",
@@ -88,13 +108,17 @@ function Scene({
         }}
       >
         <video
+          ref={videoRef}
           src={src}
           poster={poster}
-          autoPlay
-          loop
           muted
           playsInline
           preload="auto"
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            v.pause();
+            v.currentTime = 0;
+          }}
           style={{
             position: "absolute",
             inset: 0,
