@@ -426,6 +426,7 @@ function Manifesto() {
   return (
     <section
       ref={ref}
+      id="manifesto"
       className="relative min-h-[160vh] bg-black overflow-hidden border-y border-white/10"
     >
       {/* telemetry grid */}
@@ -612,7 +613,7 @@ function Lifestyle() {
         <motion.div style={{ x: xSmooth }} className="flex h-full w-[300%]">
           {lifestylePanels.map((p, i) => (
             <div key={i} className="relative w-1/3 h-full shrink-0 px-4 md:px-10 flex items-center">
-              <div className="relative w-full h-[78%] rounded-3xl overflow-hidden">
+              <MaskReveal className="relative w-full h-[78%] rounded-3xl overflow-hidden">
                 <img
                   src={p.img}
                   alt={p.title}
@@ -634,7 +635,7 @@ function Lifestyle() {
                 <div className="absolute top-6 right-6 font-mono text-[10px] md:text-xs tracking-[0.3em] uppercase text-white/60">
                   0{i + 1} / 03
                 </div>
-              </div>
+              </MaskReveal>
             </div>
           ))}
         </motion.div>
@@ -776,7 +777,7 @@ function Founder() {
           viewport={{ once: true }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="relative max-w-sm mx-auto md:mx-0"
         >
-          <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
+          <MaskReveal className="relative aspect-[3/4] rounded-3xl overflow-hidden">
             <img
               src="https://ksegroup.eu/wp-content/uploads/2024/06/meet-me-768x1024.png"
               alt="Kay Engelmann — Founder KSE Group"
@@ -784,7 +785,7 @@ function Founder() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-          </div>
+          </MaskReveal>
           <motion.div
             animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             className="absolute -top-6 -right-6 w-28 h-28 rounded-full border border-accent/50 flex items-center justify-center text-accent text-[10px] tracking-[0.25em]"
@@ -902,16 +903,14 @@ function CTA() {
         >
           Entfessle dein Potenzial — werde mit unserer Unterstützung zum nächsten Star.
         </motion.p>
-        <motion.a
+        <Magnetic
           href="mailto:info@ksegroup.eu"
-          initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm md:text-base font-semibold"
+          className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm md:text-base font-semibold cursor-pointer"
         >
           <Mail className="w-4 h-4" />
           info@ksegroup.eu
           <ArrowUpRight className="w-4 h-4" />
-        </motion.a>
+        </Magnetic>
       </div>
     </section>
   );
@@ -937,6 +936,7 @@ function Index() {
   return (
     <main className="relative bg-background overflow-x-hidden">
       <ScrollProgress />
+      <SideRail />
       <Header />
       <Hero />
       <Manifesto />
