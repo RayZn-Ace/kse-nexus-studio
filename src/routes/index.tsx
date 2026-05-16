@@ -615,7 +615,7 @@ function ServiceCard({
 
 const STATS = [
   {
-    value: 8,
+    value: 6,
     suffix: "+",
     label: "Jahre im Business",
     body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover.",
