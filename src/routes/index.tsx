@@ -631,7 +631,7 @@ const STATS = [
     suffix: "",
     pad: 2,
     label: "Fokus. Kein Konzern.",
-    body: "Ein Team, das dich beim Vornamen kennt. Kein Account Manager, kein Ticket-System, kein Wartezimmer. Du schreibst Kay — Kay antwortet.",
+    body: "Ein Team, das dich beim Vornamen kennt. Kein Account Manager, kein Ticket-System, kein Wartezimmer. Du schreibst Basti — Basti antwortet.",
   },
 ];
 
