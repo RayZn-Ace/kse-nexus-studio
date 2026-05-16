@@ -1,48 +1,35 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import videoAsset from '@/../public/villa-build.mp4.asset.json';
 
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
+  const [introOpacity, setIntroOpacity] = useState(1);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    video.pause();
     let currentTime = 0;
     let lastApplied = -1;
-    let intro = true;
-    const INTRO_END = 1.8; // seconds — loop the "network" intro
 
     const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       const duration = video.duration || 10;
       targetTimeRef.current = p * duration;
-      // Once user scrolls past a small threshold, exit intro loop forever
-      if (intro && p > 0.005) {
-        intro = false;
-        video.pause();
-      }
+      // Fade the electric overlay out across the first ~5% of scroll
+      const op = Math.max(0, 1 - p / 0.05);
+      setIntroOpacity(op);
     };
 
     const tick = () => {
-      if (intro) {
-        // Let the video play naturally and loop the intro segment
-        if (video.readyState >= 2 && video.currentTime >= INTRO_END) {
-          video.currentTime = 0;
-        }
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
       if (video.readyState >= 2) {
         const target = targetTimeRef.current;
-        // Smooth ease toward target
         currentTime += (target - currentTime) * 0.18;
-        // Only seek when diff is meaningful (~1 frame at 30fps = 0.033s)
         if (Math.abs(currentTime - lastApplied) > 0.033) {
-          // fastSeek: skip to nearest keyframe, way smoother than currentTime
           if (typeof (video as any).fastSeek === 'function') {
             (video as any).fastSeek(currentTime);
           } else {
@@ -56,14 +43,9 @@ export default function VillaBuilder() {
 
     const onLoaded = () => {
       readScroll();
-      if (intro) {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-      } else {
-        currentTime = targetTimeRef.current;
-        video.currentTime = currentTime;
-        lastApplied = currentTime;
-      }
+      currentTime = targetTimeRef.current;
+      video.currentTime = currentTime;
+      lastApplied = currentTime;
     };
 
     video.addEventListener('loadedmetadata', onLoaded);
@@ -107,6 +89,94 @@ export default function VillaBuilder() {
           opacity: 0.85,
         }}
       />
+
+      {/* Electric current overlay — only visible at the start, fades on scroll */}
+      <svg
+        viewBox="0 0 1000 600"
+        preserveAspectRatio="xMidYMid slice"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          opacity: introOpacity,
+          transition: 'opacity 0.2s linear',
+          mixBlendMode: 'screen',
+        }}
+      >
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {/* Several electric paths zipping across — staggered */}
+        {[
+          { d: 'M-50,180 Q200,140 380,230 T780,200 T1100,260', dur: 2.2, delay: 0 },
+          { d: 'M-50,360 Q220,420 420,340 T820,400 T1100,330', dur: 2.6, delay: 0.4 },
+          { d: 'M-50,480 Q260,520 460,440 T880,510 T1100,470', dur: 3.1, delay: 0.9 },
+          { d: 'M-50,90  Q180,40  360,140 T760,80  T1100,140', dur: 2.4, delay: 1.3 },
+          { d: 'M-50,540 Q240,470 440,560 T840,500 T1100,560', dur: 2.8, delay: 1.7 },
+        ].map((p, i) => (
+          <g key={i} filter="url(#glow)">
+            {/* faint base trace */}
+            <path
+              d={p.d}
+              fill="none"
+              stroke="#e8ff00"
+              strokeOpacity="0.18"
+              strokeWidth="1.2"
+            />
+            {/* travelling electric pulse */}
+            <path
+              d={p.d}
+              fill="none"
+              stroke="#e8ff00"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray="60 1800"
+              strokeDashoffset="1860"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="1860"
+                to="0"
+                dur={`${p.dur}s`}
+                begin={`${p.delay}s`}
+                repeatCount="indefinite"
+              />
+            </path>
+          </g>
+        ))}
+        {/* glowing nodes pulsing */}
+        {[
+          [220, 180], [520, 230], [780, 200],
+          [180, 360], [580, 340], [820, 400],
+          [320, 90], [680, 140],
+          [400, 540], [760, 510],
+        ].map(([cx, cy], i) => (
+          <circle
+            key={`n-${i}`}
+            cx={cx}
+            cy={cy}
+            r="3"
+            fill="#e8ff00"
+            filter="url(#glow)"
+          >
+            <animate
+              attributeName="opacity"
+              values="0.3;1;0.3"
+              dur={`${1.6 + (i % 4) * 0.4}s`}
+              repeatCount="indefinite"
+              begin={`${(i * 0.13) % 1.5}s`}
+            />
+          </circle>
+        ))}
+      </svg>
+
       {/* subtle dark overlay so foreground text stays readable */}
       <div
         style={{
