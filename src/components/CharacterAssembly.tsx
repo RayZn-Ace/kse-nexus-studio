@@ -1,311 +1,153 @@
-import { motion, useTransform, type MotionValue } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useRef } from 'react';
 
-/**
- * Scroll-driven background for the pinned CHARAKTER section.
- * Phase 1 (0→60%): 12 media icon tiles fly in from off-screen into a 4×3 grid.
- * Phase 2 (60→80%): tiles shrink and drift outward, fading.
- * Phase 3 (80→100%): three human figures fade/scale in, label appears below.
- *
- * Everything is driven by the `progress` MotionValue passed in from the
- * parent's useScroll — no timers, no CSS transitions.
- */
-
-const VB_W = 1568;
-const VB_H = 768;
-const CX = VB_W / 2; // 784
-const CY = VB_H / 2; // 384
-
-const TILE = 64;
-const GAP = 16;
-const COLS = 4;
-const ROWS = 3;
-const GRID_W = COLS * TILE + (COLS - 1) * GAP; // 304
-const GRID_H = ROWS * TILE + (ROWS - 1) * GAP; // 224
-const GRID_X0 = CX - GRID_W / 2 + TILE / 2; // first-col center x
-const GRID_Y0 = CY - GRID_H / 2 + TILE / 2; // first-row center y
-
-type IconKey =
-  | "phone"
-  | "meta"
-  | "tiktok"
-  | "instagram"
-  | "camera"
-  | "youtube"
-  | "linkedin"
-  | "clap"
-  | "mic"
-  | "bulb"
-  | "chart"
-  | "star";
-
-/** Drawn inside a 32×32 viewbox centered at origin (use -16..16). */
-function Icon({ name }: { name: IconKey }) {
-  const stroke = "#f0ede8";
-  const sw = 1.5;
-  const common = {
-    fill: "none",
-    stroke,
-    strokeWidth: sw,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-  switch (name) {
-    case "phone":
-      return (
-        <g {...common}>
-          <rect x={-7} y={-12} width={14} height={24} rx={2} />
-          <line x1={-2} y1={8} x2={2} y2={8} />
-        </g>
-      );
-    case "meta":
-      return (
-        <g {...common}>
-          <path d="M -12 4 C -10 -6, -4 -8, 0 0 C 4 8, 10 6, 12 -4" />
-        </g>
-      );
-    case "tiktok":
-      return (
-        <g {...common}>
-          <path d="M 2 -12 L 2 6 a 5 5 0 1 1 -5 -5" />
-          <path d="M 2 -12 c 1 4, 4 6, 8 6" />
-        </g>
-      );
-    case "instagram":
-      return (
-        <g {...common}>
-          <rect x={-11} y={-11} width={22} height={22} rx={5} />
-          <circle cx={0} cy={0} r={5} />
-          <circle cx={6} cy={-6} r={1.2} fill={stroke} />
-        </g>
-      );
-    case "camera":
-      return (
-        <g {...common}>
-          <rect x={-12} y={-8} width={24} height={16} rx={2} />
-          <circle cx={0} cy={0} r={5} />
-          <line x1={-4} y1={-8} x2={-2} y2={-11} />
-          <line x1={4} y1={-8} x2={2} y2={-11} />
-        </g>
-      );
-    case "youtube":
-      return (
-        <g {...common}>
-          <rect x={-12} y={-8} width={24} height={16} rx={3} />
-          <path d="M -3 -4 L 5 0 L -3 4 Z" />
-        </g>
-      );
-    case "linkedin":
-      return (
-        <g {...common}>
-          <rect x={-11} y={-11} width={22} height={22} rx={3} />
-          <line x1={-6} y1={-3} x2={-6} y2={6} />
-          <circle cx={-6} cy={-7} r={1.2} fill={stroke} />
-          <path d="M 0 6 L 0 -3 M 0 0 c 0 -3 6 -3 6 0 L 6 6" />
-        </g>
-      );
-    case "clap":
-      return (
-        <g {...common}>
-          <rect x={-12} y={-3} width={24} height={14} rx={1} />
-          <path d="M -12 -3 L -8 -10 L -4 -5 L 0 -10 L 4 -5 L 8 -10 L 12 -3" />
-        </g>
-      );
-    case "mic":
-      return (
-        <g {...common}>
-          <rect x={-4} y={-12} width={8} height={14} rx={4} />
-          <path d="M -8 -2 a 8 8 0 0 0 16 0" />
-          <line x1={0} y1={6} x2={0} y2={12} />
-          <line x1={-4} y1={12} x2={4} y2={12} />
-        </g>
-      );
-    case "bulb":
-      return (
-        <g {...common}>
-          <path d="M -6 2 a 6 7 0 1 1 12 0 c 0 4 -3 4 -3 7 L -3 9 c 0 -3 -3 -3 -3 -7 Z" />
-          <line x1={-3} y1={12} x2={3} y2={12} />
-        </g>
-      );
-    case "chart":
-      return (
-        <g {...common}>
-          <line x1={-11} y1={11} x2={11} y2={11} />
-          <line x1={-11} y1={11} x2={-11} y2={-9} />
-          <path d="M -8 6 L -3 0 L 2 4 L 9 -7" />
-          <path d="M 5 -7 L 9 -7 L 9 -3" />
-        </g>
-      );
-    case "star":
-      return (
-        <g {...common}>
-          <path d="M 0 -11 L 3 -3 L 11 -3 L 4 2 L 7 10 L 0 5 L -7 10 L -4 2 L -11 -3 L -3 -3 Z" />
-        </g>
-      );
-  }
+interface Icon {
+  label: string;
+  draw: (ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => void;
 }
 
-const ICONS: { key: IconKey; startX: number; startY: number }[] = [
-  { key: "phone",     startX: -400, startY: -200 },
-  { key: "meta",      startX:  500, startY: -300 },
-  { key: "tiktok",    startX: -300, startY:  300 },
-  { key: "instagram", startX:  600, startY:  200 },
-  { key: "camera",    startX: -500, startY:  100 },
-  { key: "youtube",   startX:  400, startY: -100 },
-  { key: "linkedin",  startX: -200, startY: -400 },
-  { key: "clap",      startX:  300, startY:  400 },
-  { key: "mic",       startX: -600, startY:   50 },
-  { key: "bulb",      startX:  200, startY: -350 },
-  { key: "chart",     startX:  500, startY:  300 },
-  { key: "star",      startX: -100, startY:  400 },
-];
+export default function CharacterAssembly({ scrollProgress }: { scrollProgress: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>(0);
+  const progressRef = useRef(scrollProgress);
 
-function Tile({
-  progress,
-  index,
-  iconKey,
-  startX,
-  startY,
-}: {
-  progress: MotionValue<number>;
-  index: number;
-  iconKey: IconKey;
-  startX: number;
-  startY: number;
-}) {
-  const col = index % COLS;
-  const row = Math.floor(index / COLS);
-  const finalX = GRID_X0 + col * (TILE + GAP);
-  const finalY = GRID_Y0 + row * (TILE + GAP);
+  progressRef.current = scrollProgress;
 
-  // Outward drift vector during phase 2
-  const dx = finalX - CX;
-  const dy = finalY - CY;
-  const driftX = finalX + dx * 0.6;
-  const driftY = finalY + dy * 0.6;
+  useEffect(() => {
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext('2d')!;
 
-  const x = useTransform(progress, [0, 0.6, 0.8], [CX + startX, finalX, driftX]);
-  const y = useTransform(progress, [0, 0.6, 0.8], [CY + startY, finalY, driftY]);
-  const opacity = useTransform(
-    progress,
-    [0, 0.15, 0.6, 0.75, 0.85],
-    [0, 1, 1, 0.6, 0],
-  );
-  const scale = useTransform(progress, [0, 0.6, 0.8], [0.3, 1, 0.4]);
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const icons: Icon[] = [
+      { label: 'phone', draw: (c,x,y,s) => { c.strokeRect(x-s*0.3,y-s*0.5,s*0.6,s); c.beginPath(); c.arc(x,y+s*0.35,s*0.06,0,Math.PI*2); c.stroke(); } },
+      { label: 'meta', draw: (c,x,y,s) => { c.beginPath(); c.ellipse(x-s*0.2,y,s*0.25,s*0.15,0,0,Math.PI*2); c.stroke(); c.beginPath(); c.ellipse(x+s*0.2,y,s*0.25,s*0.15,0,0,Math.PI*2); c.stroke(); } },
+      { label: 'tiktok', draw: (c,x,y,s) => { c.beginPath(); c.arc(x+s*0.1,y+s*0.25,s*0.25,0,Math.PI*2); c.stroke(); c.beginPath(); c.moveTo(x+s*0.1,y-s*0.5); c.lineTo(x+s*0.1,y+s*0.1); c.bezierCurveTo(x+s*0.1,y+s*0.1,x+s*0.4,y-s*0.1,x+s*0.4,y-s*0.35); c.stroke(); } },
+      { label: 'instagram', draw: (c,x,y,s) => { c.strokeRect(x-s*0.4,y-s*0.4,s*0.8,s*0.8); c.beginPath(); c.arc(x,y,s*0.25,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(x+s*0.25,y-s*0.25,s*0.06,0,Math.PI*2); c.fill(); } },
+      { label: 'camera', draw: (c,x,y,s) => { c.strokeRect(x-s*0.45,y-s*0.3,s*0.9,s*0.6); c.beginPath(); c.arc(x,y,s*0.2,0,Math.PI*2); c.stroke(); c.beginPath(); c.moveTo(x-s*0.2,y-s*0.3); c.lineTo(x-s*0.1,y-s*0.45); c.lineTo(x+s*0.1,y-s*0.45); c.lineTo(x+s*0.2,y-s*0.3); c.stroke(); } },
+      { label: 'youtube', draw: (c,x,y,s) => { c.strokeRect(x-s*0.45,y-s*0.3,s*0.9,s*0.6); c.beginPath(); c.moveTo(x-s*0.15,y-s*0.2); c.lineTo(x+s*0.25,y); c.lineTo(x-s*0.15,y+s*0.2); c.closePath(); c.stroke(); } },
+      { label: 'linkedin', draw: (c,x,y,s) => { c.strokeRect(x-s*0.4,y-s*0.4,s*0.8,s*0.8); c.beginPath(); c.arc(x-s*0.15,y-s*0.2,s*0.08,0,Math.PI*2); c.fill(); c.beginPath(); c.moveTo(x-s*0.15,y-s*0.05); c.lineTo(x-s*0.15,y+s*0.3); c.moveTo(x+s*0.05,y-s*0.05); c.lineTo(x+s*0.05,y+s*0.3); c.bezierCurveTo(x+s*0.05,y+s*0.05,x+s*0.35,y+s*0.05,x+s*0.35,y+s*0.3); c.stroke(); } },
+      { label: 'clapper', draw: (c,x,y,s) => { c.strokeRect(x-s*0.45,y-s*0.1,s*0.9,s*0.55); c.beginPath(); c.moveTo(x-s*0.45,y-s*0.1); c.lineTo(x-s*0.45,y-s*0.35); c.lineTo(x+s*0.45,y-s*0.35); c.lineTo(x+s*0.45,y-s*0.1); c.stroke(); c.beginPath(); [-0.3,-0.1,0.1,0.3].forEach(o => { c.moveTo(x+o*s,y-s*0.35); c.lineTo(x+(o+0.15)*s,y-s*0.1); }); c.stroke(); } },
+      { label: 'mic', draw: (c,x,y,s) => { c.strokeRect(x-s*0.15,y-s*0.5,s*0.3,s*0.55); c.beginPath(); c.arc(x,y-s*0.22,s*0.15,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(x,y+s*0.05,s*0.3,Math.PI,0,false); c.stroke(); c.beginPath(); c.moveTo(x,y+s*0.35); c.lineTo(x,y+s*0.5); c.moveTo(x-s*0.2,y+s*0.5); c.lineTo(x+s*0.2,y+s*0.5); c.stroke(); } },
+      { label: 'bulb', draw: (c,x,y,s) => { c.beginPath(); c.arc(x,y-s*0.1,s*0.35,0,Math.PI*2); c.stroke(); c.beginPath(); c.moveTo(x-s*0.15,y+s*0.25); c.lineTo(x+s*0.15,y+s*0.25); c.moveTo(x-s*0.12,y+s*0.38); c.lineTo(x+s*0.12,y+s*0.38); c.moveTo(x,y+s*0.38); c.lineTo(x,y+s*0.52); c.stroke(); } },
+      { label: 'chart', draw: (c,x,y,s) => { c.beginPath(); c.moveTo(x-s*0.4,y+s*0.4); c.lineTo(x-s*0.4,y-s*0.4); c.moveTo(x-s*0.4,y+s*0.4); c.lineTo(x+s*0.4,y+s*0.4); c.stroke(); c.beginPath(); c.moveTo(x-s*0.3,y+s*0.1); c.lineTo(x-s*0.05,y-s*0.15); c.lineTo(x+s*0.15,y+s*0.05); c.lineTo(x+s*0.35,y-s*0.3); c.stroke(); } },
+      { label: 'star', draw: (c,x,y,s) => { c.beginPath(); for(let i=0;i<5;i++){ const a=i*Math.PI*2/5-Math.PI/2; const b=a+Math.PI/5; i===0?c.moveTo(x+Math.cos(a)*s*0.45,y+Math.sin(a)*s*0.45):c.lineTo(x+Math.cos(a)*s*0.45,y+Math.sin(a)*s*0.45); c.lineTo(x+Math.cos(b)*s*0.2,y+Math.sin(b)*s*0.2); } c.closePath(); c.stroke(); } },
+    ];
+
+    const cols = 4, rows = 3, tileSize = 72, gap = 18;
+    const gridW = cols * tileSize + (cols-1) * gap;
+    const gridH = rows * tileSize + (rows-1) * gap;
+    const getTarget = (i: number) => ({
+      x: (canvas.width - gridW) / 2 + (i % cols) * (tileSize + gap) + tileSize / 2,
+      y: (canvas.height - gridH) / 2 + Math.floor(i / cols) * (tileSize + gap) + tileSize / 2,
+    });
+
+    const starts = [
+      {x:-200,y:-200},{x:900,y:-300},{x:-300,y:500},{x:1000,y:200},
+      {x:-400,y:100},{x:800,y:-100},{x:-100,y:-350},{x:700,y:500},
+      {x:-500,y:50},{x:300,y:-400},{x:900,y:400},{x:-150,y:400},
+    ];
+
+    const drawHuman = (c: CanvasRenderingContext2D, x: number, y: number, s: number, alpha: number) => {
+      c.save();
+      c.globalAlpha = alpha;
+      c.strokeStyle = '#f0ede8';
+      c.lineWidth = 1.5;
+      c.beginPath(); c.arc(x, y - s*0.45, s*0.12, 0, Math.PI*2); c.stroke();
+      c.beginPath(); c.moveTo(x, y-s*0.33); c.lineTo(x, y+s*0.1); c.stroke();
+      c.beginPath(); c.moveTo(x-s*0.22, y-s*0.15); c.lineTo(x, y-s*0.25); c.lineTo(x+s*0.22, y-s*0.15); c.stroke();
+      c.beginPath(); c.moveTo(x, y+s*0.1); c.lineTo(x-s*0.15, y+s*0.45); c.moveTo(x, y+s*0.1); c.lineTo(x+s*0.15, y+s*0.45); c.stroke();
+      const pulse = 1 + Math.sin(Date.now() * 0.003) * 0.3;
+      c.fillStyle = '#e8ff00';
+      c.globalAlpha = alpha * 0.9;
+      c.beginPath(); c.arc(x, y - s*0.62, 4 * pulse, 0, Math.PI*2); c.fill();
+      c.restore();
+    };
+
+    const ease = (t: number) => t < 0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+    const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+    const mapRange = (v: number, a: number, b: number) => clamp((v-a)/(b-a),0,1);
+
+    const draw = () => {
+      const p = progressRef.current;
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.strokeStyle = '#f0ede8';
+      ctx.fillStyle = '#f0ede8';
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      icons.forEach((icon, i) => {
+        const target = getTarget(i);
+        const start = starts[i];
+        const t = ease(mapRange(p, 0, 0.65));
+        const fadeOut = p > 0.65 ? ease(mapRange(p, 0.65, 0.82)) : 0;
+        const x = start.x + (target.x - start.x) * t;
+        const y = start.y + (target.y - start.y) * t;
+        const scale = (0.3 + 0.7 * t) * (1 - fadeOut * 0.6);
+        const alpha = t * (1 - fadeOut);
+        if (alpha < 0.01) return;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+        const r = 10, hs = tileSize/2;
+        ctx.beginPath();
+        (ctx as any).roundRect(-hs, -hs, tileSize, tileSize, r);
+        ctx.fillStyle = 'rgba(240,237,232,0.04)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(240,237,232,0.18)';
+        ctx.stroke();
+        ctx.strokeStyle = '#f0ede8';
+        ctx.fillStyle = '#f0ede8';
+        icon.draw(ctx, 0, 0, 22);
+        ctx.restore();
+      });
+
+      if (p > 0.78) {
+        const humanAlpha = ease(mapRange(p, 0.78, 0.96));
+        const cx = W / 2, cy = H / 2;
+        drawHuman(ctx, cx - 140, cy + 10, 120, humanAlpha * 0.7);
+        drawHuman(ctx, cx, cy - 10, 140, humanAlpha);
+        drawHuman(ctx, cx + 140, cy + 10, 120, humanAlpha * 0.7);
+
+        if (humanAlpha > 0.3) {
+          ctx.save();
+          ctx.globalAlpha = (humanAlpha - 0.3) / 0.7;
+          ctx.fillStyle = '#e8ff00';
+          ctx.font = '600 13px "Inter", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('CHARAKTER.', cx, cy + 130);
+          ctx.restore();
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
 
   return (
-    <motion.g style={{ x, y, scale, opacity }}>
-      <rect
-        x={-TILE / 2}
-        y={-TILE / 2}
-        width={TILE}
-        height={TILE}
-        rx={12}
-        fill="rgba(240,237,232,0.04)"
-        stroke="rgba(240,237,232,0.15)"
-        strokeWidth={1}
-      />
-      <Icon name={iconKey} />
-    </motion.g>
-  );
-}
-
-function Figure({
-  progress,
-  cx,
-  cy,
-  scale = 1,
-  range,
-}: {
-  progress: MotionValue<number>;
-  cx: number;
-  cy: number;
-  scale?: number;
-  range: [number, number];
-}) {
-  const opacity = useTransform(progress, range, [0, 1]);
-  const s = useTransform(progress, range, [0.7 * scale, scale]);
-  const stroke = "#f0ede8";
-  return (
-    <motion.g style={{ x: cx, y: cy, scale: s, opacity }}>
-      {/* Halo */}
-      <circle cx={0} cy={-58} r={4} fill="#e8ff00" className="kse-pulse" style={{ opacity: 0.8 }} />
-      {/* Head */}
-      <circle cx={0} cy={-34} r={18} fill="none" stroke={stroke} strokeWidth={1.5} />
-      {/* Body */}
-      <path d="M 0 -16 L 0 24" fill="none" stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
-      {/* Arms */}
-      <line x1={0} y1={-6} x2={-22} y2={10} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
-      <line x1={0} y1={-6} x2={22} y2={10} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
-      {/* Legs */}
-      <line x1={0} y1={24} x2={-14} y2={56} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
-      <line x1={0} y1={24} x2={14} y2={56} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" />
-    </motion.g>
-  );
-}
-
-export function CharacterAssembly({ progress }: { progress: MotionValue<number> }) {
-  const labelOpacity = useTransform(progress, [0.92, 1], [0, 1]);
-
-  const fig1Range: [number, number] = [0.78, 0.92];
-  const fig2Range: [number, number] = [0.82, 0.95];
-  const fig3Range: [number, number] = [0.8, 0.93];
-
-  const tiles: ReactNode = ICONS.map((cfg, i) => (
-    <Tile
-      key={cfg.key}
-      progress={progress}
-      index={i}
-      iconKey={cfg.key}
-      startX={cfg.startX}
-      startY={cfg.startY}
-    />
-  ));
-
-  return (
-    <div
-      aria-hidden
+    <canvas
+      ref={canvasRef}
       style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: "none",
-        overflow: "hidden",
+        position: 'absolute', inset: 0,
+        width: '100%', height: '100%',
+        pointerEvents: 'none', zIndex: 0,
       }}
-    >
-      <style>{`
-        @keyframes ksePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-        .kse-pulse { transform-box: fill-box; transform-origin: center; animation: ksePulse 2s ease-in-out infinite; }
-      `}</style>
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${VB_W} ${VB_H}`}
-        preserveAspectRatio="xMidYMid slice"
-        style={{ display: "block" }}
-      >
-        {/* Phase 1+2 — media tiles */}
-        {tiles}
-
-        {/* Phase 3 — figures */}
-        <Figure progress={progress} cx={CX - 184} cy={CY} range={fig1Range} />
-        <Figure progress={progress} cx={CX} cy={CY - 14} scale={1.15} range={fig2Range} />
-        <Figure progress={progress} cx={CX + 184} cy={CY} range={fig3Range} />
-
-        {/* Small CHARAKTER label below figures */}
-        <motion.text
-          x={CX}
-          y={CY + 110}
-          textAnchor="middle"
-          style={{ opacity: labelOpacity }}
-          fill="#e8ff00"
-          fontSize={16}
-          fontWeight={600}
-          letterSpacing="4.8"
-        >
-          CHARAKTER.
-        </motion.text>
-      </svg>
-    </div>
+    />
   );
 }
