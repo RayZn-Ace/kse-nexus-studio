@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   motion,
   useScroll,
@@ -121,16 +121,10 @@ function Header() {
           KSE / GROUP
         </a>
         <nav className="hidden md:flex items-center gap-8">
-          {[
-            ["Manifest", "manifesto"],
-            ["Leistungen", "services"],
-            ["Über", "about"],
-            ["Kontakt", "contact"],
-          ].map(([label, id]) => (
-            <a key={id} href={`#${id}`} className="link-underline">
-              {label}
-            </a>
-          ))}
+          <a href="#manifesto" className="link-underline">Manifest</a>
+          <Link to="/leistungen" className="link-underline">Leistungen</Link>
+          <a href="#about" className="link-underline">Über</a>
+          <a href="#contact" className="link-underline">Kontakt</a>
         </nav>
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
