@@ -749,7 +749,7 @@ function Contact() {
         </h2>
 
         <div className="mb-4 text-[12px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Bereit für den nächsten Schritt?
+          Bereit aufzuhören, unsichtbar zu sein?
         </div>
 
         <a
@@ -790,7 +790,7 @@ function Contact() {
             rel="noopener noreferrer"
             className="btn-sweep inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium"
           >
-            Instagram →
+            Auf Instagram →
           </a>
         </div>
 
@@ -798,7 +798,7 @@ function Contact() {
           className="mt-6 text-[10px] uppercase tracking-[0.35em]"
           style={{ color: "rgba(240,237,232,0.4)" }}
         >
-          Wir antworten innerhalb von 24h · Erstgespräch kostenlos
+          Erstgespräch kostenlos · Antwort innerhalb von 24h · Kein Pitch, kein Bullshit — nur ein echtes Gespräch.
         </div>
       </div>
     </section>
@@ -810,9 +810,9 @@ function Contact() {
 function Footer() {
   return (
     <footer className="border-t border-foreground/15 px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] uppercase tracking-[0.4em] text-foreground/45">
-      <span>© 2026 KSE Group · Hannover</span>
+      <span>© 2026 KSE Group</span>
       <span>Fang niemals an aufzuhören.</span>
-      <span>ksegroup.eu</span>
+      <span>Built in Hannover · DE</span>
     </footer>
   );
 }
