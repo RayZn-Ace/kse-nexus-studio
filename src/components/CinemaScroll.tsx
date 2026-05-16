@@ -28,40 +28,22 @@ export function CinemaScroll() {
   });
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const targetTimeRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Track scroll-target time
+  // Directly drive video.currentTime from spring-smoothed scroll progress.
+  // The spring already smooths the motion — no need to lerp again.
   useMotionValueEvent(progress, "change", (p) => {
     const v = videoRef.current;
     if (!v || !ready) return;
     const dur = v.duration;
     if (!dur || !isFinite(dur)) return;
-    targetTimeRef.current = Math.max(0, Math.min(dur - 0.05, p * (dur - 0.05)));
+    const target = Math.max(0, Math.min(dur - 0.05, p * (dur - 0.05)));
+    if (Math.abs(v.currentTime - target) > 0.02) {
+      try {
+        v.currentTime = target;
+      } catch {}
+    }
   });
-
-  // RAF loop: ease video.currentTime toward target for buttery motion.
-  useEffect(() => {
-    if (!ready) return;
-    const tick = () => {
-      const v = videoRef.current;
-      if (v) {
-        const cur = v.currentTime;
-        const target = targetTimeRef.current;
-        const diff = target - cur;
-        if (Math.abs(diff) > 0.005) {
-          // Lerp toward target; small step = silky smooth.
-          v.currentTime = cur + diff * 0.18;
-        }
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [ready]);
 
   const labelIndex = useTransform(progress, (v) =>
     Math.min(LABELS.length - 1, Math.floor(v * LABELS.length)),
