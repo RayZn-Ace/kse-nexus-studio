@@ -313,22 +313,12 @@ function PinnedWord() {
             whiteSpace: "nowrap",
           }}
         >
-          {words.map((w, i) => (
-            <span key={i}>
-              {w.lineBreakBefore && <br />}
-              <motion.span
-                style={{
-                  opacity: opacities[i],
-                  y: ys[i],
-                  display: "inline-block",
-                  marginRight: "0.25em",
-                  color: w.accent ? "#e8ff00" : "#f0ede8",
-                }}
-              >
-                {w.text}
-              </motion.span>
-            </span>
-          ))}
+          <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
+            WIR BAUEN KEINE MARKEN.
+          </motion.span>
+          <motion.span style={{ opacity: lineTwoOpacity, y: lineTwoY, display: "block" }}>
+            WIR BAUEN <span style={{ color: "#e8ff00" }}>CHARAKTER!</span>
+          </motion.span>
         </h2>
         </div>
       </div>
