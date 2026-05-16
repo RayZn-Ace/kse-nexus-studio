@@ -149,7 +149,7 @@ function Hero() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
   const txtY = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
 
-  const headline = ["Fang", "niemals", "an", "aufzuhören."];
+  const headline = ["FANG", "NIEMALS", "AN", "AUFZUHÖREN."];
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
@@ -192,7 +192,7 @@ function Hero() {
             letterSpacing: "-0.05em",
           }}
         >
-          {headline.map((w, i) => (
+        {headline.map((w, i) => (
             <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
               <motion.span
                 className="inline-block"
@@ -216,11 +216,11 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-10 max-w-md text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
+          className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
         >
-          Wir bauen keine Marken.
+          Die meisten Marken sind laut.
           <br />
-          <span className="text-foreground">Wir bauen Charakter!</span>
+          <span className="text-foreground">Wenige sind unvergesslich.</span>
         </motion.p>
       </motion.div>
 
@@ -234,8 +234,10 @@ function Hero() {
         >
           {Array.from({ length: 12 }).map((_, i) => (
             <span key={i} className="px-8 flex items-center gap-8">
-              KSE Group <span className="text-foreground/30">·</span> Charakter
+              KSE Group <span className="text-foreground/30">·</span> Hannover
+              <span className="text-foreground/30">·</span> Charakter
               <span className="text-foreground/30">·</span> ksegroup.eu
+              <span className="text-foreground/30">·</span> Seit 2018
               <span className="text-foreground/30">·</span>
             </span>
           ))}
@@ -259,14 +261,13 @@ function PinnedWord() {
 
   // 8 reveal steps × 0.125 each across the 600vh container
   const words: { text: string; accent?: boolean; dash?: boolean; lineBreakBefore?: boolean }[] = [
-    { text: "WIR" },
-    { text: "BAUEN" },
-    { text: "KEINE" },
-    { text: "MARKEN." },
+    { text: "DU" },
+    { text: "WIRST" },
+    { text: "NICHT" },
+    { text: "MEHR" },
     { text: "—", dash: true, lineBreakBefore: true },
-    { text: "WIR" },
-    { text: "BAUEN" },
-    { text: "CHARAKTER!", accent: true },
+    { text: "UNSICHTBAR" },
+    { text: "SEIN.", accent: true },
   ];
 
   const ranges: [number, number, number][] = [
@@ -426,29 +427,29 @@ const SERVICES = [
     n: "01",
     title: "Social Media",
     body:
-      "Kein Content-Kalender-Bullshit. Wir bauen Kanäle, die echte Community schaffen — mit Haltung, Wiedererkennungswert und Posts die Menschen teilen wollen.",
+      "Deine Konkurrenz postet auch. Der Unterschied: wir bauen Kanäle, die Menschen folgen wollen — nicht müssen. Strategie, Ästhetik, Community. Kein Baukasteninhalt. Kein Copy-Paste. Nur dein Charakter, skaliert.",
     tags: ["Instagram", "TikTok", "Meta", "LinkedIn", "YouTube"],
   },
   {
     n: "02",
     title: "Web Design",
     body:
-      "Keine Templates. Keine Baukästen-Optik. Websites, die in 3 Sekunden klar machen, wer du bist — und den Besucher nicht gehen lassen wollen.",
-    tags: ["Design", "Development", "SEO", "Performance"],
+      "Eine Website hat 3 Sekunden. Danach hat der Besucher entschieden. Wir bauen Sites, die in dieser Zeit alles sagen — wer du bist, was dich unterscheidet, warum genau du. Kein Template. Kein Durchschnitt.",
+    tags: ["Design", "Entwicklung", "SEO", "Performance"],
   },
   {
     n: "03",
     title: "Werbefilm",
     body:
-      "Cinematic. Präzise. Für Feed, Story und Großleinwand. Wir drehen Bilder, die hängenbleiben — weil gute Marken gute Bilder verdienen.",
-    tags: ["Reels", "Ads", "Brand Film", "Events"],
+      "Menschen kaufen keine Produkte. Sie kaufen Bilder, Gefühle, Identitäten. Wir drehen Werbung, die nicht wie Werbung aussieht — weil gute Bilder nicht erklären, sie zeigen. Cinematic. Präzise. Unvergesslich.",
+    tags: ["Reels", "Ads", "Brand Film", "Events", "Docs"],
   },
   {
     n: "04",
     title: "Branding",
     body:
-      "Logo, Farbe, Sprache, Auftritt — alles aus einer Hand. Wir entwickeln Identitäten, die nicht austauschbar sind. Charaktere, keine Gesichter.",
-    tags: ["Logo", "CI", "Strategie", "Positionierung"],
+      "Dein Logo ist nicht deine Marke. Deine Haltung ist es. Wir entwickeln Identitäten von Grund auf — visuell, sprachlich, strategisch. So dass dein Name für etwas steht. Nicht für alles. Für genau das Richtige.",
+    tags: ["Logo", "CI", "Strategie", "Positionierung", "Naming"],
   },
 ];
 
@@ -601,7 +602,7 @@ function ServiceCard({
               className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase"
               style={{ color: "#e8ff00" }}
             >
-              Anfragen →
+              Projekt anfragen →
             </a>
           </div>
         </div>
@@ -616,21 +617,21 @@ const STATS = [
   {
     value: 8,
     suffix: "+",
-    label: "Jahre im Game",
+    label: "Jahre im Business",
     body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover.",
   },
   {
     value: 120,
     suffix: "+",
-    label: "Projekte geliefert",
+    label: "Projekte realisiert",
     body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant.",
   },
   {
     value: 1,
     suffix: "",
     pad: 2,
-    label: "Team. Kein Konzern.",
-    body: "Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.",
+    label: "Mission. Kein Konzern.",
+    body: "Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.",
   },
 ];
 
@@ -675,7 +676,7 @@ function About() {
           <Scramble text="KSE / GROUP" />
         </h2>
         <div className="mt-6 text-[11px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Hannover · gegründet 2018
+          Hannover · Independent · Seit 2018
         </div>
       </div>
 
@@ -690,13 +691,10 @@ function About() {
           className="font-black tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
-          Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.
+          Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.
         </p>
         <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
-          Gegründet von Kay Engelmann — mit einem Ziel: Marken bauen, die man nicht vergisst.
-          Wir arbeiten mit Restaurants, Influencern, Handwerkern und Musik-Acts, die nicht aussehen
-          wollen wie alle anderen. Unser Team denkt in Bildern, schreibt in Botschaften und liefert
-          — ohne Ausrede.
+          Kay Engelmann hat KSE gegründet, weil er zu viele mittelmäßige Marken in einer Welt gesehen hat, die außergewöhnliche Menschen versteckt. Wir arbeiten nicht mit jedem. Wir arbeiten mit den richtigen — Restaurants, die eine Geschichte verdienen. Handwerker, die unterschätzt werden. Musik-Acts, die gehört werden sollten. Influencer, die mehr sind als ihr Feed. Wenn du willst, dass man dich vergisst: wir sind nicht für dich.
         </p>
       </div>
 
@@ -751,7 +749,7 @@ function Contact() {
         </h2>
 
         <div className="mb-4 text-[12px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Bereit für den nächsten Schritt?
+          Bereit aufzuhören, unsichtbar zu sein?
         </div>
 
         <a
@@ -792,7 +790,7 @@ function Contact() {
             rel="noopener noreferrer"
             className="btn-sweep inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium"
           >
-            Instagram →
+            Auf Instagram →
           </a>
         </div>
 
@@ -800,7 +798,7 @@ function Contact() {
           className="mt-6 text-[10px] uppercase tracking-[0.35em]"
           style={{ color: "rgba(240,237,232,0.4)" }}
         >
-          Wir antworten innerhalb von 24h · Erstgespräch kostenlos
+          Erstgespräch kostenlos · Antwort innerhalb von 24h · Kein Pitch, kein Bullshit — nur ein echtes Gespräch.
         </div>
       </div>
     </section>
@@ -812,9 +810,9 @@ function Contact() {
 function Footer() {
   return (
     <footer className="border-t border-foreground/15 px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] uppercase tracking-[0.4em] text-foreground/45">
-      <span>© 2026 KSE Group · Hannover</span>
+      <span>© 2026 KSE Group</span>
       <span>Fang niemals an aufzuhören.</span>
-      <span>ksegroup.eu</span>
+      <span>Built in Hannover · DE</span>
     </footer>
   );
 }
