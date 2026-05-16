@@ -1,6 +1,5 @@
-import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from "framer-motion";
+import { useScroll, useMotionValueEvent } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import flight from "@/assets/drone-flight.mp4.asset.json";
 
 /**
  * Fullscreen fixed background: ONE continuous drone flight video
@@ -18,39 +17,62 @@ const LABELS = [
   "// 05 — CHARAKTER",
 ];
 
+const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4";
+const VIDEO_FPS = 18;
+
 export function CinemaScroll() {
   const { scrollYProgress } = useScroll();
-  // Heavy smoothing so the scrub feels like a slow, weighted drone gimbal.
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 40,
-    damping: 30,
-    mass: 0.6,
-  });
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const durationRef = useRef(10.041667);
+  const pendingProgressRef = useRef(0);
+  const lastTimeRef = useRef(-1);
+  const hudRef = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Directly drive video.currentTime from spring-smoothed scroll progress.
-  // The spring already smooths the motion — no need to lerp again.
-  useMotionValueEvent(progress, "change", (p) => {
-    const v = videoRef.current;
-    if (!v || !ready) return;
-    const dur = v.duration;
-    if (!dur || !isFinite(dur)) return;
-    const target = Math.max(0, Math.min(dur - 0.05, p * (dur - 0.05)));
-    if (Math.abs(v.currentTime - target) > 0.02) {
+  const flushSeek = () => {
+    rafRef.current = null;
+    const video = videoRef.current;
+    if (!video || !ready) return;
+
+    const duration = Number.isFinite(video.duration) ? video.duration : durationRef.current;
+    const maxTime = Math.max(0, duration - 0.05);
+    const frame = 1 / VIDEO_FPS;
+    const target = Math.round(pendingProgressRef.current * maxTime * VIDEO_FPS) / VIDEO_FPS;
+    const clamped = Math.max(0, Math.min(maxTime, target));
+
+    if (Math.abs(lastTimeRef.current - clamped) >= frame * 0.75) {
       try {
-        v.currentTime = target;
+        video.currentTime = clamped;
+        lastTimeRef.current = clamped;
       } catch {}
+    }
+  };
+
+  const scheduleSeek = (progress: number) => {
+    pendingProgressRef.current = progress;
+    if (rafRef.current === null) {
+      rafRef.current = window.requestAnimationFrame(flushSeek);
+    }
+  };
+
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    scheduleSeek(progress);
+
+    const hud = hudRef.current;
+    if (hud) {
+      const pct = String(Math.round(progress * 100)).padStart(3, "0");
+      const label = LABELS[Math.min(LABELS.length - 1, Math.floor(progress * LABELS.length))];
+      hud.dataset.label = label;
+      hud.dataset.pct = pct;
     }
   });
 
-  const labelIndex = useTransform(progress, (v) =>
-    Math.min(LABELS.length - 1, Math.floor(v * LABELS.length)),
-  );
-
-  // Subtle scale push across the full scroll for extra depth
-  const scale = useTransform(progress, [0, 1], [1.04, 1.1]);
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   return (
     <div
@@ -64,36 +86,28 @@ export function CinemaScroll() {
         background: "#000",
       }}
     >
-      <motion.div
-        style={{
-          position: "absolute",
-          inset: 0,
-          scale,
-          willChange: "transform",
-        }}
-      >
         <video
           ref={videoRef}
-          src={flight.url}
+          src={SCRUB_VIDEO_SRC}
           muted
           playsInline
           preload="auto"
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
+            durationRef.current = Number.isFinite(v.duration) ? v.duration : durationRef.current;
             v.pause();
-            v.currentTime = 0;
+            setReady(true);
+            scheduleSeek(scrollYProgress.get());
           }}
-          onCanPlayThrough={() => setReady(true)}
-          onLoadedData={() => setReady(true)}
           style={{
             position: "absolute",
             inset: 0,
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            transform: "scale(1.035)",
           }}
         />
-      </motion.div>
 
       {/* Global vignette */}
       <div
@@ -114,63 +128,7 @@ export function CinemaScroll() {
             "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.6) 100%)",
         }}
       />
-
-      {/* Film grain */}
-      <svg
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          opacity: 0.08,
-          mixBlendMode: "overlay",
-        }}
-      >
-        <filter id="cine-grain">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#cine-grain)" />
-      </svg>
-
-      <SceneHud progress={progress} index={labelIndex} />
-    </div>
-  );
-}
-
-function SceneHud({
-  progress,
-  index,
-}: {
-  progress: ReturnType<typeof useSpring>;
-  index: ReturnType<typeof useTransform<number, number>>;
-}) {
-  const pct = useTransform(progress, (v: number) =>
-    String(Math.round(v * 100)).padStart(3, "0"),
-  );
-  const label = useTransform(index, (i: number) => LABELS[i] ?? LABELS[0]);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 24,
-        right: 24,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        gap: 4,
-        fontFamily: "Inter, sans-serif",
-        fontSize: 10,
-        letterSpacing: "0.4em",
-        textTransform: "uppercase",
-        color: "#e8ff00",
-        mixBlendMode: "difference",
-        zIndex: 2,
-      }}
-    >
-      <motion.span>{label}</motion.span>
-      <motion.span style={{ color: "rgba(240,237,232,0.55)" }}>
-        <motion.span>{pct}</motion.span> / 100
-      </motion.span>
+      <div ref={hudRef} className="cinema-hud" data-label={LABELS[0]} data-pct="000" />
     </div>
   );
 }

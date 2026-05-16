@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
  */
 export function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
+  const hoverRef = useRef<"default" | "link" | "hover">("default");
   const [mounted, setMounted] = useState(false);
   const [hovering, setHovering] = useState<"default" | "link" | "hover">("default");
 
@@ -19,32 +20,46 @@ export function CustomCursor() {
     const pos = { ...target };
     let raf = 0;
 
+    const setHover = (next: "default" | "link" | "hover") => {
+      if (hoverRef.current === next) return;
+      hoverRef.current = next;
+      setHovering(next);
+    };
+
+    const tick = () => {
+      pos.x += (target.x - pos.x) * 0.18;
+      pos.y += (target.y - pos.y) * 0.18;
+      const dx = target.x - pos.x;
+      const dy = target.y - pos.y;
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -50%)`;
+      }
+      if (Math.abs(dx) > 0.2 || Math.abs(dy) > 0.2) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        raf = 0;
+      }
+    };
+
     const onMove = (e: MouseEvent) => {
       target.x = e.clientX;
       target.y = e.clientY;
       const el = e.target as HTMLElement | null;
       if (!el) return;
       if (el.closest('a, button, [role="button"], [data-cursor="accent"]')) {
-        setHovering(el.closest('a, [data-cursor="accent"]') ? "link" : "hover");
+        setHover(el.closest('a, [data-cursor="accent"]') ? "link" : "hover");
       } else {
-        setHovering("default");
+        setHover("default");
       }
-    };
-
-    const tick = () => {
-      pos.x += (target.x - pos.x) * 0.15;
-      pos.y += (target.y - pos.y) * 0.15;
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -50%)`;
+      if (!raf) {
+        raf = requestAnimationFrame(tick);
       }
-      raf = requestAnimationFrame(tick);
     };
 
     window.addEventListener("mousemove", onMove);
-    raf = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("mousemove", onMove);
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
