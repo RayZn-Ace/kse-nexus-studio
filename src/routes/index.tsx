@@ -6,8 +6,6 @@ import {
   Users, MessageSquare, Brain, Palette, ShieldAlert,
 } from "lucide-react";
 import heroSky from "@/assets/hero-sky.jpg";
-import cloud1 from "@/assets/cloud-1.png";
-import smoke from "@/assets/smoke.png";
 import lifestyle1 from "@/assets/lifestyle-1.jpg";
 import lifestyle2 from "@/assets/lifestyle-2.jpg";
 import lifestyle3 from "@/assets/lifestyle-3.jpg";
@@ -51,88 +49,216 @@ function Header() {
   );
 }
 
-/* ───────────────────────── HERO (parallax sky + clouds reveal) ───────────────────────── */
+/* ───────────────────────── HERO (mission-control / kinetic typography) ───────────────────────── */
+function ScrambleWord({ word, delay = 0 }: { word: string; delay?: number }) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789/\\#";
+  const [out, setOut] = useState(() => word.split("").map(() => chars[Math.floor(Math.random() * chars.length)]).join(""));
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now() + delay;
+    const total = 60 + word.length * 55;
+    const tick = (t: number) => {
+      const p = Math.max(0, Math.min(1, (t - start) / total));
+      const reveal = Math.floor(p * word.length);
+      const next = word.split("").map((c, i) => {
+        if (i < reveal) return c;
+        if (c === " ") return " ";
+        return chars[Math.floor(Math.random() * chars.length)];
+      }).join("");
+      setOut(next);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setOut(word);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [word, delay]);
+  return <span>{out}</span>;
+}
+
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 25, mass: 0.4 });
 
-  const skyY = useTransform(smooth, [0, 1], ["0%", "30%"]);
-  const skyScale = useTransform(smooth, [0, 1], [1.1, 1.3]);
-  const cloudLeftX = useTransform(smooth, [0, 1], ["0%", "-60%"]);
-  const cloudRightX = useTransform(smooth, [0, 1], ["0%", "60%"]);
-  const cloudTopY = useTransform(smooth, [0, 1], ["0%", "-50%"]);
-  const titleScale = useTransform(smooth, [0, 0.5], [1, 1.6]);
-  const titleY = useTransform(smooth, [0, 1], ["0%", "-30%"]);
-  const titleOpacity = useTransform(smooth, [0, 0.55], [1, 0]);
+  const bgY = useTransform(smooth, [0, 1], ["0%", "20%"]);
+  const bgScale = useTransform(smooth, [0, 1], [1.05, 1.18]);
+  const titleY = useTransform(smooth, [0, 1], ["0%", "-25%"]);
+  const titleOpacity = useTransform(smooth, [0, 0.7], [1, 0]);
+  const gridY = useTransform(smooth, [0, 1], ["0%", "-40%"]);
+  const haloScale = useTransform(smooth, [0, 1], [1, 1.6]);
+  const haloOpacity = useTransform(smooth, [0, 0.7], [0.7, 0]);
 
-  const words = ["Fang", "Niemals", "An", "Aufzuhören."];
+  const [time, setTime] = useState("00:00:00");
+  useEffect(() => {
+    const id = setInterval(() => {
+      const d = new Date();
+      setTime(`${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}:${String(d.getUTCSeconds()).padStart(2, "0")}`);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const words = ["Fang", "niemals", "an", "aufzuhören."];
 
   return (
-    <section ref={ref} id="top" className="relative h-[140vh]">
-      {/* fixed-feel sky */}
-      <div className="sticky top-0 h-screen overflow-hidden">
+    <section ref={ref} id="top" className="relative h-[170vh] bg-black">
+      <div className="sticky top-0 h-screen overflow-hidden bg-black">
+        {/* deep backdrop */}
         <motion.img
           src={heroSky}
           alt=""
-          width={1920}
-          height={1280}
-          style={{ y: skyY, scale: skyScale }}
-          className="absolute inset-0 w-full h-full object-cover"
+          style={{ y: bgY, scale: bgScale }}
+          className="absolute inset-0 w-full h-full object-cover opacity-40 saturate-[0.6]"
         />
-        {/* darken */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black" />
 
-        {/* big headline behind clouds */}
+        {/* parallax telemetry grid */}
         <motion.div
-          style={{ scale: titleScale, y: titleY, opacity: titleOpacity }}
+          aria-hidden
+          style={{ y: gridY }}
+          className="absolute inset-x-0 -top-[10%] h-[140%] opacity-[0.18]"
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
+              backgroundSize: "72px 72px",
+              maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
+              WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
+            }}
+          />
+        </motion.div>
+
+        {/* glowing core halo */}
+        <motion.div
+          aria-hidden
+          style={{ scale: haloScale, opacity: haloOpacity }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vmin] h-[80vmin] rounded-full pointer-events-none"
+        >
+          <div className="absolute inset-0 rounded-full blur-3xl bg-[radial-gradient(circle,oklch(0.70_0.22_45)_0%,transparent_60%)]" />
+          <div className="absolute inset-[18%] rounded-full blur-2xl bg-[radial-gradient(circle,oklch(0.55_0.28_260)_0%,transparent_65%)]" />
+        </motion.div>
+
+        {/* corner HUD */}
+        <div className="absolute inset-0 pointer-events-none font-mono text-[10px] md:text-[11px] tracking-[0.25em] uppercase text-white/55">
+          <div className="absolute top-24 left-6 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            <span>KSE-01 / HANNOVER · LIVE</span>
+          </div>
+          <div className="absolute top-24 right-6 tabular-nums">UTC {time}</div>
+          <div className="absolute bottom-8 left-6">52.3759° N — 9.7320° E</div>
+          <div className="absolute bottom-8 right-6">// transmission 001</div>
+          {/* crosshair corners */}
+          {[
+            "top-20 left-4", "top-20 right-4", "bottom-20 left-4", "bottom-20 right-4",
+          ].map((p, i) => (
+            <div key={i} className={`absolute ${p} w-4 h-4 border-white/40`}
+              style={{
+                borderTopWidth: p.includes("top") ? 1 : 0,
+                borderBottomWidth: p.includes("bottom") ? 1 : 0,
+                borderLeftWidth: p.includes("left") ? 1 : 0,
+                borderRightWidth: p.includes("right") ? 1 : 0,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* main headline */}
+        <motion.div
+          style={{ y: titleY, opacity: titleOpacity }}
           className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
         >
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="text-white/80 tracking-[0.4em] uppercase text-[10px] md:text-xs mb-6 font-medium"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.7 }}
+            className="font-mono text-white/70 tracking-[0.5em] uppercase text-[10px] md:text-[11px] mb-8"
           >
-            ✦ KSE Group — New Media · Marketing · Magic ✦
+            [ KSE · CHARACTER ENGINE — EST. HANNOVER ]
           </motion.p>
-          <h1 className="font-display font-bold text-white leading-[0.95] tracking-[-0.04em] text-[18vw] md:text-[14vw] lg:text-[11rem]">
+
+          <h1 className="font-display font-bold text-white leading-[0.88] tracking-[-0.045em] text-[16vw] md:text-[12vw] lg:text-[10rem]">
             {words.map((w, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 120, filter: "blur(20px)" }}
+                initial={{ opacity: 0, y: 140, filter: "blur(24px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ delay: 0.3 + i * 0.15, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-                className="inline-block mr-[0.15em]"
-                style={{
-                  color: i === words.length - 1 ? "transparent" : "white",
-                  WebkitTextStroke: i === words.length - 1 ? "2px white" : undefined,
-                }}
+                transition={{ delay: 0.25 + i * 0.13, duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-block mr-[0.18em]"
+                style={
+                  i === words.length - 1
+                    ? { color: "transparent", WebkitTextStroke: "1.5px white", fontStyle: "italic" }
+                    : undefined
+                }
               >
                 {w}
               </motion.span>
             ))}
           </h1>
+
+          {/* signal divider */}
+          <motion.div
+            initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+            transition={{ delay: 1.1, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 h-px w-[min(560px,80%)] bg-gradient-to-r from-transparent via-white/50 to-transparent origin-center"
+          />
+
           <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 1 }}
-            className="text-white/85 max-w-xl mx-auto mt-6 text-sm md:text-base font-light"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.9 }}
+            className="font-mono text-white/75 max-w-xl mx-auto mt-6 text-[12px] md:text-[13px] tracking-[0.15em] uppercase"
           >
-            Wir bauen Marken, die Menschen <span className="italic">fühlen</span>. Social, Web, Film — alles aus einer Hand.
+            &gt; <ScrambleWord word="Social · Web · Film · Artist Mgmt" delay={1400} />
           </motion.p>
-          <motion.a
-            href="#why"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 0.8 }}
-            className="mt-8 inline-flex items-center gap-2 bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.6, duration: 0.8 }}
+            className="mt-10 flex items-center gap-3"
           >
-            Reise starten <ArrowUpRight className="w-4 h-4" />
-          </motion.a>
+            <a
+              href="#why"
+              className="group inline-flex items-center gap-2 bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold hover:scale-[1.04] transition-transform"
+            >
+              Mission starten <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+            </a>
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-2 border border-white/25 text-white/85 px-7 py-3.5 rounded-full text-sm font-medium hover:bg-white/10 transition-colors"
+            >
+              Kontakt aufnehmen
+            </a>
+          </motion.div>
         </motion.div>
 
-        {/* drifting clouds in front of text */}
-        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ x: cloudLeftX }} className="absolute -left-32 top-[20%] w-[70%] max-w-[900px] pointer-events-none select-none opacity-90" />
-        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ x: cloudRightX }} className="absolute -right-40 bottom-[10%] w-[80%] max-w-[1100px] pointer-events-none select-none opacity-95 scale-x-[-1]" />
-        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ y: cloudTopY }} className="absolute left-1/4 -top-20 w-[55%] max-w-[800px] pointer-events-none select-none opacity-70" />
-        <img src={smoke} alt="" width={1600} height={896} className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 pointer-events-none" />
+        {/* scanline */}
+        <motion.div
+          aria-hidden
+          initial={{ y: "-10%" }}
+          animate={{ y: "110%" }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 right-0 h-[120px] bg-gradient-to-b from-transparent via-white/[0.06] to-transparent pointer-events-none"
+        />
+        {/* film grain */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none opacity-[0.08] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.9'/></svg>\")",
+          }}
+        />
+
+        {/* scroll cue */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2, duration: 1 }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/60 font-mono text-[10px] tracking-[0.4em] uppercase"
+        >
+          <span>scroll</span>
+          <motion.span
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            className="block w-px h-8 bg-gradient-to-b from-white/70 to-transparent"
+          />
+        </motion.div>
       </div>
     </section>
   );
