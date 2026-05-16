@@ -52,7 +52,7 @@ function Header() {
 /* ───────────────────────── HERO (mission-control / kinetic typography) ───────────────────────── */
 function ScrambleWord({ word, delay = 0 }: { word: string; delay?: number }) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789/\\#";
-  const [out, setOut] = useState(() => word.split("").map(() => chars[Math.floor(Math.random() * chars.length)]).join(""));
+  const [out, setOut] = useState(word);
   useEffect(() => {
     let raf = 0;
     const start = performance.now() + delay;
