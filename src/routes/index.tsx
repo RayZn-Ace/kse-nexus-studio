@@ -8,6 +8,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { HeroCanvas } from "@/components/HeroCanvas";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -152,6 +153,11 @@ function Hero() {
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
+      {/* Three.js wireframe field — first child, behind everything */}
+      <HeroCanvas />
+
+      {/* z-index:1 wrapper so hero content sits above the canvas */}
+      <div className="relative z-[1] h-full w-full">
       {/* Parallax oversized glyph */}
       <motion.div
         aria-hidden
@@ -237,6 +243,7 @@ function Hero() {
             </span>
           ))}
         </motion.div>
+      </div>
       </div>
     </section>
   );
