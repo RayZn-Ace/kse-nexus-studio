@@ -82,8 +82,8 @@ export function CinemaScroll() {
             const v = e.currentTarget;
             v.pause();
             v.currentTime = 0;
-            setReady(true);
           }}
+          onCanPlayThrough={() => setReady(true)}
           style={{
             position: "absolute",
             inset: 0,
