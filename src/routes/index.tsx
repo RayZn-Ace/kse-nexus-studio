@@ -655,7 +655,7 @@ function About() {
             viewport={{ once: true, margin: "-15%" }}
             transition={{ duration: 0.9, ease: EASE, delay: i * 0.12 }}
             className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 px-6 md:px-12 py-12 md:py-16"
-            style={{ background: "rgba(10,10,10,0.78)", backdropFilter: "blur(2px)" }}
+            style={{ background: "rgba(10,10,10,0.82)" }}
           >
             <div>
               <div
