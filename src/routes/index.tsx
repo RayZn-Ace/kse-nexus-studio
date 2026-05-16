@@ -261,13 +261,14 @@ function PinnedWord() {
 
   // 8 reveal steps × 0.125 each across the 600vh container
   const words: { text: string; accent?: boolean; dash?: boolean; lineBreakBefore?: boolean }[] = [
-    { text: "DU" },
-    { text: "WIRST" },
-    { text: "NICHT" },
-    { text: "MEHR" },
+    { text: "WIR" },
+    { text: "BAUEN" },
+    { text: "KEINE" },
+    { text: "MARKEN." },
     { text: "—", dash: true, lineBreakBefore: true },
-    { text: "UNSICHTBAR" },
-    { text: "SEIN.", accent: true },
+    { text: "WIR" },
+    { text: "BAUEN" },
+    { text: "CHARAKTER!", accent: true },
   ];
 
   const ranges: [number, number, number][] = [
