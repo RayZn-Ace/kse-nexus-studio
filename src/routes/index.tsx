@@ -749,7 +749,7 @@ function Contact() {
         </h2>
 
         <div className="mb-4 text-[12px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Bereit aufzuhören, unsichtbar zu sein?
+          Schreib uns — bevor es dein Wettbewerb tut.
         </div>
 
         <a
@@ -798,7 +798,7 @@ function Contact() {
           className="mt-6 text-[10px] uppercase tracking-[0.35em]"
           style={{ color: "rgba(240,237,232,0.4)" }}
         >
-          Erstgespräch kostenlos · Antwort innerhalb von 24h · Kein Pitch, kein Bullshit — nur ein echtes Gespräch.
+          Erstgespräch kostenlos · Antwort in unter 24h · Kein Sales-Pitch — nur Klartext, ob wir zueinander passen.
         </div>
       </div>
     </section>
