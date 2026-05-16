@@ -259,27 +259,25 @@ function PinnedWord() {
     String(Math.round(v * 100)).padStart(3, "0"),
   );
 
-  // 8 reveal steps × 0.125 each across the 600vh container
-  const words: { text: string; accent?: boolean; dash?: boolean; lineBreakBefore?: boolean }[] = [
+  // 7 reveal steps across the 600vh container
+  const words: { text: string; accent?: boolean; lineBreakBefore?: boolean }[] = [
     { text: "WIR" },
     { text: "BAUEN" },
     { text: "KEINE" },
     { text: "MARKEN." },
     { text: "WIR", lineBreakBefore: true },
     { text: "BAUEN" },
-    { text: "ECHTEN" },
     { text: "CHARAKTER!", accent: true },
   ];
 
   const ranges: [number, number, number][] = [
-    [0, 0.05, 0.125],
-    [0.125, 0.175, 0.25],
-    [0.25, 0.3, 0.375],
-    [0.375, 0.425, 0.5],
-    [0.5, 0.55, 0.625],
-    [0.625, 0.675, 0.75],
-    [0.75, 0.8, 0.875],
-    [0.875, 0.925, 1],
+    [0, 0.05, 0.14],
+    [0.14, 0.19, 0.28],
+    [0.28, 0.33, 0.42],
+    [0.42, 0.47, 0.56],
+    [0.56, 0.61, 0.7],
+    [0.7, 0.75, 0.84],
+    [0.84, 0.89, 1],
   ];
 
   // Build all transforms up-front (hooks must be called unconditionally)
@@ -290,8 +288,7 @@ function PinnedWord() {
   const o4 = useTransform(scrollYProgress, ranges[4], [0, 1, 1]);
   const o5 = useTransform(scrollYProgress, ranges[5], [0, 1, 1]);
   const o6 = useTransform(scrollYProgress, ranges[6], [0, 1, 1]);
-  const o7 = useTransform(scrollYProgress, ranges[7], [0, 1, 1]);
-  const opacities = [o0, o1, o2, o3, o4, o5, o6, o7];
+  const opacities = [o0, o1, o2, o3, o4, o5, o6];
 
   const y0 = useTransform(scrollYProgress, ranges[0], [30, 0, 0]);
   const y1 = useTransform(scrollYProgress, ranges[1], [30, 0, 0]);
@@ -300,8 +297,7 @@ function PinnedWord() {
   const y4 = useTransform(scrollYProgress, ranges[4], [30, 0, 0]);
   const y5 = useTransform(scrollYProgress, ranges[5], [30, 0, 0]);
   const y6 = useTransform(scrollYProgress, ranges[6], [30, 0, 0]);
-  const y7 = useTransform(scrollYProgress, ranges[7], [30, 0, 0]);
-  const ys = [y0, y1, y2, y3, y4, y5, y6, y7];
+  const ys = [y0, y1, y2, y3, y4, y5, y6];
 
   return (
     <section
@@ -343,12 +339,13 @@ function PinnedWord() {
         <h2
           className="font-black px-4 text-center"
           style={{
-            fontSize: "clamp(5rem, 10vw, 9rem)",
+            fontSize: "clamp(2.2rem, 6.4vw, 8rem)",
             fontWeight: 900,
             letterSpacing: "-0.03em",
             color: "#f0ede8",
             lineHeight: 1.05,
             maxWidth: "92vw",
+            whiteSpace: "nowrap",
           }}
         >
           {words.map((w, i) => (
@@ -360,9 +357,7 @@ function PinnedWord() {
                   y: ys[i],
                   display: "inline-block",
                   marginRight: "0.25em",
-                  color: w.accent ? "#e8ff00" : w.dash ? "#e8ff00" : "#f0ede8",
-                  fontSize: w.dash ? "0.5em" : undefined,
-                  verticalAlign: w.dash ? "middle" : undefined,
+                  color: w.accent ? "#e8ff00" : "#f0ede8",
                 }}
               >
                 {w.text}
