@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { HeroCanvas } from "@/components/HeroCanvas";
 import { CharacterAssembly } from "@/components/CharacterAssembly";
+import { CinemaScroll } from "@/components/CinemaScroll";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -154,10 +155,7 @@ function Hero() {
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
-      {/* Three.js wireframe field — first child, behind everything */}
-      <HeroCanvas />
-
-      {/* z-index:1 wrapper so hero content sits above the canvas */}
+      {/* z-index:1 wrapper so hero content sits above the global cinema layer */}
       <div className="relative z-[1] h-full w-full">
       {/* Parallax oversized glyph */}
       <motion.div
@@ -761,7 +759,12 @@ function Footer() {
 
 function Index() {
   return (
-    <main className="relative bg-background text-foreground noise">
+    <main className="relative text-foreground" style={{ background: "transparent" }}>
+      {/* Global photoreal cinema sequence — drives every scroll position */}
+      <CinemaScroll />
+
+      {/* All page content sits above the cinema layer */}
+      <div className="relative" style={{ zIndex: 10 }}>
       <ScrollProgress />
       <Header />
       <Hero />
@@ -771,6 +774,7 @@ function Index() {
       <About />
       <Contact />
       <Footer />
+      </div>
     </main>
   );
 }
