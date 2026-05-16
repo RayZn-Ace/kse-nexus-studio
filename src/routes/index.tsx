@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform, useSpring, type Variants } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, type Variants, type MotionValue } from "framer-motion";
 import { useRef } from "react";
 import {
   Instagram, Mail, ArrowUpRight, Sparkles, Code2, Film, Rocket,
@@ -138,9 +138,19 @@ function Hero() {
   );
 }
 
-/* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
-import type { MotionValue } from "framer-motion";
+/* ───────────────────────── SCROLL PROGRESS BAR ───────────────────────── */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
+  return (
+    <motion.div
+      style={{ scaleX }}
+      className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[60] bg-gradient-to-r from-accent via-primary to-accent"
+    />
+  );
+}
 
+/* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
 function RevealWord({ progress, range, children }: { progress: MotionValue<number>; range: [number, number]; children: string }) {
   const opacity = useTransform(progress, range, [0.15, 1]);
   return <motion.span style={{ opacity }} className="inline-block mr-[0.25em]">{children}</motion.span>;
