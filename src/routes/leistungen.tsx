@@ -40,7 +40,7 @@ const PACKAGES: Pkg[] = [
     title: "Social Media",
     kicker: "Kanäle, denen man folgen will.",
     intro:
-      "Wir bauen Auftritte, die nicht laut sind — sondern unverwechselbar. Strategie, Ästhetik und Community in einem Paket.",
+      "Followen ist eine Entscheidung. Wir geben deiner Marke einen Grund, sie zu treffen — mit Strategie, Bildsprache und einer Community, die bleibt.",
     items: [
       { label: "Content-Strategie", detail: "Zielgruppen, Tonalität, Pillars. Schwarz auf weiß." },
       { label: "Shootings & Reels", detail: "Monatlich. Cinematic. On Brand." },
@@ -337,12 +337,23 @@ function UnpackedItem({
   const end = Math.min(start + dur, windowEnd);
   const mid = start + (end - start) * 0.55;
 
-  const opacity = useTransform(progress, [start, start + (end - start) * 0.22, end], [0, 1, 1]);
-  const x = useTransform(progress, [start, end], [180, 0]);
-  const y = useTransform(progress, [start, mid, end], [-200 + i * 6, -36, 0]);
-  const scale = useTransform(progress, [start, mid, end], [0.4, 0.94, 1]);
-  const rotateX = useTransform(progress, [start, end], [-55, 0]);
-  const rotateY = useTransform(progress, [start, end], [22, 0]);
+  // Origin = the open box opening (right side of viewport, vertical center).
+  // Cards START lying flat INSIDE the box, then rise upward through the lid,
+  // stand up (rotateX), unsquish (skewY), and grow into their final slot.
+  // No horizontal slide — the only X motion is a tiny outward drift so cards
+  // don't overlap as they emerge.
+  const opacity = useTransform(progress, [start, start + (end - start) * 0.18, end], [0, 1, 1]);
+  const x = useTransform(progress, [start, end], [0, 0]);
+  // y: starts +260 (deep inside box, below center) → rises into slot
+  const y = useTransform(progress, [start, mid, end], [260, 30, 0]);
+  // tiny scale start — like the card unfolds from a folded state
+  const scale = useTransform(progress, [start, mid, end], [0.18, 0.82, 1]);
+  // rotateX: starts 85° (lying face-up inside the box) → 0 (standing up)
+  const rotateX = useTransform(progress, [start, mid, end], [85, 20, 0]);
+  // rotateY: subtle, matches box tilt
+  const rotateY = useTransform(progress, [start, end], [-12, 0]);
+  // skewY: perspective squish while emerging — the "verzerrt rauskommen" feel
+  const skewY = useTransform(progress, [start, mid, end], [14, 4, 0]);
 
   return (
     <motion.div
@@ -353,8 +364,10 @@ function UnpackedItem({
         scale,
         rotateX,
         rotateY,
+        skewY,
         transformPerspective: 1200,
-        transformOrigin: "100% 0%",
+        // origin at bottom-center: the card hinges UP out of the box opening
+        transformOrigin: "50% 100%",
         // solid bg + no backdrop-filter: backdrop-filter forces a per-frame
         // composite of everything behind it (4 layers × 60fps = jank)
         background: "rgb(10,10,10)",
