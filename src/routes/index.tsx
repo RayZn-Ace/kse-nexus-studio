@@ -8,7 +8,6 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { HeroCanvas } from "@/components/HeroCanvas";
 import { CharacterAssembly } from "@/components/CharacterAssembly";
 import { CinemaScroll } from "@/components/CinemaScroll";
 
@@ -307,8 +306,8 @@ function PinnedWord() {
     <section
       ref={ref}
       id="manifesto"
-      className="relative bg-black border-t border-foreground/15"
-      style={{ height: "600vh" }}
+      className="relative border-t border-foreground/15"
+      style={{ height: "600vh", background: "rgba(0,0,0,0.55)" }}
     >
       <div
         style={{
@@ -393,8 +392,8 @@ function Manifest() {
   ];
   return (
     <section
-      className="relative bg-black border-t border-foreground/15"
-      style={{ padding: "15vh 8vw" }}
+      className="relative border-t border-foreground/15"
+      style={{ padding: "15vh 8vw", background: "rgba(0,0,0,0.55)" }}
     >
       <div className="max-w-6xl mx-auto">
         <h2
@@ -659,7 +658,8 @@ function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-15%" }}
             transition={{ duration: 0.9, ease: EASE, delay: i * 0.12 }}
-            className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 bg-background px-6 md:px-12 py-12 md:py-16"
+            className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 px-6 md:px-12 py-12 md:py-16"
+            style={{ background: "rgba(10,10,10,0.78)", backdropFilter: "blur(2px)" }}
           >
             <div>
               <div
