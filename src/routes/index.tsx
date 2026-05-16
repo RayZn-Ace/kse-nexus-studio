@@ -311,6 +311,51 @@ function PinnedWord() {
 
 /* ───────────── horizontal services ───────────── */
 
+/* ───────────── manifest ───────────── */
+
+function Manifest() {
+  const lines = [
+    "Wir glauben nicht an Lautstärke",
+    "um jeden Preis.",
+    "Wir glauben an Substanz.",
+    "An Haltung.",
+    "An Arbeit, die bleibt.",
+  ];
+  return (
+    <section
+      className="relative bg-black border-t border-foreground/15"
+      style={{ padding: "15vh 8vw" }}
+    >
+      <div className="max-w-6xl mx-auto">
+        <h2
+          className="font-black tracking-tight"
+          style={{ fontSize: "clamp(1.6rem, 3rem, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
+        >
+          {lines.map((line, i) => (
+            <span key={i} className="block overflow-hidden">
+              <motion.span
+                className="inline-block"
+                initial={{ y: "110%" }}
+                whileInView={{ y: "0%" }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 0.9, ease: EASE, delay: i * 0.08 }}
+              >
+                {line}
+              </motion.span>
+            </span>
+          ))}
+        </h2>
+        <div
+          className="mt-12 text-right text-[11px] uppercase tracking-[0.4em]"
+          style={{ color: "#e8ff00" }}
+        >
+          // MANIFEST · KSE GROUP
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const SERVICES = [
   { n: "01", title: "Social Media", body: "Strategie, Content, Community. Wir bauen Reichweite, die hält." },
   { n: "02", title: "Web Design", body: "Sites, die nicht aussehen wie alle anderen. Schnell, klar, eigen." },
