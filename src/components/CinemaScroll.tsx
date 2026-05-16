@@ -1,4 +1,3 @@
-import { useScroll, useMotionValueEvent } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 /**
@@ -21,14 +20,19 @@ const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4?v=studio-full";
 const VIDEO_FPS = 24;
 
 export function CinemaScroll() {
-  const { scrollYProgress } = useScroll();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const durationRef = useRef(10.041667);
+  const durationRef = useRef(26);
   const metadataReadyRef = useRef(false);
   const pendingProgressRef = useRef(0);
   const lastTimeRef = useRef(-1);
   const hudRef = useRef<HTMLDivElement | null>(null);
+
+  const readScrollProgress = () => {
+    const doc = document.documentElement;
+    const max = Math.max(1, doc.scrollHeight - window.innerHeight);
+    return Math.max(0, Math.min(1, window.scrollY / max));
+  };
 
   const flushSeek = () => {
     rafRef.current = null;
@@ -56,21 +60,28 @@ export function CinemaScroll() {
     }
   };
 
-  useMotionValueEvent(scrollYProgress, "change", (progress) => {
-    scheduleSeek(progress);
-
-    const hud = hudRef.current;
-    if (hud) {
-      const pct = String(Math.round(progress * 100)).padStart(3, "0");
-      const label = LABELS[Math.min(LABELS.length - 1, Math.floor(progress * LABELS.length))];
-      hud.dataset.label = label;
-      hud.dataset.pct = pct;
-    }
-  });
-
   useEffect(() => {
+    const updateFromScroll = () => {
+      const progress = readScrollProgress();
+      scheduleSeek(progress);
+
+      const hud = hudRef.current;
+      if (hud) {
+        const pct = String(Math.round(progress * 100)).padStart(3, "0");
+        const label = LABELS[Math.min(LABELS.length - 1, Math.floor(progress * LABELS.length))];
+        hud.dataset.label = label;
+        hud.dataset.pct = pct;
+      }
+    };
+
+    updateFromScroll();
+    window.addEventListener("scroll", updateFromScroll, { passive: true });
+    window.addEventListener("resize", updateFromScroll);
+
     return () => {
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("scroll", updateFromScroll);
+      window.removeEventListener("resize", updateFromScroll);
     };
   }, []);
 
@@ -97,7 +108,7 @@ export function CinemaScroll() {
             durationRef.current = Number.isFinite(v.duration) ? v.duration : durationRef.current;
             metadataReadyRef.current = true;
             v.pause();
-            scheduleSeek(scrollYProgress.get());
+            scheduleSeek(readScrollProgress());
           }}
           style={{
             position: "absolute",
