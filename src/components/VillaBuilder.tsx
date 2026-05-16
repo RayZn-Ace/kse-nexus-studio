@@ -10,18 +10,32 @@ export default function VillaBuilder() {
     const video = videoRef.current;
     if (!video) return;
 
-    video.pause();
     let currentTime = 0;
     let lastApplied = -1;
+    let intro = true;
+    const INTRO_END = 1.8; // seconds — loop the "network" intro
 
     const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       const duration = video.duration || 10;
       targetTimeRef.current = p * duration;
+      // Once user scrolls past a small threshold, exit intro loop forever
+      if (intro && p > 0.005) {
+        intro = false;
+        video.pause();
+      }
     };
 
     const tick = () => {
+      if (intro) {
+        // Let the video play naturally and loop the intro segment
+        if (video.readyState >= 2 && video.currentTime >= INTRO_END) {
+          video.currentTime = 0;
+        }
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
       if (video.readyState >= 2) {
         const target = targetTimeRef.current;
         // Smooth ease toward target
@@ -42,9 +56,14 @@ export default function VillaBuilder() {
 
     const onLoaded = () => {
       readScroll();
-      currentTime = targetTimeRef.current;
-      video.currentTime = currentTime;
-      lastApplied = currentTime;
+      if (intro) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      } else {
+        currentTime = targetTimeRef.current;
+        video.currentTime = currentTime;
+        lastApplied = currentTime;
+      }
     };
 
     video.addEventListener('loadedmetadata', onLoaded);
