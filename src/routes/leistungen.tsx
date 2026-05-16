@@ -40,7 +40,7 @@ const PACKAGES: Pkg[] = [
     title: "Social Media",
     kicker: "Kanäle, denen man folgen will.",
     intro:
-      "Wir bauen Auftritte, die nicht laut sind — sondern unverwechselbar. Strategie, Ästhetik und Community in einem Paket.",
+      "Followen ist eine Entscheidung. Wir geben deiner Marke einen Grund, sie zu treffen — mit Strategie, Bildsprache und einer Community, die bleibt.",
     items: [
       { label: "Content-Strategie", detail: "Zielgruppen, Tonalität, Pillars. Schwarz auf weiß." },
       { label: "Shootings & Reels", detail: "Monatlich. Cinematic. On Brand." },
