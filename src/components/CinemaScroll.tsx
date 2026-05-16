@@ -70,7 +70,7 @@ function Scene({
     scale: [1, 1.04, 1],
     x: ["0%", index % 2 === 0 ? "0.8%" : "-0.8%", "0%"],
     y: ["0%", "-0.6%", "0%"],
-  } as const;
+  };
   const ambientDuration = 18 + (index % 3) * 4;
 
   return (
