@@ -424,7 +424,10 @@ const SERVICES = [
 
 function HorizontalServices() {
   const isMobile = useIsMobile();
-  if (isMobile) return <VerticalServices />;
+  return isMobile ? <VerticalServices /> : <HorizontalServicesDesktop />;
+}
+
+function HorizontalServicesDesktop() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   // 4 panels → translate -75% across the viewport

@@ -191,7 +191,12 @@ function Intro() {
 
 function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
   const isMobile = useIsMobile();
-  if (isMobile) return <UnboxSectionMobile pkg={pkg} index={index} />;
+  return isMobile
+    ? <UnboxSectionMobile pkg={pkg} index={index} />
+    : <UnboxSectionDesktop pkg={pkg} index={index} />;
+}
+
+function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
