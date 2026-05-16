@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import VillaBuilder from "@/components/VillaBuilder";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -114,9 +115,10 @@ function ScrollProgress() {
 }
 
 function Header() {
+  const [open, setOpen] = useState(false);
   return (
-    <header className="fixed top-0 left-0 right-0 z-[70] mix-blend-difference">
-      <div className="flex items-center justify-between px-6 md:px-10 py-5 text-[11px] tracking-[0.3em] uppercase font-medium">
+    <header className="fixed top-0 left-0 right-0 z-[70]">
+      <div className="flex items-center justify-between px-5 md:px-10 py-4 md:py-5 text-[11px] tracking-[0.3em] uppercase font-medium mix-blend-difference">
         <a href="#top" className="link-underline font-black tracking-[-0.04em] text-[15px]">
           KSE / GROUP
         </a>
@@ -129,6 +131,29 @@ function Header() {
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
         </a>
+        <button
+          aria-label="Menü"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
+        >
+          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`} />
+          <span className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
+          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+        </button>
+      </div>
+      {/* mobile drawer */}
+      <div
+        className={`md:hidden overflow-hidden transition-[max-height] duration-500 ease-[cubic-bezier(.77,0,.175,1)] ${open ? "max-h-[420px]" : "max-h-0"}`}
+        style={{ background: "#0a0a0a", borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none" }}
+      >
+        <nav className="flex flex-col gap-5 px-6 py-8 text-[13px] tracking-[0.3em] uppercase">
+          <a href="#manifesto" onClick={() => setOpen(false)}>Manifest</a>
+          <Link to="/leistungen" onClick={() => setOpen(false)}>Leistungen</Link>
+          <a href="#about" onClick={() => setOpen(false)}>Über</a>
+          <a href="#contact" onClick={() => setOpen(false)}>Kontakt</a>
+          <a href="mailto:info@ksegroup.eu" style={{ color: "#e8ff00" }}>info@ksegroup.eu →</a>
+        </nav>
       </div>
     </header>
   );
@@ -298,13 +323,12 @@ function PinnedWord() {
         <h2
           className="font-black px-4 text-center"
           style={{
-            fontSize: "clamp(2.2rem, 6.4vw, 8rem)",
+            fontSize: "clamp(1.5rem, 7vw, 8rem)",
             fontWeight: 900,
             letterSpacing: "-0.03em",
             color: "#f0ede8",
             lineHeight: 1.05,
-            maxWidth: "92vw",
-            whiteSpace: "nowrap",
+            maxWidth: "94vw",
           }}
         >
           <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
@@ -399,6 +423,8 @@ const SERVICES = [
 ];
 
 function HorizontalServices() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <VerticalServices />;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   // 4 panels → translate -75% across the viewport
@@ -440,6 +466,60 @@ function HorizontalServices() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[40vw] max-w-md h-px bg-foreground/15 overflow-hidden">
           <motion.div style={{ scaleX: scrollYProgress, background: "#e8ff00" }} className="origin-left h-full" />
         </div>
+      </div>
+    </section>
+  );
+}
+
+function VerticalServices() {
+  return (
+    <section id="services" className="relative border-t border-foreground/15 px-5 py-24">
+      <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-6">
+        // Leistungen · 04 Disziplinen
+      </div>
+      <h2
+        className="font-black leading-[0.85] mb-12"
+        style={{ fontSize: "clamp(2.5rem, 12vw, 4.5rem)", letterSpacing: "-0.05em" }}
+      >
+        Was wir
+        <br />
+        bauen.
+      </h2>
+      <div className="flex flex-col gap-6">
+        {SERVICES.map((s) => (
+          <motion.article
+            key={s.n}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-10%" }}
+            transition={{ duration: 0.8, ease: EASE }}
+            className="relative border border-foreground/15 p-6"
+            style={{ background: "rgba(10,10,10,0.85)" }}
+          >
+            <span aria-hidden className="absolute top-0 left-0 right-0 h-px" style={{ background: "#e8ff00" }} />
+            <div className="flex items-baseline justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-[0.4em] text-foreground/50">/ {s.n}</span>
+              <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: "#e8ff00" }}>Service</span>
+            </div>
+            <h3
+              className="font-black mb-4"
+              style={{ fontSize: "clamp(1.8rem, 8vw, 2.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+            >
+              {s.title.toUpperCase()}
+            </h3>
+            <p className="text-foreground/85 text-sm leading-relaxed">{s.body}</p>
+            <div className="mt-4 text-[10px] uppercase tracking-[0.3em] text-foreground/55">
+              {s.tags.join(" · ")}
+            </div>
+            <a
+              href="#contact"
+              className="link-underline mt-5 inline-block text-[11px] tracking-[0.35em] uppercase"
+              style={{ color: "#e8ff00" }}
+            >
+              Projekt anfragen →
+            </a>
+          </motion.article>
+        ))}
       </div>
     </section>
   );
