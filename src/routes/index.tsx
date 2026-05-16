@@ -617,21 +617,21 @@ const STATS = [
   {
     value: 8,
     suffix: "+",
-    label: "Jahre im Game",
+    label: "Jahre im Business",
     body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover.",
   },
   {
     value: 120,
     suffix: "+",
-    label: "Projekte geliefert",
+    label: "Projekte realisiert",
     body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant.",
   },
   {
     value: 1,
     suffix: "",
     pad: 2,
-    label: "Team. Kein Konzern.",
-    body: "Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.",
+    label: "Mission. Kein Konzern.",
+    body: "Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.",
   },
 ];
 
@@ -676,7 +676,7 @@ function About() {
           <Scramble text="KSE / GROUP" />
         </h2>
         <div className="mt-6 text-[11px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
-          Hannover · gegründet 2018
+          Hannover · Independent · Seit 2018
         </div>
       </div>
 
@@ -691,13 +691,10 @@ function About() {
           className="font-black tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
-          Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.
+          Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.
         </p>
         <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
-          Gegründet von Kay Engelmann — mit einem Ziel: Marken bauen, die man nicht vergisst.
-          Wir arbeiten mit Restaurants, Influencern, Handwerkern und Musik-Acts, die nicht aussehen
-          wollen wie alle anderen. Unser Team denkt in Bildern, schreibt in Botschaften und liefert
-          — ohne Ausrede.
+          Kay Engelmann hat KSE gegründet, weil er zu viele mittelmäßige Marken in einer Welt gesehen hat, die außergewöhnliche Menschen versteckt. Wir arbeiten nicht mit jedem. Wir arbeiten mit den richtigen — Restaurants, die eine Geschichte verdienen. Handwerker, die unterschätzt werden. Musik-Acts, die gehört werden sollten. Influencer, die mehr sind als ihr Feed. Wenn du willst, dass man dich vergisst: wir sind nicht für dich.
         </p>
       </div>
 
