@@ -1,81 +1,49 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform, type Variants } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, type Variants } from "framer-motion";
 import { useRef } from "react";
-import { InkCollision } from "@/components/InkCollision";
 import {
   Instagram, Mail, ArrowUpRight, Sparkles, Code2, Film, Rocket,
-  Users, MessageSquare, Brain, Palette, ShieldAlert, MousePointer2,
+  Users, MessageSquare, Brain, Palette, ShieldAlert,
 } from "lucide-react";
+import heroSky from "@/assets/hero-sky.jpg";
+import cloud1 from "@/assets/cloud-1.png";
+import smoke from "@/assets/smoke.png";
+import lifestyle1 from "@/assets/lifestyle-1.jpg";
+import lifestyle2 from "@/assets/lifestyle-2.jpg";
+import lifestyle3 from "@/assets/lifestyle-3.jpg";
+import svcSocial from "@/assets/service-social.jpg";
+import svcWeb from "@/assets/service-web.jpg";
+import svcFilm from "@/assets/service-film.jpg";
+import svcBoost from "@/assets/service-boost.jpg";
+import ctaBg from "@/assets/cta-bg.jpg";
 
 export const Route = createFileRoute("/")({ component: Index });
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, y: 60 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-const services = [
-  { icon: Sparkles, title: "Social Media Marketing", desc: "Erstellung, Planung, Analyse & Verwaltung. Wir etablieren Ihre Marke, erreichen Ihre Zielgruppe und steigern Engagement." },
-  { icon: Code2, title: "Web Development", desc: "Maßgeschneiderte Websites, perfekt auf Marke und Zielgruppe zugeschnitten — performant, modern, skalierbar." },
-  { icon: Film, title: "Werbefilme", desc: "Professionelle, fesselnde Werbevideos, die Ihre Botschaft effektiv vermitteln und Ihr Publikum begeistern." },
-  { icon: Rocket, title: "Web & Social Boost", desc: "Gezielte Kampagnen für maximale Reichweite, mehr Traffic und stärkere Online-Sichtbarkeit." },
-];
-
-const skills = [
-  { icon: Sparkles, label: "Social Media Marketing" },
-  { icon: MessageSquare, label: "Content Management" },
-  { icon: Users, label: "Artist Consulting" },
-  { icon: Palette, label: "Web Design" },
-  { icon: ShieldAlert, label: "Krisenmanagement" },
-  { icon: Brain, label: "ChatGPT befragen" },
-];
-
-const testimonials = [
-  { name: "Alexander Falke", role: "Restaurant 993 Hannover",
-    quote: "Selten habe ich ein Team erlebt, das so effizient und kundenorientiert agiert wie KSE Management. Jedes Problem wird blitzschnell behoben — kreativ, professionell, unverzichtbar." },
-  { name: "Marcus Dyck", role: "Büro & System Montagen",
-    quote: "Seit KSE an unserer Seite ist, gibt es kein Problem mehr ohne Lösung. Die Webseite spiegelt Professionalität wider, Kay Engelmann gibt niemals auf — Kundenservice auf höchstem Niveau!" },
-  { name: "Alexander Falke", role: "Restaurant 993 Hannover",
-    quote: "Die Zusammenarbeit ist herausragend. Unsere Online-Präsenz wurde komplett transformiert — moderne Designs, smarte Strategien und messbare Ergebnisse." },
-];
-
-function Marquee() {
-  const items = ["NEW MEDIA", "SOCIAL MEDIA", "MARKETING", "ARTISTS MANAGEMENT", "WEBDESIGN", "WERBEFILME"];
-  return (
-    <div className="relative overflow-hidden border-y border-border py-5 bg-card/20">
-      <motion.div
-        className="flex gap-10 whitespace-nowrap text-xl md:text-2xl font-medium tracking-tight"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-      >
-        {[...items, ...items, ...items].map((t, i) => (
-          <span key={i} className="inline-flex items-center gap-10 text-foreground/70">
-            {t} <span className="text-accent text-sm">✦</span>
-          </span>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
+/* ───────────────────────── HEADER ───────────────────────── */
 function Header() {
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[min(1080px,calc(100%-2rem))]"
+      transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[min(1100px,calc(100%-1.5rem))]"
     >
-      <div className="glass rounded-full px-5 py-2.5 flex items-center justify-between">
-        <a href="#top" className="font-display font-semibold text-base tracking-tight">
-          <span className="text-gradient">KSE</span><span className="text-muted-foreground font-light">Group</span>
+      <div className="backdrop-blur-xl bg-black/30 border border-white/10 rounded-full px-5 py-2.5 flex items-center justify-between shadow-2xl">
+        <a href="#top" className="font-display font-bold text-base tracking-tight text-white">
+          KSE<span className="text-accent">.</span>
         </a>
-        <nav className="hidden md:flex items-center gap-7 text-[13px] text-muted-foreground">
-          <a href="#services" className="hover:text-foreground transition-colors">Services</a>
-          <a href="#founder" className="hover:text-foreground transition-colors">Founder</a>
-          <a href="#testimonials" className="hover:text-foreground transition-colors">Bewertungen</a>
+        <nav className="hidden md:flex items-center gap-7 text-[13px] text-white/70">
+          <a href="#why" className="hover:text-white transition-colors">Why KSE</a>
+          <a href="#services" className="hover:text-white transition-colors">Services</a>
+          <a href="#founder" className="hover:text-white transition-colors">Founder</a>
+          <a href="#testimonials" className="hover:text-white transition-colors">Stimmen</a>
         </nav>
-        <a href="#contact" className="group inline-flex items-center gap-1.5 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-[13px] font-medium hover:scale-105 transition-transform">
+        <a href="#contact" className="group inline-flex items-center gap-1.5 bg-white text-black rounded-full px-4 py-1.5 text-[13px] font-semibold hover:scale-105 transition-transform">
           Kontakt <ArrowUpRight className="w-3.5 h-3.5 group-hover:rotate-45 transition-transform" />
         </a>
       </div>
@@ -83,113 +51,220 @@ function Header() {
   );
 }
 
+/* ───────────────────────── HERO (parallax sky + clouds reveal) ───────────────────────── */
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 25, mass: 0.4 });
 
-  const titleWords = ["New", "Media.", "Social.", "Marketing."];
+  const skyY = useTransform(smooth, [0, 1], ["0%", "30%"]);
+  const skyScale = useTransform(smooth, [0, 1], [1.1, 1.3]);
+  const cloudLeftX = useTransform(smooth, [0, 1], ["0%", "-60%"]);
+  const cloudRightX = useTransform(smooth, [0, 1], ["0%", "60%"]);
+  const cloudTopY = useTransform(smooth, [0, 1], ["0%", "-50%"]);
+  const titleScale = useTransform(smooth, [0, 0.5], [1, 1.6]);
+  const titleY = useTransform(smooth, [0, 1], ["0%", "-30%"]);
+  const titleOpacity = useTransform(smooth, [0, 0.55], [1, 0]);
+
+  const words = ["Fang", "Niemals", "An", "Aufzuhören."];
 
   return (
-    <section ref={ref} id="top" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <motion.div style={{ y, scale }} className="absolute inset-0 -z-10">
-        <InkCollision />
-      </motion.div>
+    <section ref={ref} id="top" className="relative h-[140vh]">
+      {/* fixed-feel sky */}
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.img
+          src={heroSky}
+          alt=""
+          width={1920}
+          height={1280}
+          style={{ y: skyY, scale: skyScale }}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* darken */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black" />
 
-      <motion.div style={{ opacity }} className="relative z-10 text-center px-6 max-w-5xl pt-32">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="inline-flex items-center gap-2 text-accent font-medium tracking-[0.3em] uppercase text-[11px] mb-6"
-        >
-          <span className="w-6 h-px bg-accent/60" /> Fange niemals an aufzuhören <span className="w-6 h-px bg-accent/60" />
-        </motion.p>
-
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] mb-6 tracking-tight">
-          <span className="block text-muted-foreground/80 text-base md:text-lg font-light mb-3 tracking-normal">Ihre Experten für</span>
-          {titleWords.map((w, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, y: 60, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.5 + i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className={`inline-block mr-3 ${i === 0 ? "text-gradient" : ""}`}
-            >
-              {w}
-            </motion.span>
-          ))}
-        </h1>
-
-        <motion.p
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }}
-          className="text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed"
-        >
-          Ob Social Media, Webdesign oder Content Management — mit uns erreichen Sie Ihre digitalen Ziele.
-        </motion.p>
-
+        {/* big headline behind clouds */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4, duration: 0.6 }}
-          className="flex flex-wrap items-center justify-center gap-3"
+          style={{ scale: titleScale, y: titleY, opacity: titleOpacity }}
+          className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
         >
-          <a href="#contact"
-            className="group inline-flex items-center gap-2 bg-accent text-accent-foreground px-6 py-3 rounded-full text-sm font-medium glow-orange hover:scale-105 transition-transform">
-            Jetzt durchstarten
-            <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
-          </a>
-          <a href="#services" className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium glass hover:bg-white/10 transition-colors">
-            Services entdecken
-          </a>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="text-white/80 tracking-[0.4em] uppercase text-[10px] md:text-xs mb-6 font-medium"
+          >
+            ✦ KSE Group — New Media · Marketing · Magic ✦
+          </motion.p>
+          <h1 className="font-display font-bold text-white leading-[0.95] tracking-[-0.04em] text-[18vw] md:text-[14vw] lg:text-[11rem]">
+            {words.map((w, i) => (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, y: 120, filter: "blur(20px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ delay: 0.3 + i * 0.15, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-block mr-[0.15em]"
+                style={{
+                  color: i === words.length - 1 ? "transparent" : "white",
+                  WebkitTextStroke: i === words.length - 1 ? "2px white" : undefined,
+                }}
+              >
+                {w}
+              </motion.span>
+            ))}
+          </h1>
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 1 }}
+            className="text-white/85 max-w-xl mx-auto mt-6 text-sm md:text-base font-light"
+          >
+            Wir bauen Marken, die Menschen <span className="italic">fühlen</span>. Social, Web, Film — alles aus einer Hand.
+          </motion.p>
+          <motion.a
+            href="#why"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.8 }}
+            className="mt-8 inline-flex items-center gap-2 bg-white text-black px-7 py-3.5 rounded-full text-sm font-semibold hover:scale-105 transition-transform"
+          >
+            Reise starten <ArrowUpRight className="w-4 h-4" />
+          </motion.a>
         </motion.div>
 
-        <motion.div
-          animate={{ y: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity }}
-          className="mt-16 inline-flex flex-col items-center gap-2 text-muted-foreground/70 text-[10px] tracking-[0.3em] uppercase"
-        >
-          <MousePointer2 className="w-3.5 h-3.5" /> Scroll
-        </motion.div>
-      </motion.div>
+        {/* drifting clouds in front of text */}
+        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ x: cloudLeftX }} className="absolute -left-32 top-[20%] w-[70%] max-w-[900px] pointer-events-none select-none opacity-90" />
+        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ x: cloudRightX }} className="absolute -right-40 bottom-[10%] w-[80%] max-w-[1100px] pointer-events-none select-none opacity-95 scale-x-[-1]" />
+        <motion.img src={cloud1} alt="" width={1600} height={896} style={{ y: cloudTopY }} className="absolute left-1/4 -top-20 w-[55%] max-w-[800px] pointer-events-none select-none opacity-70" />
+        <img src={smoke} alt="" width={1600} height={896} className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 pointer-events-none" />
+      </div>
     </section>
   );
 }
 
+/* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
+function Why() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.4"] });
+  const text =
+    "Dein Brand verändert sich. Bau nicht nur eine Präsenz — bau das, was als Nächstes kommt. Wir helfen dir, mit Klarheit, Mut und dem richtigen Team an deiner Seite, einfach vorwärts zu gehen.";
+  const words = text.split(" ");
+
+  return (
+    <section id="why" ref={ref} className="relative py-40 px-6 bg-background">
+      <div className="max-w-5xl mx-auto">
+        <motion.p
+          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
+          className="text-accent uppercase tracking-[0.4em] text-[11px] mb-8 font-semibold"
+        >
+          Warum KSE
+        </motion.p>
+        <p className="font-display text-3xl md:text-5xl lg:text-6xl leading-[1.15] tracking-tight">
+          {words.map((w, i) => {
+            const start = i / words.length;
+            const end = start + 1 / words.length;
+            const opacity = useTransform(scrollYProgress, [start, end], [0.15, 1]);
+            return (
+              <motion.span key={i} style={{ opacity }} className="inline-block mr-[0.25em]">
+                {w}
+              </motion.span>
+            );
+          })}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── LIFESTYLE STRIP (parallax images) ───────────────────────── */
+function Lifestyle() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y1 = useTransform(scrollYProgress, [0, 1], ["20%", "-30%"]);
+  const y2 = useTransform(scrollYProgress, [0, 1], ["10%", "-15%"]);
+  const y3 = useTransform(scrollYProgress, [0, 1], ["30%", "-40%"]);
+
+  return (
+    <section ref={ref} className="relative py-32 px-6 overflow-hidden bg-background">
+      <div className="max-w-7xl mx-auto">
+        <motion.h2
+          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
+          className="font-display text-4xl md:text-7xl font-semibold tracking-tight max-w-3xl mb-20"
+        >
+          Hier geht's nicht nur ums <span className="italic text-gradient">Marketing.</span>
+        </motion.h2>
+
+        <div className="grid grid-cols-12 gap-4 md:gap-6">
+          <motion.div style={{ y: y1 }} className="col-span-6 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden">
+            <img src={lifestyle1} alt="Content creation studio" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
+          </motion.div>
+          <motion.div style={{ y: y2 }} className="col-span-6 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden md:mt-24">
+            <img src={lifestyle2} alt="Web design at work" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
+          </motion.div>
+          <motion.div style={{ y: y3 }} className="col-span-12 md:col-span-4 aspect-[3/4] rounded-2xl overflow-hidden">
+            <img src={lifestyle3} alt="Film production" width={1280} height={1600} loading="lazy" className="w-full h-full object-cover" />
+          </motion.div>
+        </div>
+
+        <motion.p
+          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
+          className="text-muted-foreground text-base md:text-lg max-w-2xl mt-20 leading-relaxed"
+        >
+          Es geht um <span className="text-foreground font-medium">Identität</span>. Um Fortschritt. Darum, gehört zu werden.
+          Du suchst nicht nur Reichweite — du suchst Resonanz. Genau die finden wir für dich.
+        </motion.p>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── SERVICES (big image cards) ───────────────────────── */
+const services = [
+  { img: svcSocial, title: "Social Media Marketing", tag: "01 — Social", desc: "Erstellung, Planung, Analyse & Verwaltung. Wir etablieren deine Marke, erreichen deine Zielgruppe und steigern Engagement nachhaltig." , icon: Sparkles },
+  { img: svcWeb, title: "Web Development", tag: "02 — Web", desc: "Maßgeschneiderte Websites, perfekt auf Marke und Zielgruppe zugeschnitten — performant, modern, skalierbar.", icon: Code2 },
+  { img: svcFilm, title: "Werbefilme", tag: "03 — Film", desc: "Professionelle, fesselnde Werbevideos, die deine Botschaft effektiv vermitteln und dein Publikum bewegen.", icon: Film },
+  { img: svcBoost, title: "Web & Social Boost", tag: "04 — Reach", desc: "Gezielte Kampagnen für maximale Reichweite, mehr Traffic und stärkere Online-Sichtbarkeit.", icon: Rocket },
+];
+
 function Services() {
   return (
-    <section id="services" className="relative py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }}
-          className="mb-14 max-w-2xl"
-        >
-          <p className="text-accent uppercase tracking-[0.3em] text-[11px] mb-3">Services</p>
-          <h2 className="text-3xl md:text-5xl font-semibold leading-[1.1] tracking-tight">
-            Was wir <span className="text-gradient">richtig gut</span> können.
-          </h2>
+    <section id="services" className="relative py-32 px-6 bg-background">
+      <div className="max-w-7xl mx-auto">
+        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <p className="text-accent uppercase tracking-[0.4em] text-[11px] mb-4 font-semibold">Services</p>
+            <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+              Wie KSE dich<br /><span className="italic text-gradient">durchstarten</span> lässt.
+            </h2>
+          </div>
+          <p className="text-muted-foreground text-sm md:text-base max-w-sm">
+            Vier Disziplinen. Ein Team. Eine Mission: deine Marke zur ersten Wahl machen.
+          </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-5 md:gap-7">
           {services.map((s, i) => (
-            <motion.div
+            <motion.a
+              href="#contact"
               key={s.title}
-              variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -4 }}
-              className="group relative glass rounded-2xl p-7 overflow-hidden"
+              initial={{ opacity: 0, y: 80 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.9, delay: (i % 2) * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative aspect-[4/5] md:aspect-[5/6] rounded-3xl overflow-hidden block"
             >
-              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="inline-flex w-10 h-10 items-center justify-center rounded-xl bg-primary/15 text-primary mb-5 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                  <s.icon className="w-5 h-5" />
+              <img src={s.img} alt={s.title} width={1280} height={960} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1200ms] ease-out" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute inset-0 p-7 md:p-10 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/70 text-[11px] tracking-[0.3em] uppercase">{s.tag}</span>
+                  <s.icon className="w-5 h-5 text-white/80" />
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold mb-2 tracking-tight">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">{s.desc}</p>
-                <a href="#contact" className="inline-flex items-center gap-1.5 text-accent text-sm font-medium group/link">
-                  Tell me more
-                  <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
-                </a>
+                <div>
+                  <h3 className="font-display text-3xl md:text-5xl font-semibold text-white tracking-tight mb-3 leading-[1.05]">{s.title}</h3>
+                  <p className="text-white/75 text-sm md:text-base max-w-md mb-5 leading-relaxed">{s.desc}</p>
+                  <span className="inline-flex items-center gap-2 text-white text-sm font-semibold">
+                    Mehr erfahren <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </span>
+                </div>
               </div>
-            </motion.div>
+            </motion.a>
           ))}
         </div>
       </div>
@@ -197,16 +272,47 @@ function Services() {
   );
 }
 
+/* ───────────────────────── MARQUEE ───────────────────────── */
+function Marquee() {
+  const items = ["NEW MEDIA", "SOCIAL MEDIA", "MARKETING", "ARTISTS", "WEBDESIGN", "WERBEFILME"];
+  return (
+    <div className="relative overflow-hidden border-y border-border py-6 bg-background">
+      <motion.div
+        className="flex gap-12 whitespace-nowrap font-display text-3xl md:text-5xl font-semibold tracking-tight"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+      >
+        {[...items, ...items, ...items].map((t, i) => (
+          <span key={i} className="inline-flex items-center gap-12">
+            <span className={i % 2 === 0 ? "text-foreground" : "text-foreground/30"} style={i % 3 === 0 ? { WebkitTextStroke: "1.5px white", color: "transparent" } : undefined}>{t}</span>
+            <span className="text-accent text-2xl">✦</span>
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ───────────────────────── FOUNDER ───────────────────────── */
+const skills = [
+  { icon: Sparkles, label: "Social Media Marketing" },
+  { icon: MessageSquare, label: "Content Management" },
+  { icon: Users, label: "Artist Consulting" },
+  { icon: Palette, label: "Web Design" },
+  { icon: ShieldAlert, label: "Krisenmanagement" },
+  { icon: Brain, label: "Strategie & Beratung" },
+];
+
 function Founder() {
   return (
-    <section id="founder" className="relative py-24 px-6">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-[0.9fr_1.1fr] gap-12 md:gap-16 items-center">
+    <section id="founder" className="relative py-32 px-6 bg-background">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-[0.9fr_1.1fr] gap-12 md:gap-20 items-center">
         <motion.div
-          initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.8 }}
-          className="relative max-w-sm"
+          initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="relative max-w-sm mx-auto md:mx-0"
         >
-          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden glass">
+          <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
             <img
               src="https://ksegroup.eu/wp-content/uploads/2024/06/meet-me-768x1024.png"
               alt="Kay Engelmann — Founder KSE Group"
@@ -217,31 +323,32 @@ function Founder() {
           </div>
           <motion.div
             animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-5 -right-5 w-24 h-24 rounded-full border border-accent/40 flex items-center justify-center text-accent text-[10px] tracking-[0.2em]"
+            className="absolute -top-6 -right-6 w-28 h-28 rounded-full border border-accent/50 flex items-center justify-center text-accent text-[10px] tracking-[0.25em]"
           >
             ✦ MEET • THE • FOUNDER •
           </motion.div>
         </motion.div>
 
         <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
-          <p className="text-accent uppercase tracking-[0.3em] text-[11px] mb-3">Wer ist das denn?</p>
-          <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-5 tracking-tight">
-            Kay <span className="text-gradient">Engelmann</span>
+          <p className="text-accent uppercase tracking-[0.4em] text-[11px] mb-4 font-semibold">Wer ist das denn?</p>
+          <h2 className="font-display text-4xl md:text-6xl font-semibold leading-[1.05] mb-6 tracking-tight">
+            Kay <span className="italic text-gradient">Engelmann.</span>
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-7">
-            Studierter Medien- und Kommunikationswissenschaftler. Nach Stationen bei verschiedenen Fernsehsendern in Köln machte er sich in Hannover selbstständig. Sein Ziel: Musiker, Influencer und Unternehmen dabei zu unterstützen, ihre Reichweite zu vergrößern — und besonders talentierten Newcomern zum Durchbruch zu verhelfen.
+          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8">
+            Studierter Medien- und Kommunikationswissenschaftler. Nach Stationen bei verschiedenen Fernsehsendern in Köln machte er sich in Hannover selbstständig.
+            Sein Ziel: Musiker, Influencer und Unternehmen dabei zu unterstützen, ihre Reichweite zu vergrößern — und besonders talentierten Newcomern zum Durchbruch zu verhelfen.
           </p>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-3">Was der alles so kann</p>
-          <div className="grid grid-cols-2 gap-2">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-4">Was er drauf hat</p>
+          <div className="grid grid-cols-2 gap-2.5">
             {skills.map((sk, i) => (
               <motion.div
                 key={sk.label}
                 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-                className="flex items-center gap-2.5 glass rounded-lg px-3 py-2.5"
+                className="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-3"
               >
-                <sk.icon className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="text-xs font-medium">{sk.label}</span>
+                <sk.icon className="w-4 h-4 text-accent shrink-0" />
+                <span className="text-xs md:text-sm font-medium">{sk.label}</span>
               </motion.div>
             ))}
           </div>
@@ -251,29 +358,41 @@ function Founder() {
   );
 }
 
+/* ───────────────────────── TESTIMONIALS ───────────────────────── */
+const testimonials = [
+  { name: "Alexander Falke", role: "Restaurant 993 Hannover",
+    quote: "Selten habe ich ein Team erlebt, das so effizient und kundenorientiert agiert wie KSE. Jedes Problem wird blitzschnell behoben — kreativ, professionell, unverzichtbar." },
+  { name: "Marcus Dyck", role: "Büro & System Montagen",
+    quote: "Seit KSE an unserer Seite ist, gibt es kein Problem mehr ohne Lösung. Die Webseite spiegelt Professionalität wider, Kay gibt niemals auf — Kundenservice auf höchstem Niveau!" },
+  { name: "Sarah M.", role: "Influencer / Hannover",
+    quote: "Die Zusammenarbeit ist herausragend. Meine Online-Präsenz wurde komplett transformiert — moderne Designs, smarte Strategien und messbare Ergebnisse." },
+];
+
 function Testimonials() {
   return (
-    <section id="testimonials" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="mb-12 text-center">
-          <p className="text-accent uppercase tracking-[0.3em] text-[11px] mb-3">Bewertungen</p>
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">Was sagen unsere <span className="text-gradient">Kunden?</span></h2>
+    <section id="testimonials" className="py-32 px-6 bg-background">
+      <div className="max-w-7xl mx-auto">
+        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} className="mb-14 text-center">
+          <p className="text-accent uppercase tracking-[0.4em] text-[11px] mb-4 font-semibold">Stimmen</p>
+          <h2 className="font-display text-4xl md:text-6xl font-semibold tracking-tight">
+            Glaub nicht <span className="italic text-gradient">uns.</span>
+          </h2>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-5">
           {testimonials.map((t, i) => (
             <motion.blockquote
               key={i}
-              variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -4 }}
-              className="glass rounded-2xl p-6 flex flex-col justify-between"
+              initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -6 }}
+              className="rounded-3xl p-7 md:p-8 bg-white/[0.04] border border-white/10 flex flex-col justify-between"
             >
               <div>
-                <div className="text-3xl text-accent/80 leading-none mb-3 font-display">„</div>
-                <p className="text-sm text-foreground/85 leading-relaxed">{t.quote}</p>
+                <div className="text-5xl text-accent/80 leading-none mb-4 font-display">"</div>
+                <p className="text-base text-foreground/90 leading-relaxed">{t.quote}</p>
               </div>
-              <footer className="mt-6 pt-4 border-t border-border">
+              <footer className="mt-8 pt-5 border-t border-white/10">
                 <div className="text-sm font-semibold">{t.name}</div>
                 <div className="text-xs text-muted-foreground">{t.role}</div>
               </footer>
@@ -285,32 +404,48 @@ function Testimonials() {
   );
 }
 
+/* ───────────────────────── CTA ───────────────────────── */
 function CTA() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1.1, 1.3]);
+
   return (
-    <section id="contact" className="relative py-28 px-6 overflow-hidden">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
-      <div className="max-w-4xl mx-auto text-center">
+    <section id="contact" ref={ref} className="relative h-[90vh] overflow-hidden flex items-center justify-center">
+      <motion.img
+        src={ctaBg}
+        alt=""
+        width={1920}
+        height={1280}
+        style={{ y: bgY, scale: bgScale }}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black" />
+      <div className="relative z-10 text-center px-6 max-w-4xl">
         <motion.h2
-          initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }} transition={{ duration: 0.8 }}
-          className="text-5xl md:text-8xl font-semibold leading-none mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="font-display text-6xl md:text-9xl font-bold leading-[0.9] mb-8 tracking-[-0.04em] text-white"
         >
-          Let's <span className="text-gradient italic">Talk</span>
+          Find <span className="italic" style={{ WebkitTextStroke: "2px white", color: "transparent" }}>You.</span><br/>
+          We'll help you<br/>get there.
         </motion.h2>
         <motion.p
           variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
-          className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed"
+          className="text-white/85 text-base md:text-xl max-w-xl mx-auto mb-10 font-light"
         >
-          Haben wir Ihr Interesse geweckt? Entfesseln Sie Ihr Potenzial und werden Sie mit unserer Unterstützung zum nächsten Star.
+          Entfessle dein Potenzial — werde mit unserer Unterstützung zum nächsten Star.
         </motion.p>
         <motion.a
           href="mailto:info@ksegroup.eu"
-          variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-          className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-7 py-3.5 rounded-full text-sm font-medium glow-orange"
+          initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+          className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm md:text-base font-semibold"
         >
           <Mail className="w-4 h-4" />
-          <span>info@ksegroup.eu</span>
+          info@ksegroup.eu
           <ArrowUpRight className="w-4 h-4" />
         </motion.a>
       </div>
@@ -318,14 +453,13 @@ function CTA() {
   );
 }
 
+/* ───────────────────────── FOOTER ───────────────────────── */
 function Footer() {
   return (
-    <footer className="border-t border-border py-8 px-6">
+    <footer className="border-t border-white/10 py-10 px-6 bg-background">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="font-display font-semibold text-base">
-          <span className="text-gradient">KSE</span><span className="text-muted-foreground font-light">Group</span>
-        </div>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} KSE Group. Fange niemals an aufzuhören.</p>
+        <div className="font-display font-bold text-lg">KSE<span className="text-accent">.</span></div>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} KSE Group. Fang niemals an aufzuhören.</p>
         <div className="flex items-center gap-4 text-muted-foreground">
           <a href="mailto:info@ksegroup.eu" aria-label="Email" className="hover:text-foreground transition-colors"><Mail className="w-4 h-4" /></a>
           <a href="https://instagram.com" aria-label="Instagram" className="hover:text-foreground transition-colors"><Instagram className="w-4 h-4" /></a>
@@ -337,11 +471,13 @@ function Footer() {
 
 function Index() {
   return (
-    <main className="grain relative">
+    <main className="relative bg-background overflow-x-hidden">
       <Header />
       <Hero />
-      <Marquee />
+      <Why />
+      <Lifestyle />
       <Services />
+      <Marquee />
       <Founder />
       <Testimonials />
       <CTA />
