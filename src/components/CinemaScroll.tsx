@@ -17,7 +17,7 @@ const LABELS = [
   "// 05 — CHARAKTER",
 ];
 
-const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4";
+const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4?v=studio-full";
 const VIDEO_FPS = 24;
 
 export function CinemaScroll() {
