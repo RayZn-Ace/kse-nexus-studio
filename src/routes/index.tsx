@@ -8,8 +8,8 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { HeroCanvas } from "@/components/HeroCanvas";
 import { CharacterAssembly } from "@/components/CharacterAssembly";
+import { CinemaScroll } from "@/components/CinemaScroll";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -154,10 +154,7 @@ function Hero() {
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
-      {/* Three.js wireframe field — first child, behind everything */}
-      <HeroCanvas />
-
-      {/* z-index:1 wrapper so hero content sits above the canvas */}
+      {/* z-index:1 wrapper so hero content sits above the global cinema layer */}
       <div className="relative z-[1] h-full w-full">
       {/* Parallax oversized glyph */}
       <motion.div
@@ -309,8 +306,8 @@ function PinnedWord() {
     <section
       ref={ref}
       id="manifesto"
-      className="relative bg-black border-t border-foreground/15"
-      style={{ height: "600vh" }}
+      className="relative border-t border-foreground/15"
+      style={{ height: "600vh", background: "rgba(0,0,0,0.55)" }}
     >
       <div
         style={{
@@ -395,8 +392,8 @@ function Manifest() {
   ];
   return (
     <section
-      className="relative bg-black border-t border-foreground/15"
-      style={{ padding: "15vh 8vw" }}
+      className="relative border-t border-foreground/15"
+      style={{ padding: "15vh 8vw", background: "rgba(0,0,0,0.55)" }}
     >
       <div className="max-w-6xl mx-auto">
         <h2
@@ -661,7 +658,8 @@ function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-15%" }}
             transition={{ duration: 0.9, ease: EASE, delay: i * 0.12 }}
-            className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 bg-background px-6 md:px-12 py-12 md:py-16"
+            className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 px-6 md:px-12 py-12 md:py-16"
+            style={{ background: "rgba(10,10,10,0.78)", backdropFilter: "blur(2px)" }}
           >
             <div>
               <div
@@ -761,7 +759,12 @@ function Footer() {
 
 function Index() {
   return (
-    <main className="relative bg-background text-foreground noise">
+    <main className="relative text-foreground" style={{ background: "transparent" }}>
+      {/* Global photoreal cinema sequence — drives every scroll position */}
+      <CinemaScroll />
+
+      {/* All page content sits above the cinema layer */}
+      <div className="relative" style={{ zIndex: 10 }}>
       <ScrollProgress />
       <Header />
       <Hero />
@@ -771,6 +774,7 @@ function Index() {
       <About />
       <Contact />
       <Footer />
+      </div>
     </main>
   );
 }
