@@ -276,6 +276,106 @@ function ScrollProgress() {
   );
 }
 
+/* ───────────────────────── SIDE RAIL (mission-control style) ───────────────────────── */
+const RAIL_SECTIONS = [
+  { id: "top",          label: "00 · SIGNAL" },
+  { id: "manifesto",    label: "01 · MANIFEST" },
+  { id: "why",          label: "02 · WHY" },
+  { id: "lifestyle",    label: "03 · IDENTITY" },
+  { id: "services",     label: "04 · SERVICES" },
+  { id: "founder",      label: "05 · FOUNDER" },
+  { id: "testimonials", label: "06 · VOICES" },
+  { id: "contact",      label: "07 · CONTACT" },
+];
+
+function SideRail() {
+  const { scrollYProgress } = useScroll();
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
+  const scaleY = useTransform(smooth, [0, 1], [0, 1]);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const mid = window.innerHeight * 0.4;
+      let current = 0;
+      RAIL_SECTIONS.forEach((s, i) => {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= mid) current = i;
+      });
+      setActive(current);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className="hidden lg:flex fixed left-5 top-1/2 -translate-y-1/2 z-40 flex-col items-start gap-3 font-mono text-[10px] tracking-[0.3em] uppercase pointer-events-none">
+      <div className="relative flex items-center gap-3 pointer-events-auto">
+        <div className="relative w-[2px] h-[220px] bg-white/15 overflow-hidden">
+          <motion.div style={{ scaleY }} className="absolute inset-0 origin-top bg-accent" />
+        </div>
+        <ul className="flex flex-col gap-2.5">
+          {RAIL_SECTIONS.map((s, i) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                className={`transition-colors ${i === active ? "text-white" : "text-white/40 hover:text-white/70"}`}
+              >
+                <span className={`inline-block w-3 mr-2 ${i === active ? "text-accent" : "text-white/30"}`}>
+                  {i === active ? "→" : "·"}
+                </span>
+                {s.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────── MAGNETIC BUTTON ───────────────────────── */
+function Magnetic({ children, className, href, as = "a" }: { children: React.ReactNode; className?: string; href?: string; as?: "a" | "div" }) {
+  const ref = useRef<HTMLAnchorElement & HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const onMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setPos({ x: (e.clientX - (r.left + r.width / 2)) * 0.25, y: (e.clientY - (r.top + r.height / 2)) * 0.25 });
+  };
+  const reset = () => setPos({ x: 0, y: 0 });
+  const Comp: any = as === "a" ? motion.a : motion.div;
+  return (
+    <Comp
+      ref={ref}
+      href={href}
+      onMouseMove={onMove}
+      onMouseLeave={reset}
+      animate={{ x: pos.x, y: pos.y }}
+      transition={{ type: "spring", stiffness: 200, damping: 18, mass: 0.4 }}
+      className={className}
+    >
+      {children}
+    </Comp>
+  );
+}
+
+/* ───────────────────────── MASK REVEAL (clip-path inset on scroll) ───────────────────────── */
+function MaskReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
+      whileInView={{ clipPath: "inset(0% 0% 0% 0%)" }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 1.4, delay, ease: [0.77, 0, 0.175, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /* ───────────────────────── WHY KSE (word reveal) ───────────────────────── */
 function RevealWord({ progress, range, children }: { progress: MotionValue<number>; range: [number, number]; children: string }) {
   const opacity = useTransform(progress, range, [0.15, 1]);
