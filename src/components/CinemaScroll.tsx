@@ -56,10 +56,22 @@ function Scene({
         : [0, 1, 1, 0];
 
   const opacity = useTransform(progress, opacityStops, opacityValues);
-  // Ken Burns: scale 1.05 → 1.18 across the scene's active window
-  const scale = useTransform(progress, [start, end], [1.05, 1.18]);
-  // Subtle vertical drift
-  const y = useTransform(progress, [start, end], ["-1%", "1%"]);
+  // Scroll-driven Ken Burns: scale 1.05 → 1.22 across the scene's window
+  const scale = useTransform(progress, [start, end], [1.05, 1.22]);
+  // Scroll-driven vertical drift
+  const y = useTransform(progress, [start, end], ["-2%", "2%"]);
+  // Scroll-driven horizontal pan (alternates direction per scene)
+  const xDir = index % 2 === 0 ? ["-1.5%", "1.5%"] : ["1.5%", "-1.5%"];
+  const x = useTransform(progress, [start, end], xDir);
+
+  // Continuous ambient motion (independent of scroll) — keeps the
+  // scene "alive" even when the user pauses scrolling. Slow, looping.
+  const ambient = {
+    scale: [1, 1.04, 1],
+    x: ["0%", index % 2 === 0 ? "0.8%" : "-0.8%", "0%"],
+    y: ["0%", "-0.6%", "0%"],
+  } as const;
+  const ambientDuration = 18 + (index % 3) * 4;
 
   return (
     <motion.div
@@ -71,18 +83,36 @@ function Scene({
         willChange: "opacity, transform",
       }}
     >
+      {/* Outer = scroll-driven Ken Burns */}
       <motion.div
         style={{
           position: "absolute",
           inset: 0,
           scale,
+          x,
           y,
-          backgroundImage: `url(${src})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
           willChange: "transform",
         }}
-      />
+      >
+        {/* Inner = continuous ambient drift, loops forever */}
+        <motion.div
+          animate={ambient}
+          transition={{
+            duration: ambientDuration,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatType: "mirror",
+          }}
+          style={{
+            position: "absolute",
+            inset: "-4%",
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            willChange: "transform",
+          }}
+        />
+      </motion.div>
     </motion.div>
   );
 }
