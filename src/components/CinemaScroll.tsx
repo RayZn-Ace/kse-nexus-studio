@@ -1,150 +1,74 @@
-import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, type MotionValue } from "framer-motion";
-import { useEffect, useRef } from "react";
-import v1 from "@/assets/scene-1-space.mp4.asset.json";
-import v2 from "@/assets/scene-2-clouds.mp4.asset.json";
-import v3 from "@/assets/scene-3-hannover-aerial.mp4.asset.json";
-import v4 from "@/assets/scene-4-hannover-night.mp4.asset.json";
-import v5 from "@/assets/scene-5-studio.mp4.asset.json";
-import v6 from "@/assets/scene-6-icon.mp4.asset.json";
-import p1 from "@/assets/scene-1-space.jpg";
-import p2 from "@/assets/scene-2-clouds.jpg";
-import p3 from "@/assets/scene-3-hannover-aerial.jpg";
-import p4 from "@/assets/scene-4-hannover-night.jpg";
-import p5 from "@/assets/scene-5-studio.jpg";
-import p6 from "@/assets/scene-6-icon.jpg";
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import flight from "@/assets/drone-flight.mp4.asset.json";
 
 /**
- * Fullscreen fixed background that runs a 6-scene photoreal sequence
- * driven by the entire page scroll. Each scene crossfades into the next
- * with a slow Ken Burns scale, plus mild parallax + film grain on top.
- *
- * Rendered as the lowest layer; pages above sit on z-index >= 10.
+ * Fullscreen fixed background: ONE continuous drone flight video
+ * (space → atmosphere → Hannover → studio) scroll-scrubbed across the
+ * entire page. No cuts, no crossfades — one smooth take that only
+ * advances while the user scrolls.
  */
 
-const SCENES: { src: string; poster: string; label: string }[] = [
-  { src: v1.url, poster: p1, label: "// 00 — ORBIT" },
-  { src: v2.url, poster: p2, label: "// 01 — ATMOSPHÄRE" },
-  { src: v3.url, poster: p3, label: "// 02 — HANNOVER · 52.37°N" },
-  { src: v4.url, poster: p4, label: "// 03 — DOWNTOWN · 03:00" },
-  { src: v5.url, poster: p5, label: "// 04 — STUDIO · KSE" },
-  { src: v6.url, poster: p6, label: "// 05 — CHARAKTER" },
+const LABELS = [
+  "// 00 — ORBIT",
+  "// 01 — ATMOSPHÄRE",
+  "// 02 — HANNOVER · 52.37°N",
+  "// 03 — DOWNTOWN",
+  "// 04 — STUDIO · KSE",
+  "// 05 — CHARAKTER",
 ];
 
-function Scene({
-  src,
-  poster,
-  index,
-  count,
-  progress,
-}: {
-  src: string;
-  poster: string;
-  index: number;
-  count: number;
-  progress: MotionValue<number>;
-}) {
-  const step = 1 / count;
-  const start = index * step;
-  const fadeIn = start - step * 0.6;
-  const fadeOut = start + step * 1.6;
-  const opacityStops = [fadeIn, start + step * 0.5, fadeOut];
-  const opacityValues =
-    index === 0
-      ? [1, 1, 0]
-      : index === count - 1
-        ? [0, 1, 1]
-        : [0, 1, 0];
+export function CinemaScroll() {
+  const { scrollYProgress } = useScroll();
+  // Heavy smoothing so the scrub feels like a slow, weighted drone gimbal.
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 40,
+    damping: 30,
+    mass: 0.6,
+  });
 
-  const opacity = useTransform(progress, opacityStops, opacityValues);
-  // Gentle continuous scale across the full visible window
-  const scale = useTransform(progress, [fadeIn, fadeOut], [1.05, 1.15]);
-  const y = useTransform(progress, [fadeIn, fadeOut], ["-1.5%", "1.5%"]);
-
-  // Scroll-scrubbed video: currentTime is driven by scroll progress within
-  // this scene's window. No autoplay/loop — video only "plays" while scrolling.
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const targetTimeRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+  const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.pause();
-    // Hint the browser this is non-playing media we'll seek manually.
-    try { (v as any).preservesPitch = false; } catch {}
-  }, []);
-
+  // Track scroll-target time
   useMotionValueEvent(progress, "change", (p) => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !ready) return;
     const dur = v.duration;
     if (!dur || !isFinite(dur)) return;
-    // Map [start, start+step] of global progress to [0, dur] of this clip.
-    const local = Math.max(0, Math.min(1, (p - start) / step));
-    const t = local * (dur - 0.05);
-    // Avoid spamming the decoder with tiny changes.
-    if (Math.abs(v.currentTime - t) > 0.03) {
-      v.currentTime = t;
-    }
+    targetTimeRef.current = Math.max(0, Math.min(dur - 0.05, p * (dur - 0.05)));
   });
 
-  return (
-    <motion.div
-      aria-hidden
-      style={{
-        position: "absolute",
-        inset: 0,
-        opacity,
-        willChange: "opacity, transform",
-      }}
-    >
-      {/* Background video — scroll-scrubbed (only advances while user scrolls) */}
-      <motion.div
-        style={{
-          position: "absolute",
-          inset: 0,
-          scale,
-          y,
-          willChange: "transform",
-          overflow: "hidden",
-        }}
-      >
-        <video
-          ref={videoRef}
-          src={src}
-          poster={poster}
-          muted
-          playsInline
-          preload="auto"
-          onLoadedMetadata={(e) => {
-            const v = e.currentTarget;
-            v.pause();
-            v.currentTime = 0;
-          }}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </motion.div>
-    </motion.div>
-  );
-}
+  // RAF loop: ease video.currentTime toward target for buttery motion.
+  useEffect(() => {
+    if (!ready) return;
+    const tick = () => {
+      const v = videoRef.current;
+      if (v) {
+        const cur = v.currentTime;
+        const target = targetTimeRef.current;
+        const diff = target - cur;
+        if (Math.abs(diff) > 0.005) {
+          // Lerp toward target; small step = silky smooth.
+          v.currentTime = cur + diff * 0.18;
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [ready]);
 
-export function CinemaScroll() {
-  // Whole-page scroll progress (0 → 1 from top of document to bottom).
-  const { scrollYProgress } = useScroll();
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 28,
-    mass: 0.4,
-  });
-
-  // Live scene label (top-right HUD)
   const labelIndex = useTransform(progress, (v) =>
-    Math.min(SCENES.length - 1, Math.floor(v * SCENES.length)),
+    Math.min(LABELS.length - 1, Math.floor(v * LABELS.length)),
   );
+
+  // Subtle scale push across the full scroll for extra depth
+  const scale = useTransform(progress, [0, 1], [1.04, 1.1]);
 
   return (
     <div
@@ -158,21 +82,37 @@ export function CinemaScroll() {
         background: "#000",
       }}
     >
-      {/* Scene stack */}
-      <div style={{ position: "absolute", inset: 0 }}>
-        {SCENES.map((sc, i) => (
-          <Scene
-            key={i}
-            src={sc.src}
-            poster={sc.poster}
-            index={i}
-            count={SCENES.length}
-            progress={progress}
-          />
-        ))}
-      </div>
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: 0,
+          scale,
+          willChange: "transform",
+        }}
+      >
+        <video
+          ref={videoRef}
+          src={flight.url}
+          muted
+          playsInline
+          preload="auto"
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            v.pause();
+            v.currentTime = 0;
+            setReady(true);
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </motion.div>
 
-      {/* Global vignette — keeps centered text readable */}
+      {/* Global vignette */}
       <div
         style={{
           position: "absolute",
@@ -182,7 +122,7 @@ export function CinemaScroll() {
         }}
       />
 
-      {/* Top + bottom edge scrims for header/ticker legibility */}
+      {/* Top + bottom edge scrims */}
       <div
         style={{
           position: "absolute",
@@ -192,7 +132,7 @@ export function CinemaScroll() {
         }}
       />
 
-      {/* Subtle film grain via SVG */}
+      {/* Film grain */}
       <svg
         style={{
           position: "absolute",
@@ -209,7 +149,6 @@ export function CinemaScroll() {
         <rect width="100%" height="100%" filter="url(#cine-grain)" />
       </svg>
 
-      {/* HUD — live scene label */}
       <SceneHud progress={progress} index={labelIndex} />
     </div>
   );
@@ -219,11 +158,13 @@ function SceneHud({
   progress,
   index,
 }: {
-  progress: MotionValue<number>;
-  index: MotionValue<number>;
+  progress: ReturnType<typeof useSpring>;
+  index: ReturnType<typeof useTransform<number, number>>;
 }) {
-  const pct = useTransform(progress, (v) => String(Math.round(v * 100)).padStart(3, "0"));
-  const label = useTransform(index, (i) => SCENES[i]?.label ?? SCENES[0].label);
+  const pct = useTransform(progress, (v: number) =>
+    String(Math.round(v * 100)).padStart(3, "0"),
+  );
+  const label = useTransform(index, (i: number) => LABELS[i] ?? LABELS[0]);
   return (
     <div
       style={{
