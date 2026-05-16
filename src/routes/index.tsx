@@ -265,9 +265,9 @@ function PinnedWord() {
     { text: "BAUEN" },
     { text: "KEINE" },
     { text: "MARKEN." },
-    { text: "—", dash: true, lineBreakBefore: true },
-    { text: "WIR" },
+    { text: "WIR", lineBreakBefore: true },
     { text: "BAUEN" },
+    { text: "ECHTEN" },
     { text: "CHARAKTER!", accent: true },
   ];
 
