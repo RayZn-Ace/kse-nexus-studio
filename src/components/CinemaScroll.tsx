@@ -45,28 +45,26 @@ function Scene({
   // Even windows; each scene held for ~ 1/count of total scroll, with overlap at both ends.
   const step = 1 / count;
   const start = index * step;
-  const peakIn = start + step * 0.25;
-  const peakOut = start + step * 0.85;
-  const end = start + step;
+  // Wide crossfade — each scene fades in/out over ~60% of its window,
+  // so adjacent scenes are always blending into each other (no hard cuts).
+  const peakIn = start + step * 0.6;
+  const peakOut = start + step * 0.4 + step; // extends into next scene
+  const end = start + step * 1.6;
 
-  // First scene visible from 0, last scene holds to 1.
-  const opacityStops = [
-    Math.max(0, start - step * 0.15),
-    peakIn,
-    peakOut,
-    Math.min(1, end + step * 0.05),
-  ];
+  const fadeIn = start - step * 0.6;
+  const fadeOut = start + step * 1.6;
+  const opacityStops = [fadeIn, start + step * 0.5, fadeOut];
   const opacityValues =
     index === 0
-      ? [1, 1, 1, 0]
+      ? [1, 1, 0]
       : index === count - 1
-        ? [0, 1, 1, 1]
-        : [0, 1, 1, 0];
+        ? [0, 1, 1]
+        : [0, 1, 0];
 
   const opacity = useTransform(progress, opacityStops, opacityValues);
-  // Light scroll-driven push on top of the video's own camera motion
-  const scale = useTransform(progress, [start, end], [1.02, 1.12]);
-  const y = useTransform(progress, [start, end], ["-1%", "1%"]);
+  // Gentle continuous scale across the full visible window
+  const scale = useTransform(progress, [fadeIn, fadeOut], [1.05, 1.15]);
+  const y = useTransform(progress, [fadeIn, fadeOut], ["-1.5%", "1.5%"]);
 
   return (
     <motion.div
