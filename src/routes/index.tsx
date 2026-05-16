@@ -516,12 +516,8 @@ function ServiceCard({
   return (
     <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
       <motion.article
-        style={{ opacity, x: tx }}
         className="relative w-full h-[70vh] flex flex-row overflow-hidden transition-colors hover:[border-color:var(--accent)]"
-        // Semi-transparent dark card so text stays readable over the villa background
-        // (inline styles applied below to guarantee backdrop-filter support)
         data-cursor="accent"
-        // @ts-expect-error allow inline style merging
         style={{
           opacity,
           x: tx,
