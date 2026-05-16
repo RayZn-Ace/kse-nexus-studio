@@ -1,5 +1,5 @@
 import { useScroll, useMotionValueEvent } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Fullscreen fixed background: ONE continuous drone flight video
@@ -25,15 +25,15 @@ export function CinemaScroll() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const durationRef = useRef(10.041667);
+  const metadataReadyRef = useRef(false);
   const pendingProgressRef = useRef(0);
   const lastTimeRef = useRef(-1);
   const hudRef = useRef<HTMLDivElement | null>(null);
-  const [ready, setReady] = useState(false);
 
   const flushSeek = () => {
     rafRef.current = null;
     const video = videoRef.current;
-    if (!video || !ready) return;
+    if (!video || !metadataReadyRef.current) return;
 
     const duration = Number.isFinite(video.duration) ? video.duration : durationRef.current;
     const maxTime = Math.max(0, duration - 0.05);
@@ -95,8 +95,8 @@ export function CinemaScroll() {
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             durationRef.current = Number.isFinite(v.duration) ? v.duration : durationRef.current;
+            metadataReadyRef.current = true;
             v.pause();
-            setReady(true);
             scheduleSeek(scrollYProgress.get());
           }}
           style={{
