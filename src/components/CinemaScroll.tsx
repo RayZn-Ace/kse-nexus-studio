@@ -16,16 +16,16 @@ const LABELS = [
   "// 05 — CHARAKTER",
 ];
 
-const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4?v=studio-full";
-const VIDEO_FPS = 24;
+const FRAME_COUNT = 312;
+
+const getFrameSrc = (frame: number) =>
+  `/cinema-frames/frame-${String(frame).padStart(4, "0")}.webp`;
 
 export function CinemaScroll() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const durationRef = useRef(26);
-  const metadataReadyRef = useRef(false);
   const pendingProgressRef = useRef(0);
-  const lastTimeRef = useRef(-1);
+  const lastFrameRef = useRef(1);
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const hudRef = useRef<HTMLDivElement | null>(null);
 
   const readScrollProgress = () => {
@@ -36,20 +36,14 @@ export function CinemaScroll() {
 
   const flushSeek = () => {
     rafRef.current = null;
-    const video = videoRef.current;
-    if (!video || !metadataReadyRef.current) return;
+    const img = imageRef.current;
+    if (!img) return;
 
-    const duration = Number.isFinite(video.duration) ? video.duration : durationRef.current;
-    const maxTime = Math.max(0, duration - 0.05);
-    const frame = 1 / VIDEO_FPS;
-    const target = Math.round(pendingProgressRef.current * maxTime * VIDEO_FPS) / VIDEO_FPS;
-    const clamped = Math.max(0, Math.min(maxTime, target));
+    const frame = Math.max(1, Math.min(FRAME_COUNT, Math.round(1 + pendingProgressRef.current * (FRAME_COUNT - 1))));
 
-    if (Math.abs(lastTimeRef.current - clamped) >= frame * 0.75) {
-      try {
-        video.currentTime = clamped;
-        lastTimeRef.current = clamped;
-      } catch {}
+    if (lastFrameRef.current !== frame) {
+      img.src = getFrameSrc(frame);
+      lastFrameRef.current = frame;
     }
   };
 
@@ -78,6 +72,11 @@ export function CinemaScroll() {
     window.addEventListener("scroll", updateFromScroll, { passive: true });
     window.addEventListener("resize", updateFromScroll);
 
+    [1, 35, 70, 105, 140, 175, 210, 245, 280, 312].forEach((frame) => {
+      const image = new Image();
+      image.src = getFrameSrc(frame);
+    });
+
     return () => {
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
       window.removeEventListener("scroll", updateFromScroll);
@@ -97,19 +96,11 @@ export function CinemaScroll() {
         background: "#000",
       }}
     >
-        <video
-          ref={videoRef}
-          src={SCRUB_VIDEO_SRC}
-          muted
-          playsInline
-          preload="auto"
-          onLoadedMetadata={(e) => {
-            const v = e.currentTarget;
-            durationRef.current = Number.isFinite(v.duration) ? v.duration : durationRef.current;
-            metadataReadyRef.current = true;
-            v.pause();
-            scheduleSeek(readScrollProgress());
-          }}
+        <img
+          ref={imageRef}
+          src={getFrameSrc(1)}
+          alt=""
+          draggable={false}
           style={{
             position: "absolute",
             inset: 0,
