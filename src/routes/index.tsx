@@ -422,10 +422,34 @@ function Manifest() {
 }
 
 const SERVICES = [
-  { n: "01", title: "Social Media", body: "Strategie, Content, Community. Wir bauen Reichweite, die hält." },
-  { n: "02", title: "Web Design", body: "Sites, die nicht aussehen wie alle anderen. Schnell, klar, eigen." },
-  { n: "03", title: "Werbefilm", body: "Cinematic gedreht, fürs Feed geschnitten. Bilder, die hängenbleiben." },
-  { n: "04", title: "Artist Mgmt", body: "Strategische Begleitung für Künstler & Newcomer mit etwas zu sagen." },
+  {
+    n: "01",
+    title: "Social Media",
+    body:
+      "Kein Content-Kalender-Bullshit. Wir bauen Kanäle, die echte Community schaffen — mit Haltung, Wiedererkennungswert und Posts die Menschen teilen wollen.",
+    tags: ["Instagram", "TikTok", "Meta", "LinkedIn", "YouTube"],
+  },
+  {
+    n: "02",
+    title: "Web Design",
+    body:
+      "Keine Templates. Keine Baukästen-Optik. Websites, die in 3 Sekunden klar machen, wer du bist — und den Besucher nicht gehen lassen wollen.",
+    tags: ["Design", "Development", "SEO", "Performance"],
+  },
+  {
+    n: "03",
+    title: "Werbefilm",
+    body:
+      "Cinematic. Präzise. Für Feed, Story und Großleinwand. Wir drehen Bilder, die hängenbleiben — weil gute Marken gute Bilder verdienen.",
+    tags: ["Reels", "Ads", "Brand Film", "Events"],
+  },
+  {
+    n: "04",
+    title: "Branding",
+    body:
+      "Logo, Farbe, Sprache, Auftritt — alles aus einer Hand. Wir entwickeln Identitäten, die nicht austauschbar sind. Charaktere, keine Gesichter.",
+    tags: ["Logo", "CI", "Strategie", "Positionierung"],
+  },
 ];
 
 function HorizontalServices() {
@@ -492,9 +516,17 @@ function ServiceCard({
   return (
     <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
       <motion.article
-        style={{ opacity, x: tx }}
-        className="relative w-full h-[70vh] border border-foreground/20 flex flex-row overflow-hidden hover:border-[color:var(--accent)] transition-colors"
+        className="relative w-full h-[70vh] flex flex-row overflow-hidden transition-colors hover:[border-color:var(--accent)]"
         data-cursor="accent"
+        style={{
+          opacity,
+          x: tx,
+          background: "rgba(10, 10, 10, 0.75)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(232, 255, 0, 0.15)",
+          borderRadius: "2px",
+        }}
       >
         {/* Thin accent top border */}
         <span
@@ -547,7 +579,7 @@ function ServiceCard({
         </div>
 
         {/* RIGHT PANEL — content */}
-        <div className="relative w-3/5 h-full p-8 md:p-10 flex flex-col justify-between">
+        <div className="relative w-3/5 h-full flex flex-col justify-between" style={{ padding: "2.5rem" }}>
           <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">
             / Service
           </span>
@@ -556,14 +588,18 @@ function ServiceCard({
               className="font-black mb-5"
               style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
             >
-              {s.title}
+              {s.title.toUpperCase()}
             </h3>
-            <p className="text-foreground/65 text-sm md:text-base leading-relaxed max-w-sm">
+            <p className="text-foreground/85 text-sm md:text-base leading-relaxed max-w-sm">
               {s.body}
             </p>
+            <div className="mt-6 text-[11px] uppercase tracking-[0.3em] text-foreground/60">
+              {s.tags.join(" · ")}
+            </div>
             <a
               href="#contact"
               className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase"
+              style={{ color: "#e8ff00" }}
             >
               Anfragen →
             </a>
@@ -577,9 +613,25 @@ function ServiceCard({
 /* ───────────── about (stat / paragraph two-column) ───────────── */
 
 const STATS = [
-  { value: 8, suffix: "+", label: "Jahre Praxis", body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover." },
-  { value: 120, suffix: "+", label: "Projekte realisiert", body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant." },
-  { value: 1, suffix: " MISSION", pad: 2, label: "Fokus", body: "Charakter sichtbar machen. Konsequent. Ohne Templates, ohne Copy-Paste-Marketing." },
+  {
+    value: 8,
+    suffix: "+",
+    label: "Jahre im Game",
+    body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover.",
+  },
+  {
+    value: 120,
+    suffix: "+",
+    label: "Projekte geliefert",
+    body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant.",
+  },
+  {
+    value: 1,
+    suffix: "",
+    pad: 2,
+    label: "Team. Kein Konzern.",
+    body: "Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.",
+  },
 ];
 
 /** Counts 0 → target when scrolled into view (~1.5s, 60fps). Once only. */
@@ -620,10 +672,11 @@ function About() {
           className="font-black leading-[0.85]"
           style={{ fontSize: "clamp(2.5rem, 7vw, 7rem)", letterSpacing: "-0.05em" }}
         >
-          <SplitReveal text="Über" />
-          <br />
-          <Scramble text="KSE / Group" />
+          <Scramble text="KSE / GROUP" />
         </h2>
+        <div className="mt-6 text-[11px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
+          Hannover · gegründet 2018
+        </div>
       </div>
 
       {/* Accent horizontal rule */}
@@ -637,11 +690,13 @@ function About() {
           className="font-black tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
-          Charakter sichtbar machen.
+          Charakter sichtbar machen. Punkt. Keine Templates, kein Copy-Paste, kein Durchschnitt.
         </p>
-        <p className="text-foreground/75 text-base md:text-lg leading-relaxed self-center">
-          Gegründet von Kay Engelmann — Medien- und Kommunikationswissenschaftler, ex-Köln,
-          jetzt Hannover. Wir arbeiten mit Marken, die nicht austauschbar sein wollen.
+        <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
+          Gegründet von Kay Engelmann — mit einem Ziel: Marken bauen, die man nicht vergisst.
+          Wir arbeiten mit Restaurants, Influencern, Handwerkern und Musik-Acts, die nicht aussehen
+          wollen wie alle anderen. Unser Team denkt in Bildern, schreibt in Botschaften und liefert
+          — ohne Ausrede.
         </p>
       </div>
 
@@ -695,6 +750,10 @@ function Contact() {
           <SplitReveal text="reden." delay={0.15} />
         </h2>
 
+        <div className="mb-4 text-[12px] uppercase tracking-[0.4em]" style={{ color: "#e8ff00" }}>
+          Bereit für den nächsten Schritt?
+        </div>
+
         <a
           href="mailto:info@ksegroup.eu"
           data-cursor="accent"
@@ -715,7 +774,7 @@ function Contact() {
         <div className="mt-16 flex flex-wrap gap-8 text-[11px] uppercase tracking-[0.4em] text-foreground/55">
           <span>Hannover · DE</span>
           <span>—</span>
-          <a href="https://instagram.com" className="link-underline">Instagram</a>
+          <a href="https://instagram.com/ksegroup" className="link-underline">Instagram</a>
           <span>—</span>
           <a href="https://ksegroup.eu" className="link-underline">ksegroup.eu</a>
         </div>
@@ -728,11 +787,20 @@ function Contact() {
             Projekt starten →
           </a>
           <a
-            href="#top"
-            className="btn-sweep inline-flex items-center justify-center gap-3 border border-foreground/20 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium"
+            href="https://instagram.com/ksegroup"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-sweep inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium"
           >
-            ↑ Zurück nach oben
+            Instagram →
           </a>
+        </div>
+
+        <div
+          className="mt-6 text-[10px] uppercase tracking-[0.35em]"
+          style={{ color: "rgba(240,237,232,0.4)" }}
+        >
+          Wir antworten innerhalb von 24h · Erstgespräch kostenlos
         </div>
       </div>
     </section>
@@ -744,9 +812,9 @@ function Contact() {
 function Footer() {
   return (
     <footer className="border-t border-foreground/15 px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] uppercase tracking-[0.4em] text-foreground/45">
-      <span>© {new Date().getFullYear()} KSE Group</span>
+      <span>© 2026 KSE Group · Hannover</span>
       <span>Fang niemals an aufzuhören.</span>
-      <span>Built in Hannover</span>
+      <span>ksegroup.eu</span>
     </footer>
   );
 }
