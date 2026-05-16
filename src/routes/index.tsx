@@ -8,6 +8,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { HeroCanvas } from "@/components/HeroCanvas";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -152,6 +153,11 @@ function Hero() {
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
+      {/* Three.js wireframe field — first child, behind everything */}
+      <HeroCanvas />
+
+      {/* z-index:1 wrapper so hero content sits above the canvas */}
+      <div className="relative z-[1] h-full w-full">
       {/* Parallax oversized glyph */}
       <motion.div
         aria-hidden
@@ -238,6 +244,7 @@ function Hero() {
           ))}
         </motion.div>
       </div>
+      </div>
     </section>
   );
 }
@@ -303,6 +310,51 @@ function PinnedWord() {
 }
 
 /* ───────────── horizontal services ───────────── */
+
+/* ───────────── manifest ───────────── */
+
+function Manifest() {
+  const lines = [
+    "Wir glauben nicht an Lautstärke",
+    "um jeden Preis.",
+    "Wir glauben an Substanz.",
+    "An Haltung.",
+    "An Arbeit, die bleibt.",
+  ];
+  return (
+    <section
+      className="relative bg-black border-t border-foreground/15"
+      style={{ padding: "15vh 8vw" }}
+    >
+      <div className="max-w-6xl mx-auto">
+        <h2
+          className="font-black tracking-tight"
+          style={{ fontSize: "clamp(1.6rem, 3rem, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
+        >
+          {lines.map((line, i) => (
+            <span key={i} className="block overflow-hidden">
+              <motion.span
+                className="inline-block"
+                initial={{ y: "110%" }}
+                whileInView={{ y: "0%" }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 0.9, ease: EASE, delay: i * 0.08 }}
+              >
+                {line}
+              </motion.span>
+            </span>
+          ))}
+        </h2>
+        <div
+          className="mt-12 text-right text-[11px] uppercase tracking-[0.4em]"
+          style={{ color: "#e8ff00" }}
+        >
+          // MANIFEST · KSE GROUP
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const SERVICES = [
   { n: "01", title: "Social Media", body: "Strategie, Content, Community. Wir bauen Reichweite, die hält." },
@@ -376,29 +428,81 @@ function ServiceCard({
     <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
       <motion.article
         style={{ opacity, x: tx }}
-        className="relative w-full h-[70vh] border border-foreground/20 p-8 md:p-10 flex flex-col justify-between hover:border-[color:var(--accent)] transition-colors"
+        className="relative w-full h-[70vh] border border-foreground/20 flex flex-row overflow-hidden hover:border-[color:var(--accent)] transition-colors"
         data-cursor="accent"
       >
-        <div className="flex items-start justify-between">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">/ Service</span>
+        {/* Thin accent top border */}
+        <span
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{ background: "#e8ff00" }}
+        />
+
+        {/* LEFT PANEL — big number + grid pattern */}
+        <div className="relative w-2/5 h-full border-r border-foreground/15 overflow-hidden flex items-center justify-center">
+          {/* SVG grid pattern, stroke only */}
+          <svg
+            aria-hidden
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity: 0.05 }}
+          >
+            <defs>
+              <pattern id={`grid-${s.n}`} width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#e8ff00" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#grid-${s.n})`} />
+          </svg>
+          {/* Animated diagonal line */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, transparent 48%, rgba(232,255,0,0.08) 50%, transparent 52%)",
+              backgroundSize: "200% 200%",
+            }}
+            animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
           <span
-            className="font-black"
-            style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", color: "#e8ff00", letterSpacing: "-0.04em" }}
+            className="relative font-black leading-none select-none"
+            style={{
+              fontSize: "20vw",
+              color: "#e8ff00",
+              opacity: 0.08,
+              letterSpacing: "-0.06em",
+            }}
           >
             {s.n}
           </span>
+          <span className="absolute top-6 left-6 text-[11px] uppercase tracking-[0.4em] text-foreground/50">
+            / {s.n}
+          </span>
         </div>
-        <div>
-          <h3
-            className="font-black mb-5"
-            style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
-          >
-            {s.title}
-          </h3>
-          <p className="text-foreground/65 text-sm md:text-base leading-relaxed max-w-sm">{s.body}</p>
-          <a href="#contact" className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase">
-            Anfragen →
-          </a>
+
+        {/* RIGHT PANEL — content */}
+        <div className="relative w-3/5 h-full p-8 md:p-10 flex flex-col justify-between">
+          <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">
+            / Service
+          </span>
+          <div>
+            <h3
+              className="font-black mb-5"
+              style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+            >
+              {s.title}
+            </h3>
+            <p className="text-foreground/65 text-sm md:text-base leading-relaxed max-w-sm">
+              {s.body}
+            </p>
+            <a
+              href="#contact"
+              className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase"
+            >
+              Anfragen →
+            </a>
+          </div>
         </div>
       </motion.article>
     </div>
@@ -408,16 +512,45 @@ function ServiceCard({
 /* ───────────── about (stat / paragraph two-column) ───────────── */
 
 const STATS = [
-  { n: "08+", label: "Jahre Praxis", body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover." },
-  { n: "120", label: "Projekte realisiert", body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant." },
-  { n: "01", label: "Mission", body: "Charakter sichtbar machen. Konsequent. Ohne Templates, ohne Copy-Paste-Marketing." },
+  { value: 8, suffix: "+", label: "Jahre Praxis", body: "Aus TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover." },
+  { value: 120, suffix: "+", label: "Projekte realisiert", body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant." },
+  { value: 1, suffix: " MISSION", pad: 2, label: "Fokus", body: "Charakter sichtbar machen. Konsequent. Ohne Templates, ohne Copy-Paste-Marketing." },
 ];
+
+/** Counts 0 → target when scrolled into view (~1.5s, 60fps). Once only. */
+function CountUp({ to, pad = 0, suffix = "" }: { to: number; pad?: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15%" });
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const duration = 1500;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(to * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to]);
+  const text = pad ? String(val).padStart(pad, "0") : String(val);
+  return (
+    <span ref={ref}>
+      {text}
+      {suffix}
+    </span>
+  );
+}
 
 function About() {
   return (
     <section id="about" className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44">
-      {/* Section header */}
-      <div className="max-w-6xl mx-auto mb-20 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      {/* Heading */}
+      <div className="max-w-6xl mx-auto mb-12">
         <h2
           className="font-black leading-[0.85]"
           style={{ fontSize: "clamp(2.5rem, 7vw, 7rem)", letterSpacing: "-0.05em" }}
@@ -426,7 +559,22 @@ function About() {
           <br />
           <Scramble text="KSE / Group" />
         </h2>
-        <p className="max-w-md text-foreground/70 text-sm md:text-base leading-relaxed">
+      </div>
+
+      {/* Accent horizontal rule */}
+      <div className="max-w-6xl mx-auto">
+        <div className="h-px w-full" style={{ background: "#e8ff00" }} />
+      </div>
+
+      {/* Two-column: pull quote + body */}
+      <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24">
+        <p
+          className="font-black tracking-tight"
+          style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
+        >
+          Charakter sichtbar machen.
+        </p>
+        <p className="text-foreground/75 text-base md:text-lg leading-relaxed self-center">
           Gegründet von Kay Engelmann — Medien- und Kommunikationswissenschaftler, ex-Köln,
           jetzt Hannover. Wir arbeiten mit Marken, die nicht austauschbar sein wollen.
         </p>
@@ -436,7 +584,7 @@ function About() {
       <div className="max-w-6xl mx-auto grid gap-px bg-foreground/15 border border-foreground/15">
         {STATS.map((s, i) => (
           <motion.div
-            key={s.n}
+            key={s.label}
             initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-15%" }}
@@ -448,7 +596,7 @@ function About() {
                 className="font-black"
                 style={{ fontSize: "clamp(4rem, 12vw, 11rem)", letterSpacing: "-0.06em", lineHeight: 0.85 }}
               >
-                {s.n}
+                <CountUp to={s.value} pad={s.pad ?? 0} suffix={s.suffix} />
               </div>
               <div className="mt-3 text-[11px] uppercase tracking-[0.4em] text-foreground/50">{s.label}</div>
             </div>
@@ -546,6 +694,7 @@ function Index() {
       <Header />
       <Hero />
       <PinnedWord />
+      <Manifest />
       <HorizontalServices />
       <About />
       <Contact />
