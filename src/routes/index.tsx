@@ -150,6 +150,173 @@ const WHY_TEXT =
   "Dein Brand verändert sich. Bau nicht nur eine Präsenz — bau das, was als Nächstes kommt. Wir helfen dir, mit Klarheit, Mut und dem richtigen Team an deiner Seite, einfach vorwärts zu gehen.";
 const WHY_WORDS = WHY_TEXT.split(" ");
 
+/* ───────────────────────── MANIFESTO (mission-control / terminal HUD) ───────────────────────── */
+function RevealChar({ progress, range, children }: { progress: MotionValue<number>; range: [number, number]; children: string }) {
+  const opacity = useTransform(progress, range, [0.05, 1]);
+  const y = useTransform(progress, range, [40, 0]);
+  const blur = useTransform(progress, range, ["12px", "0px"]);
+  return (
+    <motion.span style={{ opacity, y, filter: blur }} className="inline-block">
+      {children === " " ? "\u00A0" : children}
+    </motion.span>
+  );
+}
+
+function ManifestoLine({ text, progress, from, to }: { text: string; progress: MotionValue<number>; from: number; to: number }) {
+  const chars = text.split("");
+  return (
+    <span className="block">
+      {chars.map((c, i) => {
+        const span = to - from;
+        const start = from + (i / chars.length) * span;
+        const end = Math.min(to, start + span * 0.25);
+        return <RevealChar key={i} progress={progress} range={[start, end]}>{c}</RevealChar>;
+      })}
+    </span>
+  );
+}
+
+function Manifesto() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.4 });
+  const gridY = useTransform(smooth, [0, 1], ["0%", "-25%"]);
+  const tickerX = useTransform(smooth, [0, 1], ["10%", "-40%"]);
+  const coordY = useTransform(smooth, [0, 1], [0, -80]);
+
+  // word-by-word reveal driver
+  const lineProgress = useTransform(smooth, [0.05, 0.7], [0, 1]);
+
+  return (
+    <section
+      ref={ref}
+      className="relative min-h-[160vh] bg-black overflow-hidden border-y border-white/10"
+    >
+      {/* telemetry grid */}
+      <motion.div
+        style={{ y: gridY }}
+        aria-hidden
+        className="absolute inset-0 opacity-[0.18]"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, oklch(1 0 0 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.15) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+            maskImage: "radial-gradient(ellipse at 50% 40%, black 30%, transparent 80%)",
+          }}
+        />
+      </motion.div>
+
+      {/* radial glow */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 60% 50% at 50% 30%, oklch(0.62 0.24 255 / 0.25), transparent 70%)" }}
+      />
+
+      {/* sticky stage */}
+      <div className="sticky top-0 h-screen flex flex-col justify-between py-10 md:py-14 px-5 md:px-10">
+        {/* TOP HUD ROW */}
+        <div className="flex items-start justify-between font-mono text-[10px] md:text-[11px] tracking-[0.2em] text-white/60 uppercase">
+          <motion.div style={{ y: coordY }} className="flex flex-col gap-1">
+            <span className="text-accent">● LIVE</span>
+            <span>52.3759° N / 9.7320° E</span>
+            <span>STATION: KSE-01</span>
+          </motion.div>
+          <div className="hidden md:flex flex-col items-center gap-1">
+            <span className="text-white/40">// transmission 002</span>
+            <span>MANIFEST / CHARACTER ENGINE</span>
+          </div>
+          <motion.div style={{ y: coordY }} className="flex flex-col items-end gap-1">
+            <span>T-{new Date().getFullYear()}</span>
+            <span className="text-white/40">SIGNAL: STABLE</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              REC
+            </span>
+          </motion.div>
+        </div>
+
+        {/* CENTER STAGE — slogans */}
+        <div className="relative flex-1 flex flex-col items-center justify-center text-center">
+          {/* small label */}
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="font-mono text-[10px] md:text-[11px] tracking-[0.5em] text-accent uppercase mb-8 md:mb-12"
+          >
+            ✦ Mission Statement ✦
+          </motion.p>
+
+          {/* slogan 1 */}
+          <h2 className="font-display font-semibold leading-[0.92] tracking-[-0.04em] text-white text-[14vw] md:text-[10vw] lg:text-[9rem]">
+            <ManifestoLine text="Wir bauen keine" progress={lineProgress} from={0.0} to={0.3} />
+            <span className="block italic" style={{ WebkitTextStroke: "1.5px white", color: "transparent" }}>
+              <ManifestoLine text="Brands." progress={lineProgress} from={0.25} to={0.45} />
+            </span>
+          </h2>
+
+          {/* divider w/ telemetry */}
+          <div className="my-6 md:my-10 flex items-center gap-3 md:gap-5 font-mono text-[9px] md:text-[11px] text-white/40 tracking-[0.3em]">
+            <span>—</span>
+            <span>// 01</span>
+            <span className="w-16 md:w-32 h-px bg-white/30" />
+            <span className="text-accent">CHARACTER.SYS</span>
+            <span className="w-16 md:w-32 h-px bg-white/30" />
+            <span>// 02</span>
+            <span>—</span>
+          </div>
+
+          {/* slogan 2 */}
+          <h2 className="font-display font-semibold leading-[0.92] tracking-[-0.04em] text-white text-[14vw] md:text-[10vw] lg:text-[9rem]">
+            <ManifestoLine text="Wir bauen" progress={lineProgress} from={0.45} to={0.62} />
+            <span className="block text-gradient">
+              <ManifestoLine text="Charakter." progress={lineProgress} from={0.6} to={0.85} />
+            </span>
+          </h2>
+
+          {/* secondary line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="mt-10 md:mt-14 max-w-xl font-mono text-[11px] md:text-sm text-white/55 tracking-wide leading-relaxed"
+          >
+            &gt;&nbsp; Marken werden vergessen. Charakter bleibt.
+            <br />
+            &gt;&nbsp; Deshalb arbeiten wir an dem Teil, der nicht kopiert werden kann.
+          </motion.p>
+        </div>
+
+        {/* BOTTOM HUD — scrolling slogan ticker */}
+        <div className="relative border-t border-white/15 pt-4">
+          <motion.div
+            style={{ x: tickerX }}
+            className="flex gap-12 whitespace-nowrap font-mono text-[11px] md:text-xs uppercase tracking-[0.35em] text-white/70"
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span key={i} className="flex items-center gap-12">
+                <span className="text-accent">◆</span>
+                <span>Fang niemals an aufzuhören</span>
+                <span className="text-white/30">/ /</span>
+                <span>Never stop starting</span>
+                <span className="text-white/30">/ /</span>
+                <span className="text-accent">KSE — CHARACTER ENGINE v.{new Date().getFullYear()}</span>
+                <span className="text-white/30">/ /</span>
+              </span>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Why() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.4"] });
@@ -476,6 +643,7 @@ function Index() {
     <main className="relative bg-background overflow-x-hidden">
       <Header />
       <Hero />
+      <Manifesto />
       <Why />
       <Lifestyle />
       <Services />
