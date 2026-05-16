@@ -18,7 +18,7 @@ const LABELS = [
 ];
 
 const SCRUB_VIDEO_SRC = "/drone-flight-scrub.mp4";
-const VIDEO_FPS = 18;
+const VIDEO_FPS = 24;
 
 export function CinemaScroll() {
   const { scrollYProgress } = useScroll();
