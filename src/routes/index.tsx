@@ -691,10 +691,10 @@ function About() {
           className="font-black tracking-tight"
           style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
-          Charakter sichtbar machen. Ohne Kompromisse. Ohne Templates. Ohne die Angst, zu polarisieren — denn wer niemanden abstößt, begeistert auch niemanden.
+          Wir bauen Marken, an denen man nicht vorbeiscrollen kann.
         </p>
         <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
-          Kay Engelmann hat KSE gegründet, weil er zu viele mittelmäßige Marken in einer Welt gesehen hat, die außergewöhnliche Menschen versteckt. Wir arbeiten nicht mit jedem. Wir arbeiten mit den richtigen — Restaurants, die eine Geschichte verdienen. Handwerker, die unterschätzt werden. Musik-Acts, die gehört werden sollten. Influencer, die mehr sind als ihr Feed. Wenn du willst, dass man dich vergisst: wir sind nicht für dich.
+          KSE ist kein Dienstleister, der Abgabetermine erfüllt. Wir sind das Team, das dafür sorgt, dass dein Name fällt, wenn du nicht im Raum bist. Strategie, Design, Content, Performance — aus einer Hand, ohne Agentur-Theater, ohne Praktikanten an deinem Projekt. Wir nehmen wenige Kunden im Jahr. Dafür liefern wir Arbeit, die Wettbewerber nervös macht. Wenn du willst, dass man dich übersieht: such dir jemand anderen.
         </p>
       </div>
 
