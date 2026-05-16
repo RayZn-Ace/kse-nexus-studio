@@ -1,10 +1,16 @@
 import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
-import s1 from "@/assets/scene-1-space.jpg";
-import s2 from "@/assets/scene-2-clouds.jpg";
-import s3 from "@/assets/scene-3-hannover-aerial.jpg";
-import s4 from "@/assets/scene-4-hannover-night.jpg";
-import s5 from "@/assets/scene-5-studio.jpg";
-import s6 from "@/assets/scene-6-icon.jpg";
+import v1 from "@/assets/scene-1-space.mp4.asset.json";
+import v2 from "@/assets/scene-2-clouds.mp4.asset.json";
+import v3 from "@/assets/scene-3-hannover-aerial.mp4.asset.json";
+import v4 from "@/assets/scene-4-hannover-night.mp4.asset.json";
+import v5 from "@/assets/scene-5-studio.mp4.asset.json";
+import v6 from "@/assets/scene-6-icon.mp4.asset.json";
+import p1 from "@/assets/scene-1-space.jpg";
+import p2 from "@/assets/scene-2-clouds.jpg";
+import p3 from "@/assets/scene-3-hannover-aerial.jpg";
+import p4 from "@/assets/scene-4-hannover-night.jpg";
+import p5 from "@/assets/scene-5-studio.jpg";
+import p6 from "@/assets/scene-6-icon.jpg";
 
 /**
  * Fullscreen fixed background that runs a 6-scene photoreal sequence
@@ -14,22 +20,24 @@ import s6 from "@/assets/scene-6-icon.jpg";
  * Rendered as the lowest layer; pages above sit on z-index >= 10.
  */
 
-const SCENES: { src: string; label: string }[] = [
-  { src: s1, label: "// 00 — ORBIT" },
-  { src: s2, label: "// 01 — ATMOSPHÄRE" },
-  { src: s3, label: "// 02 — HANNOVER · 52.37°N" },
-  { src: s4, label: "// 03 — DOWNTOWN · 03:00" },
-  { src: s5, label: "// 04 — STUDIO · KSE" },
-  { src: s6, label: "// 05 — CHARAKTER" },
+const SCENES: { src: string; poster: string; label: string }[] = [
+  { src: v1.url, poster: p1, label: "// 00 — ORBIT" },
+  { src: v2.url, poster: p2, label: "// 01 — ATMOSPHÄRE" },
+  { src: v3.url, poster: p3, label: "// 02 — HANNOVER · 52.37°N" },
+  { src: v4.url, poster: p4, label: "// 03 — DOWNTOWN · 03:00" },
+  { src: v5.url, poster: p5, label: "// 04 — STUDIO · KSE" },
+  { src: v6.url, poster: p6, label: "// 05 — CHARAKTER" },
 ];
 
 function Scene({
   src,
+  poster,
   index,
   count,
   progress,
 }: {
   src: string;
+  poster: string;
   index: number;
   count: number;
   progress: MotionValue<number>;
@@ -56,22 +64,9 @@ function Scene({
         : [0, 1, 1, 0];
 
   const opacity = useTransform(progress, opacityStops, opacityValues);
-  // Scroll-driven Ken Burns: scale 1.05 → 1.22 across the scene's window
-  const scale = useTransform(progress, [start, end], [1.05, 1.22]);
-  // Scroll-driven vertical drift
-  const y = useTransform(progress, [start, end], ["-2%", "2%"]);
-  // Scroll-driven horizontal pan (alternates direction per scene)
-  const xDir = index % 2 === 0 ? ["-1.5%", "1.5%"] : ["1.5%", "-1.5%"];
-  const x = useTransform(progress, [start, end], xDir);
-
-  // Continuous ambient motion (independent of scroll) — keeps the
-  // scene "alive" even when the user pauses scrolling. Slow, looping.
-  const ambient = {
-    scale: [1, 1.04, 1],
-    x: ["0%", index % 2 === 0 ? "0.8%" : "-0.8%", "0%"],
-    y: ["0%", "-0.6%", "0%"],
-  };
-  const ambientDuration = 18 + (index % 3) * 4;
+  // Light scroll-driven push on top of the video's own camera motion
+  const scale = useTransform(progress, [start, end], [1.02, 1.12]);
+  const y = useTransform(progress, [start, end], ["-1%", "1%"]);
 
   return (
     <motion.div
@@ -83,33 +78,31 @@ function Scene({
         willChange: "opacity, transform",
       }}
     >
-      {/* Outer = scroll-driven Ken Burns */}
+      {/* Background video — continuously animated, loops forever */}
       <motion.div
         style={{
           position: "absolute",
           inset: 0,
           scale,
-          x,
           y,
           willChange: "transform",
+          overflow: "hidden",
         }}
       >
-        {/* Inner = continuous ambient drift, loops forever */}
-        <motion.div
-          animate={ambient}
-          transition={{
-            duration: ambientDuration,
-            ease: "easeInOut",
-            repeat: Infinity,
-            repeatType: "mirror",
-          }}
+        <video
+          src={src}
+          poster={poster}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
           style={{
             position: "absolute",
-            inset: "-4%",
-            backgroundImage: `url(${src})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            willChange: "transform",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
         />
       </motion.div>
@@ -149,6 +142,7 @@ export function CinemaScroll() {
           <Scene
             key={i}
             src={sc.src}
+            poster={sc.poster}
             index={i}
             count={SCENES.length}
             progress={progress}
