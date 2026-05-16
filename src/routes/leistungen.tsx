@@ -171,7 +171,7 @@ function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
     target: ref,
     offset: ["start start", "end end"],
   });
-  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.4 });
+  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.5 });
 
   // Phases:
   // 0.00 – 0.18  : box flies in + rotates into view
@@ -192,8 +192,8 @@ function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
   const lidRotX = useTransform(p, [0.4, 0.58], [0, -135]);
   const lidLift = useTransform(p, [0.4, 0.58], [0, -30]);
 
-  // Box fade once items are out
-  const boxFade = useTransform(p, [0.62, 0.78], [1, 0.15]);
+  // Box dims gently as items emerge (never fully gone, stays as backdrop)
+  const boxFade = useTransform(p, [0.58, 0.95], [1, 0.18]);
 
   // Title parallax
   const titleY = useTransform(p, [0, 1], [60, -60]);
