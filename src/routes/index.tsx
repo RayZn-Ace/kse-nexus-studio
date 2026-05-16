@@ -694,6 +694,7 @@ function Index() {
       <Header />
       <Hero />
       <PinnedWord />
+      <Manifest />
       <HorizontalServices />
       <About />
       <Contact />
