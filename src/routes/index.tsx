@@ -427,29 +427,29 @@ const SERVICES = [
     n: "01",
     title: "Social Media",
     body:
-      "Kein Content-Kalender-Bullshit. Wir bauen Kanäle, die echte Community schaffen — mit Haltung, Wiedererkennungswert und Posts die Menschen teilen wollen.",
+      "Deine Konkurrenz postet auch. Der Unterschied: wir bauen Kanäle, die Menschen folgen wollen — nicht müssen. Strategie, Ästhetik, Community. Kein Baukasteninhalt. Kein Copy-Paste. Nur dein Charakter, skaliert.",
     tags: ["Instagram", "TikTok", "Meta", "LinkedIn", "YouTube"],
   },
   {
     n: "02",
     title: "Web Design",
     body:
-      "Keine Templates. Keine Baukästen-Optik. Websites, die in 3 Sekunden klar machen, wer du bist — und den Besucher nicht gehen lassen wollen.",
-    tags: ["Design", "Development", "SEO", "Performance"],
+      "Eine Website hat 3 Sekunden. Danach hat der Besucher entschieden. Wir bauen Sites, die in dieser Zeit alles sagen — wer du bist, was dich unterscheidet, warum genau du. Kein Template. Kein Durchschnitt.",
+    tags: ["Design", "Entwicklung", "SEO", "Performance"],
   },
   {
     n: "03",
     title: "Werbefilm",
     body:
-      "Cinematic. Präzise. Für Feed, Story und Großleinwand. Wir drehen Bilder, die hängenbleiben — weil gute Marken gute Bilder verdienen.",
-    tags: ["Reels", "Ads", "Brand Film", "Events"],
+      "Menschen kaufen keine Produkte. Sie kaufen Bilder, Gefühle, Identitäten. Wir drehen Werbung, die nicht wie Werbung aussieht — weil gute Bilder nicht erklären, sie zeigen. Cinematic. Präzise. Unvergesslich.",
+    tags: ["Reels", "Ads", "Brand Film", "Events", "Docs"],
   },
   {
     n: "04",
     title: "Branding",
     body:
-      "Logo, Farbe, Sprache, Auftritt — alles aus einer Hand. Wir entwickeln Identitäten, die nicht austauschbar sind. Charaktere, keine Gesichter.",
-    tags: ["Logo", "CI", "Strategie", "Positionierung"],
+      "Dein Logo ist nicht deine Marke. Deine Haltung ist es. Wir entwickeln Identitäten von Grund auf — visuell, sprachlich, strategisch. So dass dein Name für etwas steht. Nicht für alles. Für genau das Richtige.",
+    tags: ["Logo", "CI", "Strategie", "Positionierung", "Naming"],
   },
 ];
 
@@ -602,7 +602,7 @@ function ServiceCard({
               className="link-underline mt-8 inline-block text-[11px] tracking-[0.35em] uppercase"
               style={{ color: "#e8ff00" }}
             >
-              Anfragen →
+              Projekt anfragen →
             </a>
           </div>
         </div>
