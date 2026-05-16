@@ -149,7 +149,7 @@ function Hero() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
   const txtY = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
 
-  const headline = ["Fang", "niemals", "an", "aufzuhören."];
+  const headline = ["FANG", "NIEMALS", "AN", "AUFZUHÖREN."];
 
   return (
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
@@ -192,7 +192,7 @@ function Hero() {
             letterSpacing: "-0.05em",
           }}
         >
-          {headline.map((w, i) => (
+        {headline.map((w, i) => (
             <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
               <motion.span
                 className="inline-block"
@@ -216,11 +216,11 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-10 max-w-md text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
+          className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
         >
-          Wir bauen keine Marken.
+          Die meisten Marken sind laut.
           <br />
-          <span className="text-foreground">Wir bauen Charakter!</span>
+          <span className="text-foreground">Wenige sind unvergesslich.</span>
         </motion.p>
       </motion.div>
 
@@ -234,8 +234,10 @@ function Hero() {
         >
           {Array.from({ length: 12 }).map((_, i) => (
             <span key={i} className="px-8 flex items-center gap-8">
-              KSE Group <span className="text-foreground/30">·</span> Charakter
+              KSE Group <span className="text-foreground/30">·</span> Hannover
+              <span className="text-foreground/30">·</span> Charakter
               <span className="text-foreground/30">·</span> ksegroup.eu
+              <span className="text-foreground/30">·</span> Seit 2018
               <span className="text-foreground/30">·</span>
             </span>
           ))}
@@ -259,14 +261,13 @@ function PinnedWord() {
 
   // 8 reveal steps × 0.125 each across the 600vh container
   const words: { text: string; accent?: boolean; dash?: boolean; lineBreakBefore?: boolean }[] = [
-    { text: "WIR" },
-    { text: "BAUEN" },
-    { text: "KEINE" },
-    { text: "MARKEN." },
+    { text: "DU" },
+    { text: "WIRST" },
+    { text: "NICHT" },
+    { text: "MEHR" },
     { text: "—", dash: true, lineBreakBefore: true },
-    { text: "WIR" },
-    { text: "BAUEN" },
-    { text: "CHARAKTER!", accent: true },
+    { text: "UNSICHTBAR" },
+    { text: "SEIN.", accent: true },
   ];
 
   const ranges: [number, number, number][] = [
