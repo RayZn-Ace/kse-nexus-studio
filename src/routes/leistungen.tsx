@@ -88,7 +88,10 @@ const PACKAGES: Pkg[] = [
       { label: "Positionierung", detail: "Was du bist. Was du nicht bist. Und für wen." },
       { label: "Naming & Verbal", detail: "Name, Claim, Tonalität — präzise und besitzbar." },
       { label: "Visual System", detail: "Logo, Farbe, Typo, Bildwelt. Skalierbar." },
-      { label: "Brand Guidelines", detail: "Damit alle Kanäle gleich klingen, ohne dich zu fragen." },
+      {
+        label: "Brand Guidelines",
+        detail: "Damit alle Kanäle gleich klingen, ohne dich zu fragen.",
+      },
     ],
     price: "ab 4.900 € / Projekt",
   },
@@ -105,10 +108,22 @@ function PageHeader() {
           KSE / GROUP
         </Link>
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" hash="manifesto" className="link-underline">Manifest</Link>
-          <Link to="/leistungen" className="link-underline" activeProps={{ style: { color: ACCENT } }}>Leistungen</Link>
-          <Link to="/" hash="about" className="link-underline">Über</Link>
-          <Link to="/" hash="contact" className="link-underline">Kontakt</Link>
+          <Link to="/" hash="manifesto" className="link-underline">
+            Manifest
+          </Link>
+          <Link
+            to="/leistungen"
+            className="link-underline"
+            activeProps={{ style: { color: ACCENT } }}
+          >
+            Leistungen
+          </Link>
+          <Link to="/" hash="about" className="link-underline">
+            Über
+          </Link>
+          <Link to="/" hash="contact" className="link-underline">
+            Kontakt
+          </Link>
         </nav>
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
@@ -119,21 +134,40 @@ function PageHeader() {
           onClick={() => setOpen((v) => !v)}
           className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
         >
-          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`} />
-          <span className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+          <span
+            className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`}
+          />
+          <span
+            className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`}
+          />
+          <span
+            className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`}
+          />
         </button>
       </div>
       <div
         className={`md:hidden overflow-hidden transition-[max-height] duration-500 ease-[cubic-bezier(.77,0,.175,1)] ${open ? "max-h-[420px]" : "max-h-0"}`}
-        style={{ background: "#0a0a0a", borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none" }}
+        style={{
+          background: "#0a0a0a",
+          borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none",
+        }}
       >
         <nav className="flex flex-col gap-5 px-6 py-8 text-[13px] tracking-[0.3em] uppercase">
-          <Link to="/" hash="manifesto" onClick={() => setOpen(false)}>Manifest</Link>
-          <Link to="/leistungen" onClick={() => setOpen(false)} style={{ color: ACCENT }}>Leistungen</Link>
-          <Link to="/" hash="about" onClick={() => setOpen(false)}>Über</Link>
-          <Link to="/" hash="contact" onClick={() => setOpen(false)}>Kontakt</Link>
-          <a href="mailto:info@ksegroup.eu" style={{ color: ACCENT }}>info@ksegroup.eu →</a>
+          <Link to="/" hash="manifesto" onClick={() => setOpen(false)}>
+            Manifest
+          </Link>
+          <Link to="/leistungen" onClick={() => setOpen(false)} style={{ color: ACCENT }}>
+            Leistungen
+          </Link>
+          <Link to="/" hash="about" onClick={() => setOpen(false)}>
+            Über
+          </Link>
+          <Link to="/" hash="contact" onClick={() => setOpen(false)}>
+            Kontakt
+          </Link>
+          <a href="mailto:info@ksegroup.eu" style={{ color: ACCENT }}>
+            info@ksegroup.eu →
+          </a>
         </nav>
       </div>
     </header>
@@ -154,8 +188,8 @@ function Intro() {
           style={{ fontSize: "clamp(2.6rem, 9vw, 9rem)", letterSpacing: "-0.05em" }}
         >
           <span className="block overflow-hidden">
-              <motion.span
-                data-mobile-reveal
+            <motion.span
+              data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
@@ -165,21 +199,21 @@ function Intro() {
             </motion.span>
           </span>
           <span className="block overflow-hidden">
-              <motion.span
-                data-mobile-reveal
+            <motion.span
+              data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
               transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-                style={{ color: ACCENT, "--mobile-reveal-delay": "90ms" } as React.CSSProperties}
+              style={{ color: ACCENT, "--mobile-reveal-delay": "90ms" } as React.CSSProperties}
             >
               ausgepackt.
             </motion.span>
           </span>
         </h1>
         <p className="mt-10 max-w-xl text-base md:text-lg text-foreground/70 leading-relaxed">
-          Scroll dich durch unsere vier Disziplinen. Jedes Paket dreht sich, öffnet sich
-          und legt seinen Inhalt vor dir aus — Schritt für Schritt.
+          Scroll dich durch unsere vier Disziplinen. Jedes Paket dreht sich, öffnet sich und legt
+          seinen Inhalt vor dir aus — Schritt für Schritt.
         </p>
         <div className="mt-12 flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-foreground/50">
           <span className="inline-block w-8 h-px bg-foreground/40" /> scroll down
@@ -193,9 +227,11 @@ function Intro() {
 
 function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
   const isMobile = useIsMobile();
-  return isMobile
-    ? <UnboxSectionMobile pkg={pkg} index={index} />
-    : <UnboxSectionDesktop pkg={pkg} index={index} />;
+  return isMobile ? (
+    <UnboxSectionMobile pkg={pkg} index={index} />
+  ) : (
+    <UnboxSectionDesktop pkg={pkg} index={index} />
+  );
 }
 
 function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
@@ -270,16 +306,9 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
           >
             {pkg.title}
           </h2>
-          <p className="mt-5 text-base md:text-lg text-foreground/70 max-w-sm">
-            {pkg.kicker}
-          </p>
-          <p className="mt-4 text-sm text-foreground/55 max-w-sm leading-relaxed">
-            {pkg.intro}
-          </p>
-          <div
-            className="mt-6 text-[11px] uppercase tracking-[0.35em]"
-            style={{ color: ACCENT }}
-          >
+          <p className="mt-5 text-base md:text-lg text-foreground/70 max-w-sm">{pkg.kicker}</p>
+          <p className="mt-4 text-sm text-foreground/55 max-w-sm leading-relaxed">{pkg.intro}</p>
+          <div className="mt-6 text-[11px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
             {pkg.price}
           </div>
         </motion.div>
@@ -319,13 +348,7 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
         <div className="absolute inset-0 flex items-center justify-end pr-[6vw] md:pr-[10vw] pointer-events-none">
           <div className="w-[min(560px,46vw)] flex flex-col gap-3">
             {pkg.items.map((it, i) => (
-              <UnpackedItem
-                key={it.label}
-                item={it}
-                i={i}
-                total={pkg.items.length}
-                progress={p}
-              />
+              <UnpackedItem key={it.label} item={it} i={i} total={pkg.items.length} progress={p} />
             ))}
           </div>
         </div>
@@ -337,8 +360,7 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
               key={d}
               className="block w-1.5 h-1.5 rounded-full"
               style={{
-                background:
-                  d === index ? ACCENT : "rgba(255,255,255,0.2)",
+                background: d === index ? ACCENT : "rgba(255,255,255,0.2)",
               }}
             />
           ))}
@@ -386,7 +408,11 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
           <div className="font-black mt-2" style={{ fontSize: "1.4rem", letterSpacing: "-0.03em" }}>
             {pkg.title}
           </div>
-          <span aria-hidden className="block w-10 h-px mx-auto mt-2" style={{ background: ACCENT }} />
+          <span
+            aria-hidden
+            className="block w-10 h-px mx-auto mt-2"
+            style={{ background: ACCENT }}
+          />
           <div className="text-[10px] uppercase tracking-[0.3em] text-foreground/40 mt-2">
             Inhalt: 4 Module
           </div>
@@ -403,11 +429,13 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.6, ease: EASE, delay: i * 0.08 }}
             className="px-5 py-4 border border-foreground/15"
-            style={{
-              background: "rgb(10,10,10)",
-              borderLeft: `2px solid ${ACCENT}`,
-              "--mobile-reveal-delay": `${i * 80}ms`,
-            } as React.CSSProperties}
+            style={
+              {
+                background: "rgb(10,10,10)",
+                borderLeft: `2px solid ${ACCENT}`,
+                "--mobile-reveal-delay": `${i * 80}ms`,
+              } as React.CSSProperties
+            }
           >
             <div className="flex items-baseline gap-3">
               <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
@@ -486,19 +514,12 @@ function UnpackedItem({
       className="px-5 py-4 border border-foreground/15"
     >
       <div className="flex items-baseline gap-3">
-        <span
-          className="text-[10px] uppercase tracking-[0.35em]"
-          style={{ color: ACCENT }}
-        >
+        <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
           {String(i + 1).padStart(2, "0")}
         </span>
-        <h3 className="font-semibold text-base md:text-lg tracking-tight">
-          {item.label}
-        </h3>
+        <h3 className="font-semibold text-base md:text-lg tracking-tight">{item.label}</h3>
       </div>
-      <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">
-        {item.detail}
-      </p>
+      <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">{item.detail}</p>
     </motion.div>
   );
 }
@@ -518,11 +539,9 @@ function Box3D({
   const H = 200; // height (depth of opening)
   const D = 220; // depth
 
-  const baseFace =
-    "absolute inset-0 flex items-center justify-center text-foreground border";
+  const baseFace = "absolute inset-0 flex items-center justify-center text-foreground border";
   const faceStyle: React.CSSProperties = {
-    background:
-      "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
+    background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
     borderColor: "rgba(232,255,0,0.25)",
   };
 
@@ -628,15 +647,11 @@ function Box3D({
         <div
           className="absolute inset-0 border flex items-center justify-center"
           style={{
-            background:
-              "linear-gradient(135deg, rgba(28,28,28,0.98), rgba(12,12,12,0.98))",
+            background: "linear-gradient(135deg, rgba(28,28,28,0.98), rgba(12,12,12,0.98))",
             borderColor: "rgba(232,255,0,0.35)",
           }}
         >
-          <span
-            className="text-[10px] uppercase tracking-[0.4em]"
-            style={{ color: ACCENT }}
-          >
+          <span className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
             KSE · {pkg.n}
           </span>
         </div>
@@ -645,8 +660,7 @@ function Box3D({
           className="absolute inset-0 border flex items-center justify-center"
           style={{
             transform: "rotateX(180deg) translateZ(1px)",
-            background:
-              "linear-gradient(135deg, rgba(8,8,8,0.98), rgba(20,20,20,0.98))",
+            background: "linear-gradient(135deg, rgba(8,8,8,0.98), rgba(20,20,20,0.98))",
             borderColor: "rgba(232,255,0,0.2)",
           }}
         >
@@ -659,13 +673,7 @@ function Box3D({
   );
 }
 
-function BoxFaceContent({
-  pkg,
-  variant,
-}: {
-  pkg: Pkg;
-  variant: "front" | "back" | "side";
-}) {
+function BoxFaceContent({ pkg, variant }: { pkg: Pkg; variant: "front" | "back" | "side" }) {
   if (variant === "side") {
     return (
       <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/40 rotate-90">
@@ -675,10 +683,7 @@ function BoxFaceContent({
   }
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-      <span
-        className="text-[10px] uppercase tracking-[0.4em]"
-        style={{ color: ACCENT }}
-      >
+      <span className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
         Paket {pkg.n}
       </span>
       <span
@@ -687,11 +692,7 @@ function BoxFaceContent({
       >
         {pkg.title}
       </span>
-      <span
-        aria-hidden
-        className="block w-10 h-px"
-        style={{ background: ACCENT }}
-      />
+      <span aria-hidden className="block w-10 h-px" style={{ background: ACCENT }} />
       <span className="text-[10px] uppercase tracking-[0.3em] text-foreground/40">
         {variant === "front" ? "Inhalt: 4 Module" : "Versiegelt · Original"}
       </span>
@@ -717,8 +718,8 @@ function Outro() {
           <span style={{ color: ACCENT }}>Basti antwortet.</span>
         </h2>
         <p className="mt-8 max-w-xl text-base md:text-lg text-foreground/70 leading-relaxed">
-          Kein Account Manager, kein Ticket-System. Sag uns, welches Paket dich
-          reizt — oder ob du eine Kombination brauchst.
+          Kein Account Manager, kein Ticket-System. Sag uns, welches Paket dich reizt — oder ob du
+          eine Kombination brauchst.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <a

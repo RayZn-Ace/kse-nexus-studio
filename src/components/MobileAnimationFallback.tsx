@@ -7,7 +7,8 @@ export function MobileAnimationFallback() {
     if (typeof window === "undefined") return;
 
     const media = window.matchMedia(MOBILE_QUERY);
-    const elements = () => Array.from(document.querySelectorAll<HTMLElement>("[data-mobile-reveal]"));
+    const elements = () =>
+      Array.from(document.querySelectorAll<HTMLElement>("[data-mobile-reveal]"));
 
     const revealNow = () => {
       elements().forEach((el) => el.classList.add("is-visible"));

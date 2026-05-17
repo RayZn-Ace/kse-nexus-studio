@@ -50,7 +50,11 @@ function SplitReveal({
             whileInView={{ y: "0%" }}
             viewport={{ once, margin: "-10%" }}
             transition={{ duration: 1, ease: EASE, delay: delay + i * stagger }}
-            style={{ "--mobile-reveal-delay": `${Math.round((delay + i * stagger) * 1000)}ms` } as React.CSSProperties}
+            style={
+              {
+                "--mobile-reveal-delay": `${Math.round((delay + i * stagger) * 1000)}ms`,
+              } as React.CSSProperties
+            }
           >
             {w}
           </motion.span>
@@ -82,7 +86,7 @@ function Scramble({ text, className = "" }: { text: string; className?: string }
             if (i < reveal || c === " ") return c;
             return pool[Math.floor(Math.random() * pool.length)];
           })
-          .join("")
+          .join(""),
       );
       if (frame >= total) {
         setOut(text);
@@ -125,10 +129,18 @@ function Header() {
           KSE / GROUP
         </a>
         <nav className="hidden md:flex items-center gap-8">
-          <a href="#manifesto" className="link-underline">Manifest</a>
-          <Link to="/leistungen" className="link-underline">Leistungen</Link>
-          <a href="#about" className="link-underline">Über</a>
-          <a href="#contact" className="link-underline">Kontakt</a>
+          <a href="#manifesto" className="link-underline">
+            Manifest
+          </a>
+          <Link to="/leistungen" className="link-underline">
+            Leistungen
+          </Link>
+          <a href="#about" className="link-underline">
+            Über
+          </a>
+          <a href="#contact" className="link-underline">
+            Kontakt
+          </a>
         </nav>
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
@@ -139,22 +151,41 @@ function Header() {
           onClick={() => setOpen((v) => !v)}
           className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
         >
-          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`} />
-          <span className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+          <span
+            className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`}
+          />
+          <span
+            className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`}
+          />
+          <span
+            className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`}
+          />
         </button>
       </div>
       {/* mobile drawer */}
       <div
         className={`md:hidden overflow-hidden transition-[max-height] duration-500 ease-[cubic-bezier(.77,0,.175,1)] ${open ? "max-h-[420px]" : "max-h-0"}`}
-        style={{ background: "#0a0a0a", borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none" }}
+        style={{
+          background: "#0a0a0a",
+          borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none",
+        }}
       >
         <nav className="flex flex-col gap-5 px-6 py-8 text-[13px] tracking-[0.3em] uppercase">
-          <a href="#manifesto" onClick={() => setOpen(false)}>Manifest</a>
-          <Link to="/leistungen" onClick={() => setOpen(false)}>Leistungen</Link>
-          <a href="#about" onClick={() => setOpen(false)}>Über</a>
-          <a href="#contact" onClick={() => setOpen(false)}>Kontakt</a>
-          <a href="mailto:info@ksegroup.eu" style={{ color: "#e8ff00" }}>info@ksegroup.eu →</a>
+          <a href="#manifesto" onClick={() => setOpen(false)}>
+            Manifest
+          </a>
+          <Link to="/leistungen" onClick={() => setOpen(false)}>
+            Leistungen
+          </Link>
+          <a href="#about" onClick={() => setOpen(false)}>
+            Über
+          </a>
+          <a href="#contact" onClick={() => setOpen(false)}>
+            Kontakt
+          </a>
+          <a href="mailto:info@ksegroup.eu" style={{ color: "#e8ff00" }}>
+            info@ksegroup.eu →
+          </a>
         </nav>
       </div>
     </header>
@@ -176,96 +207,96 @@ function Hero() {
     <section id="top" ref={ref} className="relative h-screen w-full overflow-hidden">
       {/* z-index:1 wrapper so hero content sits above the global cinema layer */}
       <div className="relative z-[1] h-full w-full">
-      {/* Parallax oversized glyph */}
-      <motion.div
-        aria-hidden
-        style={{ y: bgY }}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-      >
-        <span
-          className="font-black leading-none"
-          style={{
-            fontSize: "min(82vw, 1100px)",
-            color: "transparent",
-            WebkitTextStroke: "1px rgba(240,237,232,0.07)",
-            letterSpacing: "-0.06em",
-          }}
-        >
-          KSE
-        </span>
-      </motion.div>
-
-      {/* Top meta row */}
-      <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
-        <span>[ 01 / Hannover · DE ]</span>
-        <span className="hidden md:inline">Est. — Independent Studio</span>
-      </div>
-
-      {/* Headline */}
-      <motion.div
-        style={{ y: txtY }}
-        className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center"
-      >
-        <h1
-          className="font-black leading-[0.85]"
-          style={{
-            fontSize: "clamp(3.5rem, 13vw, 12rem)",
-            letterSpacing: "-0.05em",
-          }}
-        >
-        {headline.map((w, i) => (
-            <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
-              <motion.span
-                data-mobile-reveal
-                className="inline-block"
-                initial={{ y: 80, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
-                style={{ "--mobile-reveal-delay": `${200 + i * 120}ms` } as React.CSSProperties}
-              >
-                {i === headline.length - 1 ? (
-                  <span style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}>
-                    {w}
-                  </span>
-                ) : (
-                  w
-                )}
-              </motion.span>
-            </span>
-          ))}
-        </h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
-        >
-          Die meisten Marken sind laut.
-          <br />
-          <span className="text-foreground">Wenige sind unvergesslich.</span>
-        </motion.p>
-      </motion.div>
-
-      {/* Bottom ticker */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+        {/* Parallax oversized glyph */}
         <motion.div
-          className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium"
-          style={{ color: "#e8ff00" }}
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+          aria-hidden
+          style={{ y: bgY }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
         >
-          {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i} className="px-8 flex items-center gap-8">
-              KSE Group <span className="text-foreground/30">·</span> Hannover
-              <span className="text-foreground/30">·</span> Charakter
-              <span className="text-foreground/30">·</span> ksegroup.eu
-              <span className="text-foreground/30">·</span> Seit 2018
-              <span className="text-foreground/30">·</span>
-            </span>
-          ))}
+          <span
+            className="font-black leading-none"
+            style={{
+              fontSize: "min(82vw, 1100px)",
+              color: "transparent",
+              WebkitTextStroke: "1px rgba(240,237,232,0.07)",
+              letterSpacing: "-0.06em",
+            }}
+          >
+            KSE
+          </span>
         </motion.div>
-      </div>
+
+        {/* Top meta row */}
+        <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
+          <span>[ 01 / Hannover · DE ]</span>
+          <span className="hidden md:inline">Est. — Independent Studio</span>
+        </div>
+
+        {/* Headline */}
+        <motion.div
+          style={{ y: txtY }}
+          className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center"
+        >
+          <h1
+            className="font-black leading-[0.85]"
+            style={{
+              fontSize: "clamp(3.5rem, 13vw, 12rem)",
+              letterSpacing: "-0.05em",
+            }}
+          >
+            {headline.map((w, i) => (
+              <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
+                <motion.span
+                  data-mobile-reveal
+                  className="inline-block"
+                  initial={{ y: 80, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
+                  style={{ "--mobile-reveal-delay": `${200 + i * 120}ms` } as React.CSSProperties}
+                >
+                  {i === headline.length - 1 ? (
+                    <span style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}>
+                      {w}
+                    </span>
+                  ) : (
+                    w
+                  )}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
+            className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
+          >
+            Die meisten Marken sind laut.
+            <br />
+            <span className="text-foreground">Wenige sind unvergesslich.</span>
+          </motion.p>
+        </motion.div>
+
+        {/* Bottom ticker */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+          <motion.div
+            className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium"
+            style={{ color: "#e8ff00" }}
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+          >
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span key={i} className="px-8 flex items-center gap-8">
+                KSE Group <span className="text-foreground/30">·</span> Hannover
+                <span className="text-foreground/30">·</span> Charakter
+                <span className="text-foreground/30">·</span> ksegroup.eu
+                <span className="text-foreground/30">·</span> Seit 2018
+                <span className="text-foreground/30">·</span>
+              </span>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -306,42 +337,52 @@ function PinnedWord() {
         }}
       >
         {/* Existing content sits above the background */}
-        <div style={{ position: "relative", zIndex: 1, width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {/* Top-left label */}
         <div
-          className="absolute top-8 left-6 text-[10px] uppercase tracking-[0.4em]"
-          style={{ color: "#e8ff00" }}
-        >
-          // MANIFEST
-        </div>
-        {/* Top-right scroll counter */}
-        <div
-          className="absolute top-8 right-6 text-[10px] uppercase tracking-[0.4em]"
-          style={{ color: "#e8ff00" }}
-        >
-          <motion.span>{counter}</motion.span>
-          <span className="text-foreground/40"> / 100</span>
-        </div>
-
-        {/* Word stage */}
-        <h2
-          className="font-black px-4 text-center"
           style={{
-            fontSize: "clamp(1.5rem, 7vw, 8rem)",
-            fontWeight: 900,
-            letterSpacing: "-0.03em",
-            color: "#f0ede8",
-            lineHeight: 1.05,
-            maxWidth: "94vw",
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
-            WIR BAUEN KEINE MARKEN.
-          </motion.span>
-          <motion.span style={{ opacity: lineTwoOpacity, y: lineTwoY, display: "block" }}>
-            WIR BAUEN <span style={{ color: "#e8ff00" }}>CHARAKTER!</span>
-          </motion.span>
-        </h2>
+          {/* Top-left label */}
+          <div
+            className="absolute top-8 left-6 text-[10px] uppercase tracking-[0.4em]"
+            style={{ color: "#e8ff00" }}
+          >
+            // MANIFEST
+          </div>
+          {/* Top-right scroll counter */}
+          <div
+            className="absolute top-8 right-6 text-[10px] uppercase tracking-[0.4em]"
+            style={{ color: "#e8ff00" }}
+          >
+            <motion.span>{counter}</motion.span>
+            <span className="text-foreground/40"> / 100</span>
+          </div>
+
+          {/* Word stage */}
+          <h2
+            className="font-black px-4 text-center"
+            style={{
+              fontSize: "clamp(1.5rem, 7vw, 8rem)",
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              color: "#f0ede8",
+              lineHeight: 1.05,
+              maxWidth: "94vw",
+            }}
+          >
+            <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
+              WIR BAUEN KEINE MARKEN.
+            </motion.span>
+            <motion.span style={{ opacity: lineTwoOpacity, y: lineTwoY, display: "block" }}>
+              WIR BAUEN <span style={{ color: "#e8ff00" }}>CHARAKTER!</span>
+            </motion.span>
+          </h2>
         </div>
       </div>
     </section>
@@ -368,7 +409,11 @@ function Manifest() {
       <div className="max-w-6xl mx-auto">
         <h2
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(1.6rem, 3rem, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
+          style={{
+            fontSize: "clamp(1.6rem, 3rem, 3rem)",
+            lineHeight: 1.2,
+            letterSpacing: "-0.03em",
+          }}
         >
           {lines.map((line, i) => (
             <span key={i} className="block overflow-hidden">
@@ -401,29 +446,25 @@ const SERVICES = [
   {
     n: "01",
     title: "Social Media",
-    body:
-      "Deine Konkurrenz postet auch. Der Unterschied: wir bauen Kanäle, die Menschen folgen wollen — nicht müssen. Strategie, Ästhetik, Community. Kein Baukasteninhalt. Kein Copy-Paste. Nur dein Charakter, skaliert.",
+    body: "Deine Konkurrenz postet auch. Der Unterschied: wir bauen Kanäle, die Menschen folgen wollen — nicht müssen. Strategie, Ästhetik, Community. Kein Baukasteninhalt. Kein Copy-Paste. Nur dein Charakter, skaliert.",
     tags: ["Instagram", "TikTok", "Meta", "LinkedIn", "YouTube"],
   },
   {
     n: "02",
     title: "Web Design",
-    body:
-      "Eine Website hat 3 Sekunden. Danach hat der Besucher entschieden. Wir bauen Sites, die in dieser Zeit alles sagen — wer du bist, was dich unterscheidet, warum genau du. Kein Template. Kein Durchschnitt.",
+    body: "Eine Website hat 3 Sekunden. Danach hat der Besucher entschieden. Wir bauen Sites, die in dieser Zeit alles sagen — wer du bist, was dich unterscheidet, warum genau du. Kein Template. Kein Durchschnitt.",
     tags: ["Design", "Entwicklung", "SEO", "Performance"],
   },
   {
     n: "03",
     title: "Werbefilm",
-    body:
-      "Menschen kaufen keine Produkte. Sie kaufen Bilder, Gefühle, Identitäten. Wir drehen Werbung, die nicht wie Werbung aussieht — weil gute Bilder nicht erklären, sie zeigen. Cinematic. Präzise. Unvergesslich.",
+    body: "Menschen kaufen keine Produkte. Sie kaufen Bilder, Gefühle, Identitäten. Wir drehen Werbung, die nicht wie Werbung aussieht — weil gute Bilder nicht erklären, sie zeigen. Cinematic. Präzise. Unvergesslich.",
     tags: ["Reels", "Ads", "Brand Film", "Events", "Docs"],
   },
   {
     n: "04",
     title: "Branding",
-    body:
-      "Dein Logo ist nicht deine Marke. Deine Haltung ist es. Wir entwickeln Identitäten von Grund auf — visuell, sprachlich, strategisch. So dass dein Name für etwas steht. Nicht für alles. Für genau das Richtige.",
+    body: "Dein Logo ist nicht deine Marke. Deine Haltung ist es. Wir entwickeln Identitäten von Grund auf — visuell, sprachlich, strategisch. So dass dein Name für etwas steht. Nicht für alles. Für genau das Richtige.",
     tags: ["Logo", "CI", "Strategie", "Positionierung", "Naming"],
   },
 ];
@@ -473,7 +514,10 @@ function HorizontalServicesDesktop() {
 
         {/* progress bar */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[40vw] max-w-md h-px bg-foreground/15 overflow-hidden">
-          <motion.div style={{ scaleX: scrollYProgress, background: "#e8ff00" }} className="origin-left h-full" />
+          <motion.div
+            style={{ scaleX: scrollYProgress, background: "#e8ff00" }}
+            className="origin-left h-full"
+          />
         </div>
       </div>
     </section>
@@ -504,16 +548,36 @@ function VerticalServices() {
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.8, ease: EASE }}
             className="relative border border-foreground/15 p-6"
-            style={{ background: "rgba(10,10,10,0.85)", "--mobile-reveal-delay": `${Number(s.n) * 70}ms` } as React.CSSProperties}
+            style={
+              {
+                background: "rgba(10,10,10,0.85)",
+                "--mobile-reveal-delay": `${Number(s.n) * 70}ms`,
+              } as React.CSSProperties
+            }
           >
-            <span aria-hidden className="absolute top-0 left-0 right-0 h-px" style={{ background: "#e8ff00" }} />
+            <span
+              aria-hidden
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{ background: "#e8ff00" }}
+            />
             <div className="flex items-baseline justify-between mb-4">
-              <span className="text-[10px] uppercase tracking-[0.4em] text-foreground/50">/ {s.n}</span>
-              <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: "#e8ff00" }}>Service</span>
+              <span className="text-[10px] uppercase tracking-[0.4em] text-foreground/50">
+                / {s.n}
+              </span>
+              <span
+                className="text-[10px] uppercase tracking-[0.35em]"
+                style={{ color: "#e8ff00" }}
+              >
+                Service
+              </span>
             </div>
             <h3
               className="font-black mb-4"
-              style={{ fontSize: "clamp(1.8rem, 8vw, 2.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+              style={{
+                fontSize: "clamp(1.8rem, 8vw, 2.4rem)",
+                letterSpacing: "-0.04em",
+                lineHeight: 0.95,
+              }}
             >
               {s.title.toUpperCase()}
             </h3>
@@ -574,11 +638,7 @@ function ServiceCard({
         {/* LEFT PANEL — big number + grid pattern */}
         <div className="relative w-2/5 h-full border-r border-foreground/15 overflow-hidden flex items-center justify-center">
           {/* SVG grid pattern, stroke only */}
-          <svg
-            aria-hidden
-            className="absolute inset-0 w-full h-full"
-            style={{ opacity: 0.05 }}
-          >
+          <svg aria-hidden className="absolute inset-0 w-full h-full" style={{ opacity: 0.05 }}>
             <defs>
               <pattern id={`grid-${s.n}`} width="32" height="32" patternUnits="userSpaceOnUse">
                 <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#e8ff00" strokeWidth="1" />
@@ -615,14 +675,21 @@ function ServiceCard({
         </div>
 
         {/* RIGHT PANEL — content */}
-        <div className="relative w-3/5 h-full flex flex-col justify-between" style={{ padding: "2.5rem" }}>
+        <div
+          className="relative w-3/5 h-full flex flex-col justify-between"
+          style={{ padding: "2.5rem" }}
+        >
           <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">
             / Service
           </span>
           <div>
             <h3
               className="font-black mb-5"
-              style={{ fontSize: "clamp(2rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+              style={{
+                fontSize: "clamp(2rem, 3.5vw, 3.4rem)",
+                letterSpacing: "-0.04em",
+                lineHeight: 0.95,
+              }}
             >
               {s.title.toUpperCase()}
             </h3>
@@ -701,7 +768,10 @@ function CountUp({ to, pad = 0, suffix = "" }: { to: number; pad?: number; suffi
 
 function About() {
   return (
-    <section id="about" className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44">
+    <section
+      id="about"
+      className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44"
+    >
       {/* Heading */}
       <div className="max-w-6xl mx-auto mb-12">
         <h2
@@ -724,12 +794,20 @@ function About() {
       <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24">
         <p
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
+          style={{
+            fontSize: "clamp(2.25rem, 4rem, 4rem)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.04em",
+          }}
         >
           Wir bauen Marken, an denen man nicht vorbeiscrollen kann.
         </p>
         <p className="text-foreground/90 text-base md:text-lg leading-relaxed self-center">
-          KSE ist kein Dienstleister, der Abgabetermine erfüllt. Wir sind das Team, das dafür sorgt, dass dein Name fällt, wenn du nicht im Raum bist. Strategie, Design, Content, Performance — aus einer Hand, ohne Agentur-Theater, ohne Praktikanten an deinem Projekt. Wir nehmen wenige Kunden im Jahr. Dafür liefern wir Arbeit, die Wettbewerber nervös macht. Wenn du willst, dass man dich übersieht: such dir jemand anderen.
+          KSE ist kein Dienstleister, der Abgabetermine erfüllt. Wir sind das Team, das dafür sorgt,
+          dass dein Name fällt, wenn du nicht im Raum bist. Strategie, Design, Content, Performance
+          — aus einer Hand, ohne Agentur-Theater, ohne Praktikanten an deinem Projekt. Wir nehmen
+          wenige Kunden im Jahr. Dafür liefern wir Arbeit, die Wettbewerber nervös macht. Wenn du
+          willst, dass man dich übersieht: such dir jemand anderen.
         </p>
       </div>
 
@@ -744,16 +822,27 @@ function About() {
             viewport={{ once: true, margin: "-15%" }}
             transition={{ duration: 0.9, ease: EASE, delay: i * 0.12 }}
             className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 px-6 md:px-12 py-12 md:py-16"
-            style={{ background: "rgba(10,10,10,0.82)", "--mobile-reveal-delay": `${i * 120}ms` } as React.CSSProperties}
+            style={
+              {
+                background: "rgba(10,10,10,0.82)",
+                "--mobile-reveal-delay": `${i * 120}ms`,
+              } as React.CSSProperties
+            }
           >
             <div>
               <div
                 className="font-black"
-                style={{ fontSize: "clamp(4rem, 12vw, 11rem)", letterSpacing: "-0.06em", lineHeight: 0.85 }}
+                style={{
+                  fontSize: "clamp(4rem, 12vw, 11rem)",
+                  letterSpacing: "-0.06em",
+                  lineHeight: 0.85,
+                }}
               >
                 <CountUp to={s.value} pad={s.pad ?? 0} suffix={s.suffix} />
               </div>
-              <div className="mt-3 text-[11px] uppercase tracking-[0.4em] text-foreground/50">{s.label}</div>
+              <div className="mt-3 text-[11px] uppercase tracking-[0.4em] text-foreground/50">
+                {s.label}
+              </div>
             </div>
             <p className="text-foreground/80 text-base md:text-xl leading-relaxed self-center max-w-xl">
               {s.body}
@@ -769,7 +858,10 @@ function About() {
 
 function Contact() {
   return (
-    <section id="contact" className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44 overflow-hidden">
+    <section
+      id="contact"
+      className="relative border-t border-foreground/15 px-6 md:px-10 py-32 md:py-44 overflow-hidden"
+    >
       <div className="absolute top-8 left-6 text-[10px] uppercase tracking-[0.4em] text-foreground/50">
         // 04 — Kontakt
       </div>
@@ -788,11 +880,7 @@ function Contact() {
           Schreib uns — bevor es dein Wettbewerb tut.
         </div>
 
-        <a
-          href="mailto:info@ksegroup.eu"
-          data-cursor="accent"
-          className="block group"
-        >
+        <a href="mailto:info@ksegroup.eu" data-cursor="accent" className="block group">
           <span
             className="font-black block leading-[0.9] break-all transition-colors group-hover:[color:var(--accent)]"
             style={{ fontSize: "clamp(2rem, 8vw, 8rem)", letterSpacing: "-0.05em" }}
@@ -808,9 +896,13 @@ function Contact() {
         <div className="mt-16 flex flex-wrap gap-8 text-[11px] uppercase tracking-[0.4em] text-foreground/55">
           <span>Hannover · DE</span>
           <span>—</span>
-          <a href="https://instagram.com/ksegroup" className="link-underline">Instagram</a>
+          <a href="https://instagram.com/ksegroup" className="link-underline">
+            Instagram
+          </a>
           <span>—</span>
-          <a href="https://ksegroup.eu" className="link-underline">ksegroup.eu</a>
+          <a href="https://ksegroup.eu" className="link-underline">
+            ksegroup.eu
+          </a>
         </div>
 
         <div className="mt-20 flex flex-col md:flex-row gap-4">
@@ -834,7 +926,8 @@ function Contact() {
           className="mt-6 text-[10px] uppercase tracking-[0.35em]"
           style={{ color: "rgba(240,237,232,0.4)" }}
         >
-          Erstgespräch kostenlos · Antwort in unter 24h · Kein Sales-Pitch — nur Klartext, ob wir zueinander passen.
+          Erstgespräch kostenlos · Antwort in unter 24h · Kein Sales-Pitch — nur Klartext, ob wir
+          zueinander passen.
         </div>
       </div>
     </section>
@@ -863,15 +956,15 @@ function Index() {
 
       {/* All page content sits above the cinema layer */}
       <div className="relative" style={{ zIndex: 1 }}>
-      <ScrollProgress />
-      <Header />
-      <Hero />
-      <PinnedWord />
-      <Manifest />
-      <HorizontalServices />
-      <About />
-      <Contact />
-      <Footer />
+        <ScrollProgress />
+        <Header />
+        <Hero />
+        <PinnedWord />
+        <Manifest />
+        <HorizontalServices />
+        <About />
+        <Contact />
+        <Footer />
       </div>
     </main>
   );
