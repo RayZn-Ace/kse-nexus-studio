@@ -74,14 +74,14 @@ export default function VillaBuilder() {
     <div
       aria-hidden
       style={{
-        position: 'fixed',
+          position: "fixed",
         inset: 0,
-        width: '100vw',
-        height: '100vh',
+          width: "100vw",
+          height: "100svh",
         zIndex: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        background: '#000',
+          pointerEvents: "none",
+          overflow: "hidden",
+          background: "#000",
       }}
     >
       <video
@@ -91,12 +91,58 @@ export default function VillaBuilder() {
         playsInline
         preload="auto"
         style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
           opacity: 0.85,
         }}
       />
+
+      <svg
+        className="kse-mobile-network"
+        viewBox="0 0 390 844"
+        preserveAspectRatio="xMidYMid slice"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+      >
+        <g className="network-drift" opacity="0.92">
+          {[80, 185, 290, 420, 570, 720].map((y, i) => (
+            <path
+              key={`wave-${y}`}
+              d={`M-80 ${y} C 40 ${y - 70} 128 ${y + 65} 244 ${y - 10} S 454 ${y + 36} 520 ${y - 42}`}
+              fill="none"
+              stroke="#e8ff00"
+              strokeOpacity={i % 2 ? 0.18 : 0.28}
+              strokeWidth={i % 2 ? 1.1 : 1.7}
+            />
+          ))}
+          <g stroke="#e8ff00" strokeOpacity="0.34" strokeWidth="1.2">
+            <path d="M24 212 L98 334 L188 265 L310 386 L366 300" />
+            <path d="M36 548 L126 432 L224 520 L348 438" />
+            <path d="M64 160 L190 265 L126 432 L310 386" />
+            <path d="M98 334 L224 520 L310 386" />
+          </g>
+          {[
+            [24, 212],
+            [98, 334],
+            [188, 265],
+            [310, 386],
+            [366, 300],
+            [36, 548],
+            [126, 432],
+            [224, 520],
+            [348, 438],
+          ].map(([cx, cy], i) => (
+            <circle key={`mobile-node-${i}`} cx={cx} cy={cy} r="4" fill="#e8ff00" opacity="0.62" />
+          ))}
+        </g>
+        <g className="villa-draw" transform="translate(45 280)" opacity="0.24">
+          <path d="M8 210 L8 104 L150 8 L292 104 L292 210 Z" fill="none" stroke="#f0ede8" strokeWidth="2" />
+          <path d="M0 112 L150 0 L300 112" fill="none" stroke="#e8ff00" strokeWidth="2.5" />
+          <path d="M56 210 L56 132 L122 132 L122 210" fill="none" stroke="#f0ede8" strokeWidth="2" />
+          <path d="M178 210 L178 130 L250 130 L250 210" fill="none" stroke="#f0ede8" strokeWidth="2" />
+          <path d="M150 8 L150 210" fill="none" stroke="#f0ede8" strokeOpacity="0.45" strokeWidth="1.5" />
+        </g>
+      </svg>
 
       {/* Electric current overlay — only visible at the start, fades on scroll */}
       <svg
