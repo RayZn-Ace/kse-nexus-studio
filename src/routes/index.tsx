@@ -339,7 +339,7 @@ function Manifest() {
       <div className="max-w-6xl mx-auto">
         <h2
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(1.6rem, 3rem, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
+          style={{ fontSize: "clamp(1.5rem, 5.2vw, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
         >
           {lines.map((line, i) => (
             <span key={i} className="block overflow-hidden">
@@ -633,7 +633,7 @@ function About() {
       <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24">
         <p
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
+          style={{ fontSize: "clamp(1.875rem, 5.5vw, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
           Wir bauen Marken, an denen man nicht vorbeiscrollen kann.
         </p>
