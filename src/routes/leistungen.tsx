@@ -207,7 +207,7 @@ function Intro() {
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
               transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-                style={{ color: ACCENT }}
+              style={{ color: ACCENT }}
             >
               ausgepackt.
             </motion.span>
@@ -394,7 +394,13 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: EASE, delay: 0.04 }}
         className="font-black leading-[0.85] tracking-tight mb-4"
-        style={{ fontSize: "clamp(2.2rem, 10vw, 3.6rem)", letterSpacing: "-0.04em", "--mobile-reveal-delay": "40ms" } as React.CSSProperties}
+        style={
+          {
+            fontSize: "clamp(2.2rem, 10vw, 3.6rem)",
+            letterSpacing: "-0.04em",
+            "--mobile-reveal-delay": "40ms",
+          } as React.CSSProperties
+        }
       >
         {pkg.title}
       </motion.h2>
@@ -440,15 +446,17 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
         viewport={{ once: true, amount: 0.18 }}
         transition={{ duration: 0.75, ease: EASE, delay: 0.2 }}
         className="relative border flex items-center justify-center mb-6 mx-auto"
-        style={{
-          width: "100%",
-          maxWidth: 320,
-          height: 140,
-          background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
-          borderColor: "rgba(232,255,0,0.25)",
-          transformPerspective: 900,
-          "--mobile-reveal-delay": "200ms",
-        } as React.CSSProperties}
+        style={
+          {
+            width: "100%",
+            maxWidth: 320,
+            height: 140,
+            background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
+            borderColor: "rgba(232,255,0,0.25)",
+            transformPerspective: 900,
+            "--mobile-reveal-delay": "200ms",
+          } as React.CSSProperties
+        }
       >
         <div className="text-center">
           <div className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
