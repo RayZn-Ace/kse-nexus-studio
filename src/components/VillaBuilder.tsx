@@ -3,22 +3,81 @@ import videoAsset from '@/../public/villa-build.mp4.asset.json';
 
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
+  const targetProgressRef = useRef(0);
   const [introOpacity, setIntroOpacity] = useState(1);
+  const [useFrameSequence, setUseFrameSequence] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
 
     video.pause();
     let currentTime = 0;
+    let currentFrame = 0;
     let lastApplied = -1;
     let seeking = false;
     let primed = false;
+    let frameSequence = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches;
+    setUseFrameSequence(frameSequence);
+    const frameCount = 161;
+    const frames: Array<HTMLImageElement | undefined> = [];
+    const loadedFrames = new Set<number>();
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
+
+    const frameUrl = (index: number) =>
+      `/villa-frames/frame-${String(index + 1).padStart(3, '0')}.jpg`;
+
+    const loadFrame = (index: number) => {
+      if (!frameSequence || frames[index]) return;
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => loadedFrames.add(index);
+      img.src = frameUrl(index);
+      frames[index] = img;
+    };
+
+    const nearestLoadedFrame = (index: number) => {
+      if (loadedFrames.has(index)) return index;
+      for (let offset = 1; offset < 14; offset += 1) {
+        const before = index - offset;
+        const after = index + offset;
+        if (after < frameCount && loadedFrames.has(after)) return after;
+        if (before >= 0 && loadedFrames.has(before)) return before;
+      }
+      return loadedFrames.has(0) ? 0 : -1;
+    };
+
+    const drawFrame = (index: number) => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(window.innerWidth * dpr));
+      const height = Math.max(1, Math.round(window.innerHeight * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      const ctx = canvas.getContext('2d');
+      const img = frames[index];
+      if (!ctx || !img || !loadedFrames.has(index)) return;
+
+      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+      const drawWidth = img.naturalWidth * scale;
+      const drawHeight = img.naturalHeight * scale;
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+    };
+
+    if (frameSequence) {
+      loadFrame(0);
+      window.setTimeout(() => {
+        for (let i = 1; i < frameCount; i += 1) loadFrame(i);
+      }, 80);
+    }
 
     // iOS Safari quirk: a muted/playsInline video will not honor
     // currentTime assignments reliably until it has been "played" once
@@ -52,6 +111,7 @@ export default function VillaBuilder() {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       const duration = video.duration || 10;
+      targetProgressRef.current = p;
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
@@ -59,7 +119,17 @@ export default function VillaBuilder() {
     };
 
     const tick = () => {
-      if (video.readyState >= 2) {
+      if (frameSequence) {
+        const targetFrame = targetProgressRef.current * (frameCount - 1);
+        currentFrame += (targetFrame - currentFrame) * 0.2;
+        const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
+        for (let i = -3; i <= 5; i += 1) {
+          const nearby = wantedFrame + i;
+          if (nearby >= 0 && nearby < frameCount) loadFrame(nearby);
+        }
+        const frameToDraw = nearestLoadedFrame(wantedFrame);
+        if (frameToDraw >= 0) drawFrame(frameToDraw);
+      } else if (video.readyState >= 2) {
         const target = targetTimeRef.current;
         // Smooth interpolation toward the scroll target.
         currentTime += (target - currentTime) * (isIOS ? 0.22 : 0.18);
