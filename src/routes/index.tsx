@@ -298,13 +298,12 @@ function PinnedWord() {
         <h2
           className="font-black px-4 text-center"
           style={{
-            fontSize: "clamp(2.2rem, 6.4vw, 8rem)",
+            fontSize: "clamp(1.5rem, 7.5vw, 8rem)",
             fontWeight: 900,
             letterSpacing: "-0.03em",
             color: "#f0ede8",
             lineHeight: 1.05,
-            maxWidth: "92vw",
-            whiteSpace: "nowrap",
+            maxWidth: "94vw",
           }}
         >
           <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
