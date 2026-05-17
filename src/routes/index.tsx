@@ -219,9 +219,9 @@ function Hero() {
       </motion.div>
 
       {/* Bottom ticker */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-3 md:py-4">
         <motion.div
-          className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium"
+          className="flex whitespace-nowrap text-[10px] md:text-[13px] tracking-[0.3em] md:tracking-[0.4em] uppercase font-medium"
           style={{ color: "#e8ff00" }}
           animate={{ x: ["0%", "-50%"] }}
           transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
@@ -334,7 +334,7 @@ function Manifest() {
   return (
     <section
       className="relative border-t border-foreground/15"
-      style={{ padding: "15vh 8vw", background: "rgba(0,0,0,0.55)" }}
+      style={{ padding: "clamp(10vh, 15vh, 15vh) clamp(1.5rem, 8vw, 8vw)", background: "rgba(0,0,0,0.55)" }}
     >
       <div className="max-w-6xl mx-auto">
         <h2
