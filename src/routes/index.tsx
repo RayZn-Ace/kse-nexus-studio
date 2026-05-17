@@ -307,22 +307,35 @@ function HeroMobile() {
           <span>[ 01 / Hannover · DE ]</span>
         </div>
 
-        <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center">
+        <div
+          className="absolute inset-x-0 z-20 px-4 text-center"
+          style={{ top: "42%", transform: "translateY(-50%)" }}
+        >
           <h1
-            className="font-black leading-[0.85] animate-[kse-mobile-hero_900ms_cubic-bezier(0.22,1,0.36,1)_both]"
-            style={{ fontSize: "clamp(3.5rem, 13vw, 12rem)", letterSpacing: "-0.05em" }}
+            className="font-black leading-[0.85]"
+            style={{
+              display: "block",
+              opacity: 1,
+              visibility: "visible",
+              transform: "translate3d(0,0,0)",
+              fontSize: "clamp(3.6rem, 18vw, 6.5rem)",
+              letterSpacing: "0",
+              color: "#f0ede8",
+            }}
           >
-            <span className="inline-block mr-[0.18em]">FANG</span>
-            <span className="inline-block mr-[0.18em]">NIEMALS</span>
-            <span className="inline-block mr-[0.18em]">AN</span>
+            <span className="block">FANG NIEMALS</span>
+            <span className="block">AN</span>
             <span
-              className="inline-block mr-[0.18em]"
+              className="block"
               style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}
             >
               AUFZUHÖREN.
             </span>
           </h1>
-          <p className="mt-10 max-w-xl text-[13px] uppercase tracking-[0.3em] text-foreground/70 animate-[kse-mobile-hero_900ms_cubic-bezier(0.22,1,0.36,1)_180ms_both]">
+          <p
+            className="mx-auto mt-10 max-w-xl text-[13px] uppercase tracking-[0.3em] text-foreground/70"
+            style={{ opacity: 1, visibility: "visible", transform: "none" }}
+          >
             Die meisten Marken sind laut.
             <br />
             <span className="text-foreground">Wenige sind unvergesslich.</span>
