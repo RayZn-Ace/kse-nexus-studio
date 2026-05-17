@@ -14,6 +14,27 @@ export default function VillaBuilder() {
     video.pause();
     let currentTime = 0;
     let lastApplied = -1;
+    let primed = false;
+
+    // iOS Safari quirk: a muted/playsInline video will not honor
+    // currentTime assignments reliably until it has been "played" once
+    // inside a user gesture. We prime it on the first touch/click.
+    const prime = () => {
+      if (primed) return;
+      primed = true;
+      video.muted = true;
+      const p = video.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => video.pause()).catch(() => {});
+      } else {
+        video.pause();
+      }
+    };
+    window.addEventListener('touchstart', prime, { passive: true, once: true });
+    window.addEventListener('click', prime, { once: true });
+
+    // Force load on mount — iOS often ignores preload="auto".
+    try { video.load(); } catch {}
 
     const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -59,6 +80,8 @@ export default function VillaBuilder() {
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
       video.removeEventListener('loadedmetadata', onLoaded);
+      window.removeEventListener('touchstart', prime);
+      window.removeEventListener('click', prime);
     };
   }, []);
 
@@ -80,7 +103,13 @@ export default function VillaBuilder() {
         ref={videoRef}
         src={videoAsset.url}
         muted
+        defaultMuted
         playsInline
+        // @ts-expect-error iOS Safari attribute
+        webkit-playsinline="true"
+        disableRemotePlayback
+        disablePictureInPicture
+        crossOrigin="anonymous"
         preload="auto"
         style={{
           width: '100%',
