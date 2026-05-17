@@ -87,7 +87,6 @@
   /* underline-on-hover link */
   .link-underline {
     position: relative;
-    display: inline-block;
   }
   .link-underline::after {
     content: "";
@@ -160,8 +159,8 @@
       transition-delay: var(--mobile-reveal-delay, 0ms);
     }
     [data-mobile-reveal].is-visible {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1 !important;
+      transform: translate3d(0, 0, 0) scale(1) !important;
     }
   }
 }
