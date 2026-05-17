@@ -189,8 +189,12 @@ function Header() {
 /* ───────────── hero ───────────── */
 
 function Hero() {
-  const ref = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  return isMobile ? <HeroMobile /> : <HeroDesktop />;
+}
+
+function HeroDesktop() {
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   // Parallax: background glyph drifts faster than foreground text
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
@@ -233,21 +237,17 @@ function Hero() {
           className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center"
         >
           <h1
-            data-mobile-reveal
             className="font-black leading-[0.85]"
-            style={
-              {
+              style={{
                 fontSize: "clamp(3.5rem, 13vw, 12rem)",
                 letterSpacing: "-0.05em",
-                "--mobile-reveal-delay": "120ms",
-              } as React.CSSProperties
-            }
+              }}
           >
             {headline.map((w, i) => (
               <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
                 <motion.span
                   className="inline-block"
-                  initial={isMobile ? false : { y: 80, opacity: 0 }}
+                  initial={{ y: 80, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
                 >
