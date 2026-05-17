@@ -103,10 +103,8 @@ export default function VillaBuilder() {
         ref={videoRef}
         src={videoAsset.url}
         muted
-        defaultMuted
         playsInline
-        // @ts-expect-error iOS Safari attribute
-        webkit-playsinline="true"
+        {...({ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as Record<string, string>)}
         disableRemotePlayback
         disablePictureInPicture
         crossOrigin="anonymous"
