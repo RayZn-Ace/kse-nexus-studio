@@ -1,30 +1,15 @@
-import { useEffect, useRef } from "react";
-import videoAsset from "@/../public/villa-build.mp4.asset.json";
+import { useEffect, useRef, useState } from 'react';
+import videoAsset from '@/../public/villa-build.mp4.asset.json';
 
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const overlayRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
+  const [introOpacity, setIntroOpacity] = useState(1);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const isMobileSafariSafeMode = window.matchMedia(
-      "(max-width: 767px), (pointer: coarse)",
-    ).matches;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (isMobileSafariSafeMode || reduceMotion) {
-      video.removeAttribute("src");
-      video.load();
-      return;
-    }
-
-    if (!video.src) {
-      video.src = videoAsset.url;
-      video.load();
-    }
 
     video.pause();
     let currentTime = 0;
@@ -37,7 +22,7 @@ export default function VillaBuilder() {
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
-      if (overlayRef.current) overlayRef.current.style.opacity = String(op);
+      setIntroOpacity(op);
     };
 
     const tick = () => {
@@ -45,13 +30,8 @@ export default function VillaBuilder() {
         const target = targetTimeRef.current;
         currentTime += (target - currentTime) * 0.18;
         if (Math.abs(currentTime - lastApplied) > 0.033) {
-          if (
-            typeof (video as HTMLVideoElement & { fastSeek?: (time: number) => void }).fastSeek ===
-            "function"
-          ) {
-            (video as HTMLVideoElement & { fastSeek: (time: number) => void }).fastSeek(
-              currentTime,
-            );
+          if (typeof (video as any).fastSeek === 'function') {
+            (video as any).fastSeek(currentTime);
           } else {
             video.currentTime = currentTime;
           }
@@ -68,17 +48,17 @@ export default function VillaBuilder() {
       lastApplied = currentTime;
     };
 
-    video.addEventListener("loadedmetadata", onLoaded);
-    window.addEventListener("scroll", readScroll, { passive: true });
-    window.addEventListener("resize", readScroll);
+    video.addEventListener('loadedmetadata', onLoaded);
+    window.addEventListener('scroll', readScroll, { passive: true });
+    window.addEventListener('resize', readScroll);
     readScroll();
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("scroll", readScroll);
-      window.removeEventListener("resize", readScroll);
-      video.removeEventListener("loadedmetadata", onLoaded);
+      window.removeEventListener('scroll', readScroll);
+      window.removeEventListener('resize', readScroll);
+      video.removeEventListener('loadedmetadata', onLoaded);
     };
   }, []);
 
@@ -86,110 +66,42 @@ export default function VillaBuilder() {
     <div
       aria-hidden
       style={{
-        position: "fixed",
+        position: 'fixed',
         inset: 0,
-        width: "100vw",
-        height: "100svh",
+        width: '100vw',
+        height: '100vh',
         zIndex: 0,
-        pointerEvents: "none",
-        overflow: "hidden",
-        background: "#000",
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        background: '#000',
       }}
     >
       <video
         ref={videoRef}
+        src={videoAsset.url}
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
         style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
           opacity: 0.85,
         }}
       />
 
-      <svg
-        className="kse-mobile-network"
-        viewBox="0 0 390 844"
-        preserveAspectRatio="xMidYMid slice"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-      >
-        <g className="network-drift" opacity="0.82">
-          {[80, 185, 290, 420, 570, 720].map((y, i) => (
-            <path
-              key={`wave-${y}`}
-              d={`M-80 ${y} C 40 ${y - 70} 128 ${y + 65} 244 ${y - 10} S 454 ${y + 36} 520 ${y - 42}`}
-              fill="none"
-              stroke="#e8ff00"
-              strokeOpacity={i % 2 ? 0.18 : 0.28}
-              strokeWidth={i % 2 ? 1.1 : 1.7}
-            />
-          ))}
-          <g stroke="#e8ff00" strokeOpacity="0.28" strokeWidth="1.2">
-            <path d="M24 212 L98 334 L188 265 L310 386 L366 300" />
-            <path d="M36 548 L126 432 L224 520 L348 438" />
-            <path d="M64 160 L190 265 L126 432 L310 386" />
-            <path d="M98 334 L224 520 L310 386" />
-          </g>
-          {[
-            [24, 212],
-            [98, 334],
-            [188, 265],
-            [310, 386],
-            [366, 300],
-            [36, 548],
-            [126, 432],
-            [224, 520],
-            [348, 438],
-          ].map(([cx, cy], i) => (
-            <circle key={`mobile-node-${i}`} cx={cx} cy={cy} r="4" fill="#e8ff00" opacity="0.5" />
-          ))}
-        </g>
-        <g className="villa-draw" transform="translate(45 308)" opacity="0.5">
-          <path
-            d="M8 210 L8 104 L150 8 L292 104 L292 210 Z"
-            fill="none"
-            stroke="#f0ede8"
-            strokeWidth="2.4"
-          />
-          <path d="M0 112 L150 0 L300 112" fill="none" stroke="#e8ff00" strokeWidth="3" />
-          <path
-            d="M56 210 L56 132 L122 132 L122 210"
-            fill="none"
-            stroke="#f0ede8"
-            strokeWidth="2.4"
-          />
-          <path
-            d="M178 210 L178 130 L250 130 L250 210"
-            fill="none"
-            stroke="#f0ede8"
-            strokeWidth="2.4"
-          />
-          <path
-            d="M150 8 L150 210"
-            fill="none"
-            stroke="#f0ede8"
-            strokeOpacity="0.65"
-            strokeWidth="1.8"
-          />
-        </g>
-      </svg>
-
       {/* Electric current overlay — only visible at the start, fades on scroll */}
       <svg
-        ref={overlayRef}
-        className="kse-desktop-electric"
         viewBox="0 0 1000 600"
         preserveAspectRatio="xMidYMid slice"
         style={{
-          position: "absolute",
+          position: 'absolute',
           inset: 0,
-          width: "100%",
-          height: "100%",
-          opacity: 1,
-          transition: "opacity 0.2s linear",
-          mixBlendMode: "screen",
+          width: '100%',
+          height: '100%',
+          opacity: introOpacity,
+          transition: 'opacity 0.2s linear',
+          mixBlendMode: 'screen',
         }}
       >
         <defs>
@@ -203,15 +115,21 @@ export default function VillaBuilder() {
         </defs>
         {/* Several electric paths zipping across — staggered */}
         {[
-          { d: "M-50,180 Q200,140 380,230 T780,200 T1100,260", dur: 2.2, delay: 0 },
-          { d: "M-50,360 Q220,420 420,340 T820,400 T1100,330", dur: 2.6, delay: 0.4 },
-          { d: "M-50,480 Q260,520 460,440 T880,510 T1100,470", dur: 3.1, delay: 0.9 },
-          { d: "M-50,90  Q180,40  360,140 T760,80  T1100,140", dur: 2.4, delay: 1.3 },
-          { d: "M-50,540 Q240,470 440,560 T840,500 T1100,560", dur: 2.8, delay: 1.7 },
+          { d: 'M-50,180 Q200,140 380,230 T780,200 T1100,260', dur: 2.2, delay: 0 },
+          { d: 'M-50,360 Q220,420 420,340 T820,400 T1100,330', dur: 2.6, delay: 0.4 },
+          { d: 'M-50,480 Q260,520 460,440 T880,510 T1100,470', dur: 3.1, delay: 0.9 },
+          { d: 'M-50,90  Q180,40  360,140 T760,80  T1100,140', dur: 2.4, delay: 1.3 },
+          { d: 'M-50,540 Q240,470 440,560 T840,500 T1100,560', dur: 2.8, delay: 1.7 },
         ].map((p, i) => (
           <g key={i} filter="url(#glow)">
             {/* faint base trace */}
-            <path d={p.d} fill="none" stroke="#e8ff00" strokeOpacity="0.18" strokeWidth="1.2" />
+            <path
+              d={p.d}
+              fill="none"
+              stroke="#e8ff00"
+              strokeOpacity="0.18"
+              strokeWidth="1.2"
+            />
             {/* travelling electric pulse */}
             <path
               d={p.d}
@@ -235,18 +153,19 @@ export default function VillaBuilder() {
         ))}
         {/* glowing nodes pulsing */}
         {[
-          [220, 180],
-          [520, 230],
-          [780, 200],
-          [180, 360],
-          [580, 340],
-          [820, 400],
-          [320, 90],
-          [680, 140],
-          [400, 540],
-          [760, 510],
+          [220, 180], [520, 230], [780, 200],
+          [180, 360], [580, 340], [820, 400],
+          [320, 90], [680, 140],
+          [400, 540], [760, 510],
         ].map(([cx, cy], i) => (
-          <circle key={`n-${i}`} cx={cx} cy={cy} r="3" fill="#e8ff00" filter="url(#glow)">
+          <circle
+            key={`n-${i}`}
+            cx={cx}
+            cy={cy}
+            r="3"
+            fill="#e8ff00"
+            filter="url(#glow)"
+          >
             <animate
               attributeName="opacity"
               values="0.3;1;0.3"
@@ -261,10 +180,10 @@ export default function VillaBuilder() {
       {/* subtle dark overlay so foreground text stays readable */}
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           inset: 0,
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.7) 100%)",
+            'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.7) 100%)',
         }}
       />
     </div>

@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
-import { useRef, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/leistungen")({
   head: () => ({
@@ -88,10 +87,7 @@ const PACKAGES: Pkg[] = [
       { label: "Positionierung", detail: "Was du bist. Was du nicht bist. Und für wen." },
       { label: "Naming & Verbal", detail: "Name, Claim, Tonalität — präzise und besitzbar." },
       { label: "Visual System", detail: "Logo, Farbe, Typo, Bildwelt. Skalierbar." },
-      {
-        label: "Brand Guidelines",
-        detail: "Damit alle Kanäle gleich klingen, ohne dich zu fragen.",
-      },
+      { label: "Brand Guidelines", detail: "Damit alle Kanäle gleich klingen, ohne dich zu fragen." },
     ],
     price: "ab 4.900 € / Projekt",
   },
@@ -100,75 +96,21 @@ const PACKAGES: Pkg[] = [
 /* ───────────── header (mini, page-scoped) ───────────── */
 
 function PageHeader() {
-  const [open, setOpen] = useState(false);
   return (
-    <header className="fixed top-0 left-0 right-0 z-[70]">
-      <div className="flex items-center justify-between px-5 md:px-10 py-4 md:py-5 text-[11px] tracking-[0.3em] uppercase font-medium mix-blend-difference">
+    <header className="fixed top-0 left-0 right-0 z-[70] mix-blend-difference">
+      <div className="flex items-center justify-between px-6 md:px-10 py-5 text-[11px] tracking-[0.3em] uppercase font-medium">
         <Link to="/" className="link-underline font-black tracking-[-0.04em] text-[15px]">
           KSE / GROUP
         </Link>
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" hash="manifesto" className="link-underline">
-            Manifest
-          </Link>
-          <Link
-            to="/leistungen"
-            className="link-underline"
-            activeProps={{ style: { color: ACCENT } }}
-          >
-            Leistungen
-          </Link>
-          <Link to="/" hash="about" className="link-underline">
-            Über
-          </Link>
-          <Link to="/" hash="contact" className="link-underline">
-            Kontakt
-          </Link>
+          <Link to="/" hash="manifesto" className="link-underline">Manifest</Link>
+          <Link to="/leistungen" className="link-underline" activeProps={{ style: { color: ACCENT } }}>Leistungen</Link>
+          <Link to="/" hash="about" className="link-underline">Über</Link>
+          <Link to="/" hash="contact" className="link-underline">Kontakt</Link>
         </nav>
         <a href="mailto:info@ksegroup.eu" className="link-underline hidden md:inline">
           info@ksegroup.eu →
         </a>
-        <button
-          aria-label="Menü"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="md:hidden flex flex-col gap-[5px] p-2 -mr-2"
-        >
-          <span
-            className={`block w-6 h-px bg-foreground transition-transform ${open ? "translate-y-[6px] rotate-45" : ""}`}
-          />
-          <span
-            className={`block w-6 h-px bg-foreground transition-opacity ${open ? "opacity-0" : ""}`}
-          />
-          <span
-            className={`block w-6 h-px bg-foreground transition-transform ${open ? "-translate-y-[6px] -rotate-45" : ""}`}
-          />
-        </button>
-      </div>
-      <div
-        className={`md:hidden overflow-hidden transition-[max-height] duration-500 ease-[cubic-bezier(.77,0,.175,1)] ${open ? "max-h-[420px]" : "max-h-0"}`}
-        style={{
-          background: "#0a0a0a",
-          borderBottom: open ? "1px solid rgba(240,237,232,0.14)" : "none",
-        }}
-      >
-        <nav className="flex flex-col gap-5 px-6 py-8 text-[13px] tracking-[0.3em] uppercase">
-          <Link to="/" hash="manifesto" onClick={() => setOpen(false)}>
-            Manifest
-          </Link>
-          <Link to="/leistungen" onClick={() => setOpen(false)} style={{ color: ACCENT }}>
-            Leistungen
-          </Link>
-          <Link to="/" hash="about" onClick={() => setOpen(false)}>
-            Über
-          </Link>
-          <Link to="/" hash="contact" onClick={() => setOpen(false)}>
-            Kontakt
-          </Link>
-          <a href="mailto:info@ksegroup.eu" style={{ color: ACCENT }}>
-            info@ksegroup.eu →
-          </a>
-        </nav>
       </div>
     </header>
   );
@@ -183,12 +125,8 @@ function Intro() {
         <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-8">
           // Leistungen · 04 Pakete · ausgepackt
         </div>
-        <motion.h1
-          data-mobile-reveal
+        <h1
           className="font-black leading-[0.85] tracking-tight"
-          initial={{ opacity: 0, y: 38 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: EASE, delay: 0.08 }}
           style={{ fontSize: "clamp(2.6rem, 9vw, 9rem)", letterSpacing: "-0.05em" }}
         >
           <span className="block overflow-hidden">
@@ -212,10 +150,10 @@ function Intro() {
               ausgepackt.
             </motion.span>
           </span>
-        </motion.h1>
+        </h1>
         <p className="mt-10 max-w-xl text-base md:text-lg text-foreground/70 leading-relaxed">
-          Scroll dich durch unsere vier Disziplinen. Jedes Paket dreht sich, öffnet sich und legt
-          seinen Inhalt vor dir aus — Schritt für Schritt.
+          Scroll dich durch unsere vier Disziplinen. Jedes Paket dreht sich, öffnet sich
+          und legt seinen Inhalt vor dir aus — Schritt für Schritt.
         </p>
         <div className="mt-12 flex items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-foreground/50">
           <span className="inline-block w-8 h-px bg-foreground/40" /> scroll down
@@ -228,15 +166,6 @@ function Intro() {
 /* ───────────── unbox section ───────────── */
 
 function UnboxSection({ pkg, index }: { pkg: Pkg; index: number }) {
-  const isMobile = useIsMobile();
-  return isMobile ? (
-    <UnboxSectionMobile pkg={pkg} index={index} />
-  ) : (
-    <UnboxSectionDesktop pkg={pkg} index={index} />
-  );
-}
-
-function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -308,9 +237,16 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
           >
             {pkg.title}
           </h2>
-          <p className="mt-5 text-base md:text-lg text-foreground/70 max-w-sm">{pkg.kicker}</p>
-          <p className="mt-4 text-sm text-foreground/55 max-w-sm leading-relaxed">{pkg.intro}</p>
-          <div className="mt-6 text-[11px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
+          <p className="mt-5 text-base md:text-lg text-foreground/70 max-w-sm">
+            {pkg.kicker}
+          </p>
+          <p className="mt-4 text-sm text-foreground/55 max-w-sm leading-relaxed">
+            {pkg.intro}
+          </p>
+          <div
+            className="mt-6 text-[11px] uppercase tracking-[0.35em]"
+            style={{ color: ACCENT }}
+          >
             {pkg.price}
           </div>
         </motion.div>
@@ -350,7 +286,13 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
         <div className="absolute inset-0 flex items-center justify-end pr-[6vw] md:pr-[10vw] pointer-events-none">
           <div className="w-[min(560px,46vw)] flex flex-col gap-3">
             {pkg.items.map((it, i) => (
-              <UnpackedItem key={it.label} item={it} i={i} total={pkg.items.length} progress={p} />
+              <UnpackedItem
+                key={it.label}
+                item={it}
+                i={i}
+                total={pkg.items.length}
+                progress={p}
+              />
             ))}
           </div>
         </div>
@@ -362,147 +304,12 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
               key={d}
               className="block w-1.5 h-1.5 rounded-full"
               style={{
-                background: d === index ? ACCENT : "rgba(255,255,255,0.2)",
+                background:
+                  d === index ? ACCENT : "rgba(255,255,255,0.2)",
               }}
             />
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────── mobile unbox: simpler vertical reveal ───────────── */
-
-function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
-  return (
-    <section className="relative border-b border-foreground/15 px-5 py-20">
-      <motion.div
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.65, ease: EASE }}
-        className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-4"
-      >
-        // Paket {pkg.n} · {String(index + 1).padStart(2, "0")} von 04
-      </motion.div>
-      <motion.h2
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 28 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.7, ease: EASE, delay: 0.04 }}
-        className="font-black leading-[0.85] tracking-tight mb-4"
-        style={
-          {
-            fontSize: "clamp(2.2rem, 10vw, 3.6rem)",
-            letterSpacing: "-0.04em",
-            "--mobile-reveal-delay": "40ms",
-          } as React.CSSProperties
-        }
-      >
-        {pkg.title}
-      </motion.h2>
-      <motion.p
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.7, ease: EASE, delay: 0.08 }}
-        className="text-base text-foreground/75 mb-3"
-        style={{ "--mobile-reveal-delay": "80ms" } as React.CSSProperties}
-      >
-        {pkg.kicker}
-      </motion.p>
-      <motion.p
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.7, ease: EASE, delay: 0.12 }}
-        className="text-sm text-foreground/55 leading-relaxed mb-5"
-        style={{ "--mobile-reveal-delay": "120ms" } as React.CSSProperties}
-      >
-        {pkg.intro}
-      </motion.p>
-      <motion.div
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.15 }}
-        transition={{ duration: 0.7, ease: EASE, delay: 0.16 }}
-        className="text-[11px] uppercase tracking-[0.35em] mb-8"
-        style={{ color: ACCENT, "--mobile-reveal-delay": "160ms" } as React.CSSProperties}
-      >
-        {pkg.price}
-      </motion.div>
-
-      {/* mini "package" header */}
-      <motion.div
-        data-mobile-reveal
-        initial={{ opacity: 0, y: 42, scale: 0.94, rotateX: 12 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-        viewport={{ once: true, amount: 0.18 }}
-        transition={{ duration: 0.75, ease: EASE, delay: 0.2 }}
-        className="relative border flex items-center justify-center mb-6 mx-auto"
-        style={
-          {
-            width: "100%",
-            maxWidth: 320,
-            height: 140,
-            background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
-            borderColor: "rgba(232,255,0,0.25)",
-            transformPerspective: 900,
-            "--mobile-reveal-delay": "200ms",
-          } as React.CSSProperties
-        }
-      >
-        <div className="text-center">
-          <div className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
-            Paket {pkg.n}
-          </div>
-          <div className="font-black mt-2" style={{ fontSize: "1.4rem", letterSpacing: "-0.03em" }}>
-            {pkg.title}
-          </div>
-          <span
-            aria-hidden
-            className="block w-10 h-px mx-auto mt-2"
-            style={{ background: ACCENT }}
-          />
-          <div className="text-[10px] uppercase tracking-[0.3em] text-foreground/40 mt-2">
-            Inhalt: 4 Module
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="flex flex-col gap-3">
-        {pkg.items.map((it, i) => (
-          <motion.div
-            data-mobile-reveal
-            key={it.label}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10%" }}
-            transition={{ duration: 0.6, ease: EASE, delay: i * 0.08 }}
-            className="px-5 py-4 border border-foreground/15"
-            style={
-              {
-                background: "rgb(10,10,10)",
-                borderLeft: `2px solid ${ACCENT}`,
-                "--mobile-reveal-delay": `${i * 80}ms`,
-              } as React.CSSProperties
-            }
-          >
-            <div className="flex items-baseline gap-3">
-              <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="font-semibold text-base tracking-tight">{it.label}</h3>
-            </div>
-            <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">{it.detail}</p>
-          </motion.div>
-        ))}
       </div>
     </section>
   );
@@ -571,12 +378,19 @@ function UnpackedItem({
       className="px-5 py-4 border border-foreground/15"
     >
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
+        <span
+          className="text-[10px] uppercase tracking-[0.35em]"
+          style={{ color: ACCENT }}
+        >
           {String(i + 1).padStart(2, "0")}
         </span>
-        <h3 className="font-semibold text-base md:text-lg tracking-tight">{item.label}</h3>
+        <h3 className="font-semibold text-base md:text-lg tracking-tight">
+          {item.label}
+        </h3>
       </div>
-      <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">{item.detail}</p>
+      <p className="mt-1.5 text-sm text-foreground/65 leading-relaxed">
+        {item.detail}
+      </p>
     </motion.div>
   );
 }
@@ -596,9 +410,11 @@ function Box3D({
   const H = 200; // height (depth of opening)
   const D = 220; // depth
 
-  const baseFace = "absolute inset-0 flex items-center justify-center text-foreground border";
+  const baseFace =
+    "absolute inset-0 flex items-center justify-center text-foreground border";
   const faceStyle: React.CSSProperties = {
-    background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
+    background:
+      "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
     borderColor: "rgba(232,255,0,0.25)",
   };
 
@@ -704,11 +520,15 @@ function Box3D({
         <div
           className="absolute inset-0 border flex items-center justify-center"
           style={{
-            background: "linear-gradient(135deg, rgba(28,28,28,0.98), rgba(12,12,12,0.98))",
+            background:
+              "linear-gradient(135deg, rgba(28,28,28,0.98), rgba(12,12,12,0.98))",
             borderColor: "rgba(232,255,0,0.35)",
           }}
         >
-          <span className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
+          <span
+            className="text-[10px] uppercase tracking-[0.4em]"
+            style={{ color: ACCENT }}
+          >
             KSE · {pkg.n}
           </span>
         </div>
@@ -717,7 +537,8 @@ function Box3D({
           className="absolute inset-0 border flex items-center justify-center"
           style={{
             transform: "rotateX(180deg) translateZ(1px)",
-            background: "linear-gradient(135deg, rgba(8,8,8,0.98), rgba(20,20,20,0.98))",
+            background:
+              "linear-gradient(135deg, rgba(8,8,8,0.98), rgba(20,20,20,0.98))",
             borderColor: "rgba(232,255,0,0.2)",
           }}
         >
@@ -730,7 +551,13 @@ function Box3D({
   );
 }
 
-function BoxFaceContent({ pkg, variant }: { pkg: Pkg; variant: "front" | "back" | "side" }) {
+function BoxFaceContent({
+  pkg,
+  variant,
+}: {
+  pkg: Pkg;
+  variant: "front" | "back" | "side";
+}) {
   if (variant === "side") {
     return (
       <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/40 rotate-90">
@@ -740,7 +567,10 @@ function BoxFaceContent({ pkg, variant }: { pkg: Pkg; variant: "front" | "back" 
   }
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-      <span className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
+      <span
+        className="text-[10px] uppercase tracking-[0.4em]"
+        style={{ color: ACCENT }}
+      >
         Paket {pkg.n}
       </span>
       <span
@@ -749,7 +579,11 @@ function BoxFaceContent({ pkg, variant }: { pkg: Pkg; variant: "front" | "back" 
       >
         {pkg.title}
       </span>
-      <span aria-hidden className="block w-10 h-px" style={{ background: ACCENT }} />
+      <span
+        aria-hidden
+        className="block w-10 h-px"
+        style={{ background: ACCENT }}
+      />
       <span className="text-[10px] uppercase tracking-[0.3em] text-foreground/40">
         {variant === "front" ? "Inhalt: 4 Module" : "Versiegelt · Original"}
       </span>
@@ -775,8 +609,8 @@ function Outro() {
           <span style={{ color: ACCENT }}>Basti antwortet.</span>
         </h2>
         <p className="mt-8 max-w-xl text-base md:text-lg text-foreground/70 leading-relaxed">
-          Kein Account Manager, kein Ticket-System. Sag uns, welches Paket dich reizt — oder ob du
-          eine Kombination brauchst.
+          Kein Account Manager, kein Ticket-System. Sag uns, welches Paket dich
+          reizt — oder ob du eine Kombination brauchst.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <a
