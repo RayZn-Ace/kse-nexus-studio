@@ -396,13 +396,18 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
       <div className="flex flex-col gap-3">
         {pkg.items.map((it, i) => (
           <motion.div
+            data-mobile-reveal
             key={it.label}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.6, ease: EASE, delay: i * 0.08 }}
             className="px-5 py-4 border border-foreground/15"
-            style={{ background: "rgb(10,10,10)", borderLeft: `2px solid ${ACCENT}` }}
+            style={{
+              background: "rgb(10,10,10)",
+              borderLeft: `2px solid ${ACCENT}`,
+              "--mobile-reveal-delay": `${i * 80}ms`,
+            } as React.CSSProperties}
           >
             <div className="flex items-baseline gap-3">
               <span className="text-[10px] uppercase tracking-[0.35em]" style={{ color: ACCENT }}>
