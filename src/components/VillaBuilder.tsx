@@ -61,18 +61,18 @@ export default function VillaBuilder() {
     const tick = () => {
       if (video.readyState >= 2) {
         const target = targetTimeRef.current;
-        // Less smoothing on iOS — long lerp tail keeps a seek pending forever
-        // and stalls the pipeline.
-        currentTime += (target - currentTime) * (isIOS ? 0.35 : 0.18);
-        const threshold = isIOS ? 0.08 : 0.033;
+        // Smooth interpolation toward the scroll target.
+        currentTime += (target - currentTime) * (isIOS ? 0.22 : 0.18);
+        const threshold = isIOS ? 0.05 : 0.033;
         if (!seeking && Math.abs(currentTime - lastApplied) > threshold) {
-          // fastSeek where available (Safari supports it) — much cheaper
-          if (typeof (video as any).fastSeek === 'function') {
-            (video as any).fastSeek(currentTime);
-          } else {
+          // Always use currentTime (NOT fastSeek): fastSeek snaps to the
+          // nearest keyframe, which on iOS makes reverse scrolling look
+          // like the animation "resets" because it jumps back to a sparse
+          // keyframe instead of the exact frame.
+          try {
             video.currentTime = currentTime;
-          }
-          lastApplied = currentTime;
+            lastApplied = currentTime;
+          } catch {}
         }
       }
       rafRef.current = requestAnimationFrame(tick);
