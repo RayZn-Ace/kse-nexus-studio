@@ -210,7 +210,7 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
+          className="mt-8 md:mt-10 max-w-xl text-[11px] md:text-sm uppercase tracking-[0.25em] md:tracking-[0.3em] text-foreground/70 px-2"
         >
           Die meisten Marken sind laut.
           <br />
