@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { CustomCursor } from "@/components/CustomCursor";
+import { MobileAnimationFallback } from "@/components/MobileAnimationFallback";
 
 function NotFoundComponent() {
   return (
@@ -76,17 +77,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "KSE Group — New Media, Social Media, Webdesign" },
-      { name: "description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
+      {
+        name: "description",
+        content:
+          "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören.",
+      },
       { name: "author", content: "KSE Group" },
       { property: "og:title", content: "KSE Group — New Media, Social Media, Webdesign" },
-      { property: "og:description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
+      {
+        property: "og:description",
+        content:
+          "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "KSE Group — New Media, Social Media, Webdesign" },
-      { name: "twitter:description", content: "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4" },
+      {
+        name: "twitter:description",
+        content:
+          "KSE Group aus Hannover: Social Media Marketing, Webdesign, Werbefilme & Artist Management. Fange niemals an aufzuhören.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/a6477067-2d3c-458b-ba7e-5c76cbe753b4",
+      },
     ],
     links: [
       {
@@ -95,7 +116,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -124,6 +148,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SmoothScroll />
+      <MobileAnimationFallback />
       <CustomCursor />
       <Outlet />
       <Toaster theme="dark" position="bottom-right" />
