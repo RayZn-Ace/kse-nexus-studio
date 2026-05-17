@@ -135,11 +135,15 @@ export default function VillaBuilder() {
         video.pause();
       }
     };
-    window.addEventListener('touchstart', prime, { passive: true, once: true });
-    window.addEventListener('click', prime, { once: true });
+    if (!frameSequence) {
+      window.addEventListener('touchstart', prime, { passive: true, once: true });
+      window.addEventListener('click', prime, { once: true });
+    }
 
     // Force load on mount — iOS often ignores preload="auto".
-    try { video.load(); } catch {}
+    if (!frameSequence) {
+      try { video.load(); } catch {}
+    }
 
     // On iOS, seeking is asynchronous: setting currentTime while a previous
     // seek hasn't completed causes the pipeline to stall. We mark `seeking`
