@@ -116,8 +116,8 @@ function ScrollProgress() {
 function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-[70] mix-blend-difference">
-      <div className="flex items-center justify-between px-6 md:px-10 py-5 text-[11px] tracking-[0.3em] uppercase font-medium">
-        <a href="#top" className="link-underline font-black tracking-[-0.04em] text-[15px]">
+      <div className="flex items-center justify-between px-5 md:px-10 py-4 md:py-5 text-[10px] md:text-[11px] tracking-[0.25em] md:tracking-[0.3em] uppercase font-medium">
+        <a href="#top" className="link-underline font-black tracking-[-0.04em] text-[14px] md:text-[15px]">
           KSE / GROUP
         </a>
         <nav className="hidden md:flex items-center gap-8">
