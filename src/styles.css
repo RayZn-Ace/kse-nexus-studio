@@ -188,7 +188,13 @@
   .kse-mobile-network {
     display: none;
   }
+  .kse-desktop-electric {
+    display: block;
+  }
   @media (max-width: 767px), (pointer: coarse) {
+    .kse-desktop-electric {
+      display: none;
+    }
     .kse-mobile-network {
       display: block;
     }
