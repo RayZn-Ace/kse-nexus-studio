@@ -151,18 +151,30 @@ export default function VillaBuilder() {
     const onLoaded = () => {
       readScroll();
       currentTime = targetTimeRef.current;
+      currentFrame = targetProgressRef.current * (frameCount - 1);
       video.currentTime = currentTime;
       lastApplied = currentTime;
     };
+
+    const onMediaChange = (event: MediaQueryListEvent) => {
+      frameSequence = event.matches;
+      setUseFrameSequence(event.matches);
+      if (event.matches) loadFrame(Math.round(targetProgressRef.current * (frameCount - 1)));
+    };
+
+    const mediaQuery = window.matchMedia('(pointer: coarse), (max-width: 767px)');
+    mediaQuery.addEventListener('change', onMediaChange);
 
     video.addEventListener('loadedmetadata', onLoaded);
     window.addEventListener('scroll', readScroll, { passive: true });
     window.addEventListener('resize', readScroll);
     readScroll();
+    currentFrame = targetProgressRef.current * (frameCount - 1);
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      mediaQuery.removeEventListener('change', onMediaChange);
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
       video.removeEventListener('loadedmetadata', onLoaded);
@@ -201,7 +213,20 @@ export default function VillaBuilder() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          opacity: 0.85,
+          opacity: useFrameSequence ? 0 : 0.85,
+          visibility: useFrameSequence ? 'hidden' : 'visible',
+        }}
+      />
+
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          opacity: useFrameSequence ? 0.85 : 0,
+          visibility: useFrameSequence ? 'visible' : 'hidden',
         }}
       />
 
