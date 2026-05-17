@@ -126,7 +126,7 @@ export default function VillaBuilder() {
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
-      setIntroOpacity(op);
+      if (overlayRef.current) overlayRef.current.style.opacity = String(op);
     };
 
     const tick = () => {
@@ -134,13 +134,12 @@ export default function VillaBuilder() {
         const targetFrame = targetProgressRef.current * (frameCount - 1);
         currentFrame += (targetFrame - currentFrame) * 0.22;
         const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
-        for (let i = -4; i <= 6; i += 1) {
-          const nearby = wantedFrame + i;
-          if (nearby >= 0 && nearby < frameCount) loadFrame(nearby, Math.abs(i) <= 2);
-        }
+        const wantedSheet = sheetForFrame(wantedFrame);
+        loadSheet(wantedSheet - 1);
+        loadSheet(wantedSheet);
+        loadSheet(wantedSheet + 1);
         const frameToDraw = nearestLoadedFrame(wantedFrame);
         if (frameToDraw >= 0) {
-          decodeFrame(frameToDraw);
           drawFrame(frameToDraw);
         }
       } else if (video.readyState >= 2) {
@@ -174,10 +173,7 @@ export default function VillaBuilder() {
       frameSequence = event.matches;
       setUseFrameSequence(event.matches);
       if (event.matches) {
-        loadFrame(Math.round(targetProgressRef.current * (frameCount - 1)), true);
-        warmFrames();
-      } else {
-        window.clearTimeout(idleLoader);
+        for (let i = 0; i < Math.ceil(frameCount / framesPerSheet); i += 1) loadSheet(i);
       }
     };
 
@@ -193,7 +189,6 @@ export default function VillaBuilder() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.clearTimeout(idleLoader);
       mediaQuery.removeEventListener('change', onMediaChange);
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
