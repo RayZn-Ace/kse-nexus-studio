@@ -14,27 +14,9 @@ export default function VillaBuilder() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (isMobileSafariSafeMode || reduceMotion) {
-      video.loop = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.autoplay = true;
-      video.preload = "auto";
-
-      const play = () => {
-        void video.play().catch(() => {
-          // iOS can delay autoplay until enough data is buffered; the SVG fallback stays visible.
-        });
-      };
-
-      video.addEventListener("loadeddata", play);
-      video.addEventListener("canplay", play);
-      play();
-
-      return () => {
-        video.removeEventListener("loadeddata", play);
-        video.removeEventListener("canplay", play);
-        video.pause();
-      };
+      video.removeAttribute("src");
+      video.load();
+      return;
     }
 
     video.pause();
