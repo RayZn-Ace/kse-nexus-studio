@@ -190,6 +190,7 @@ function Header() {
 
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   // Parallax: background glyph drifts faster than foreground text
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
@@ -243,7 +244,7 @@ function Hero() {
                 <motion.span
                   data-mobile-reveal
                   className="inline-block"
-                  initial={{ y: 80, opacity: 0 }}
+                  initial={isMobile ? false : { y: 80, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
                   style={{ "--mobile-reveal-delay": `${200 + i * 120}ms` } as React.CSSProperties}
