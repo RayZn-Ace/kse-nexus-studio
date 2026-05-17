@@ -29,6 +29,8 @@ export default function VillaBuilder() {
     const framesPerSheet = sheetColumns * sheetRows;
     const sheets: Array<HTMLImageElement | undefined> = [];
     const loadedSheets = new Set<number>();
+    let previousDrawnFrame = -1;
+    let previousOverlayOpacity = 1;
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
@@ -126,7 +128,10 @@ export default function VillaBuilder() {
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
-      if (overlayRef.current) overlayRef.current.style.opacity = String(op);
+      if (overlayRef.current && Math.abs(op - previousOverlayOpacity) > 0.03) {
+        overlayRef.current.style.opacity = String(op);
+        previousOverlayOpacity = op;
+      }
     };
 
     const tick = () => {
@@ -139,8 +144,9 @@ export default function VillaBuilder() {
         loadSheet(wantedSheet);
         loadSheet(wantedSheet + 1);
         const frameToDraw = nearestLoadedFrame(wantedFrame);
-        if (frameToDraw >= 0) {
+        if (frameToDraw >= 0 && frameToDraw !== previousDrawnFrame) {
           drawFrame(frameToDraw);
+          previousDrawnFrame = frameToDraw;
         }
       } else if (video.readyState >= 2) {
         const target = targetTimeRef.current;
