@@ -3,22 +3,90 @@ import videoAsset from '@/../public/villa-build.mp4.asset.json';
 
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
-  const [introOpacity, setIntroOpacity] = useState(1);
+  const targetProgressRef = useRef(0);
+  const [useFrameSequence, setUseFrameSequence] = useState<boolean | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
 
     video.pause();
     let currentTime = 0;
+    let currentFrame = 0;
     let lastApplied = -1;
     let seeking = false;
     let primed = false;
+    let frameSequence = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches;
+    setUseFrameSequence(frameSequence);
+    const frameCount = 241;
+    const sheetColumns = 5;
+    const sheetRows = 10;
+    const framesPerSheet = sheetColumns * sheetRows;
+    const sheets: Array<HTMLImageElement | undefined> = [];
+    const loadedSheets = new Set<number>();
+    let previousDrawnFrame = -1;
+    let previousOverlayOpacity = 1;
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
+
+    const sheetForFrame = (index: number) => Math.floor(index / framesPerSheet);
+    const sheetUrl = (index: number) => `/villa-sprites/sheet-${String(index + 1).padStart(3, '0')}.jpg`;
+
+    const loadSheet = (index: number) => {
+      if (!frameSequence || index < 0 || index >= Math.ceil(frameCount / framesPerSheet) || sheets[index]) return;
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => loadedSheets.add(index);
+      img.src = sheetUrl(index);
+      sheets[index] = img;
+    };
+
+    const nearestLoadedFrame = (index: number) => {
+      const wantedSheet = sheetForFrame(index);
+      if (loadedSheets.has(wantedSheet)) return index;
+      for (let offset = 1; offset < 3; offset += 1) {
+        const afterSheet = wantedSheet + offset;
+        const beforeSheet = wantedSheet - offset;
+        if (loadedSheets.has(afterSheet)) return Math.min(frameCount - 1, afterSheet * framesPerSheet);
+        if (loadedSheets.has(beforeSheet)) return Math.max(0, beforeSheet * framesPerSheet + framesPerSheet - 1);
+      }
+      return loadedSheets.has(0) ? 0 : -1;
+    };
+
+    const drawFrame = (index: number) => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(window.innerWidth * dpr));
+      const height = Math.max(1, Math.round(window.innerHeight * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      const ctx = canvas.getContext('2d');
+      const sheetIndex = sheetForFrame(index);
+      const img = sheets[sheetIndex];
+      if (!ctx || !img || !loadedSheets.has(sheetIndex)) return;
+
+      const frameWidth = img.naturalWidth / sheetColumns;
+      const frameHeight = img.naturalHeight / sheetRows;
+      const localFrame = index % framesPerSheet;
+      const sourceX = (localFrame % sheetColumns) * frameWidth;
+      const sourceY = Math.floor(localFrame / sheetColumns) * frameHeight;
+      const scale = Math.max(width / frameWidth, height / frameHeight);
+      const drawWidth = frameWidth * scale;
+      const drawHeight = frameHeight * scale;
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(img, sourceX, sourceY, frameWidth, frameHeight, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+    };
+
+    if (frameSequence) {
+      for (let i = 0; i < Math.ceil(frameCount / framesPerSheet); i += 1) loadSheet(i);
+    }
 
     // iOS Safari quirk: a muted/playsInline video will not honor
     // currentTime assignments reliably until it has been "played" once
@@ -34,11 +102,15 @@ export default function VillaBuilder() {
         video.pause();
       }
     };
-    window.addEventListener('touchstart', prime, { passive: true, once: true });
-    window.addEventListener('click', prime, { once: true });
+    if (!frameSequence) {
+      window.addEventListener('touchstart', prime, { passive: true, once: true });
+      window.addEventListener('click', prime, { once: true });
+    }
 
     // Force load on mount — iOS often ignores preload="auto".
-    try { video.load(); } catch {}
+    if (!frameSequence) {
+      try { video.load(); } catch {}
+    }
 
     // On iOS, seeking is asynchronous: setting currentTime while a previous
     // seek hasn't completed causes the pipeline to stall. We mark `seeking`
@@ -52,14 +124,31 @@ export default function VillaBuilder() {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       const duration = video.duration || 10;
+      targetProgressRef.current = p;
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
-      setIntroOpacity(op);
+      if (overlayRef.current && Math.abs(op - previousOverlayOpacity) > 0.03) {
+        overlayRef.current.style.opacity = String(op);
+        previousOverlayOpacity = op;
+      }
     };
 
     const tick = () => {
-      if (video.readyState >= 2) {
+      if (frameSequence) {
+        const targetFrame = targetProgressRef.current * (frameCount - 1);
+        currentFrame += (targetFrame - currentFrame) * 0.22;
+        const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
+        const wantedSheet = sheetForFrame(wantedFrame);
+        loadSheet(wantedSheet - 1);
+        loadSheet(wantedSheet);
+        loadSheet(wantedSheet + 1);
+        const frameToDraw = nearestLoadedFrame(wantedFrame);
+        if (frameToDraw >= 0 && frameToDraw !== previousDrawnFrame) {
+          drawFrame(frameToDraw);
+          previousDrawnFrame = frameToDraw;
+        }
+      } else if (video.readyState >= 2) {
         const target = targetTimeRef.current;
         // Smooth interpolation toward the scroll target.
         currentTime += (target - currentTime) * (isIOS ? 0.22 : 0.18);
@@ -81,18 +170,32 @@ export default function VillaBuilder() {
     const onLoaded = () => {
       readScroll();
       currentTime = targetTimeRef.current;
+      currentFrame = targetProgressRef.current * (frameCount - 1);
       video.currentTime = currentTime;
       lastApplied = currentTime;
     };
+
+    const onMediaChange = (event: MediaQueryListEvent) => {
+      frameSequence = event.matches;
+      setUseFrameSequence(event.matches);
+      if (event.matches) {
+        for (let i = 0; i < Math.ceil(frameCount / framesPerSheet); i += 1) loadSheet(i);
+      }
+    };
+
+    const mediaQuery = window.matchMedia('(pointer: coarse), (max-width: 767px)');
+    mediaQuery.addEventListener('change', onMediaChange);
 
     video.addEventListener('loadedmetadata', onLoaded);
     window.addEventListener('scroll', readScroll, { passive: true });
     window.addEventListener('resize', readScroll);
     readScroll();
+    currentFrame = targetProgressRef.current * (frameCount - 1);
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      mediaQuery.removeEventListener('change', onMediaChange);
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
       video.removeEventListener('loadedmetadata', onLoaded);
@@ -119,24 +222,38 @@ export default function VillaBuilder() {
     >
       <video
         ref={videoRef}
-        src={videoAsset.url}
+        src={useFrameSequence === false ? videoAsset.url : undefined}
         muted
         playsInline
         {...({ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as Record<string, string>)}
         disableRemotePlayback
         disablePictureInPicture
         crossOrigin="anonymous"
-        preload="auto"
+        preload={useFrameSequence === false ? 'auto' : 'none'}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          opacity: 0.85,
+          opacity: useFrameSequence === false ? 0.85 : 0,
+          visibility: useFrameSequence === false ? 'visible' : 'hidden',
+        }}
+      />
+
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          opacity: useFrameSequence === true ? 0.85 : 0,
+          visibility: useFrameSequence === true ? 'visible' : 'hidden',
         }}
       />
 
       {/* Electric current overlay — only visible at the start, fades on scroll */}
       <svg
+        ref={overlayRef}
         viewBox="0 0 1000 600"
         preserveAspectRatio="xMidYMid slice"
         style={{
@@ -144,7 +261,7 @@ export default function VillaBuilder() {
           inset: 0,
           width: '100%',
           height: '100%',
-          opacity: introOpacity,
+          opacity: 1,
           transition: 'opacity 0.2s linear',
           mixBlendMode: 'screen',
         }}
