@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { CustomCursor } from "@/components/CustomCursor";
+import { MobileAnimationFallback } from "@/components/MobileAnimationFallback";
 
 function NotFoundComponent() {
   return (
@@ -124,6 +125,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SmoothScroll />
+      <MobileAnimationFallback />
       <CustomCursor />
       <Outlet />
       <Toaster theme="dark" position="bottom-right" />
