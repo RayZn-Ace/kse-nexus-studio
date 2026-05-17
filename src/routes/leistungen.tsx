@@ -193,7 +193,6 @@ function Intro() {
         >
           <span className="block overflow-hidden">
             <motion.span
-              data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
@@ -204,12 +203,11 @@ function Intro() {
           </span>
           <span className="block overflow-hidden">
             <motion.span
-              data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
               transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-              style={{ color: ACCENT, "--mobile-reveal-delay": "90ms" } as React.CSSProperties}
+                style={{ color: ACCENT }}
             >
               ausgepackt.
             </motion.span>
