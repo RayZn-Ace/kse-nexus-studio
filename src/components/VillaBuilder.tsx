@@ -14,7 +14,11 @@ export default function VillaBuilder() {
     video.pause();
     let currentTime = 0;
     let lastApplied = -1;
+    let seeking = false;
     let primed = false;
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
     // iOS Safari quirk: a muted/playsInline video will not honor
     // currentTime assignments reliably until it has been "played" once
@@ -36,6 +40,14 @@ export default function VillaBuilder() {
     // Force load on mount — iOS often ignores preload="auto".
     try { video.load(); } catch {}
 
+    // On iOS, seeking is asynchronous: setting currentTime while a previous
+    // seek hasn't completed causes the pipeline to stall. We mark `seeking`
+    // and only issue the next seek after `seeked` fires.
+    const onSeeking = () => { seeking = true; };
+    const onSeeked = () => { seeking = false; };
+    video.addEventListener('seeking', onSeeking);
+    video.addEventListener('seeked', onSeeked);
+
     const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
@@ -49,8 +61,12 @@ export default function VillaBuilder() {
     const tick = () => {
       if (video.readyState >= 2) {
         const target = targetTimeRef.current;
-        currentTime += (target - currentTime) * 0.18;
-        if (Math.abs(currentTime - lastApplied) > 0.033) {
+        // Less smoothing on iOS — long lerp tail keeps a seek pending forever
+        // and stalls the pipeline.
+        currentTime += (target - currentTime) * (isIOS ? 0.35 : 0.18);
+        const threshold = isIOS ? 0.08 : 0.033;
+        if (!seeking && Math.abs(currentTime - lastApplied) > threshold) {
+          // fastSeek where available (Safari supports it) — much cheaper
           if (typeof (video as any).fastSeek === 'function') {
             (video as any).fastSeek(currentTime);
           } else {
@@ -80,6 +96,8 @@ export default function VillaBuilder() {
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
       video.removeEventListener('loadedmetadata', onLoaded);
+      video.removeEventListener('seeking', onSeeking);
+      video.removeEventListener('seeked', onSeeked);
       window.removeEventListener('touchstart', prime);
       window.removeEventListener('click', prime);
     };
