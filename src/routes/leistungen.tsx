@@ -398,14 +398,47 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
       >
         {pkg.title}
       </motion.h2>
-      <p className="text-base text-foreground/75 mb-3">{pkg.kicker}</p>
-      <p className="text-sm text-foreground/55 leading-relaxed mb-5">{pkg.intro}</p>
-      <div className="text-[11px] uppercase tracking-[0.35em] mb-8" style={{ color: ACCENT }}>
+      <motion.p
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.08 }}
+        className="text-base text-foreground/75 mb-3"
+        style={{ "--mobile-reveal-delay": "80ms" } as React.CSSProperties}
+      >
+        {pkg.kicker}
+      </motion.p>
+      <motion.p
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.12 }}
+        className="text-sm text-foreground/55 leading-relaxed mb-5"
+        style={{ "--mobile-reveal-delay": "120ms" } as React.CSSProperties}
+      >
+        {pkg.intro}
+      </motion.p>
+      <motion.div
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.16 }}
+        className="text-[11px] uppercase tracking-[0.35em] mb-8"
+        style={{ color: ACCENT, "--mobile-reveal-delay": "160ms" } as React.CSSProperties}
+      >
         {pkg.price}
-      </div>
+      </motion.div>
 
       {/* mini "package" header */}
-      <div
+      <motion.div
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 42, scale: 0.94, rotateX: 12 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
+        viewport={{ once: true, amount: 0.18 }}
+        transition={{ duration: 0.75, ease: EASE, delay: 0.2 }}
         className="relative border flex items-center justify-center mb-6 mx-auto"
         style={{
           width: "100%",
@@ -413,7 +446,9 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
           height: 140,
           background: "linear-gradient(135deg, rgba(20,20,20,0.95), rgba(8,8,8,0.95))",
           borderColor: "rgba(232,255,0,0.25)",
-        }}
+          transformPerspective: 900,
+          "--mobile-reveal-delay": "200ms",
+        } as React.CSSProperties}
       >
         <div className="text-center">
           <div className="text-[10px] uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
@@ -431,7 +466,7 @@ function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
             Inhalt: 4 Module
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col gap-3">
         {pkg.items.map((it, i) => (
