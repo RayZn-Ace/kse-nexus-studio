@@ -233,10 +233,12 @@ function Hero() {
           className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center"
         >
           <h1
+            data-mobile-reveal
             className="font-black leading-[0.85]"
             style={{
               fontSize: "clamp(3.5rem, 13vw, 12rem)",
               letterSpacing: "-0.05em",
+              "--mobile-reveal-delay": "120ms",
             }}
           >
             {headline.map((w, i) => (
