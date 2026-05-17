@@ -21,6 +21,11 @@ export default function VillaBuilder() {
       return;
     }
 
+    if (!video.src) {
+      video.src = videoAsset.url;
+      video.load();
+    }
+
     video.pause();
     let currentTime = 0;
     let lastApplied = -1;
@@ -93,10 +98,9 @@ export default function VillaBuilder() {
     >
       <video
         ref={videoRef}
-        src={videoAsset.url}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         style={{
           width: "100%",
           height: "100%",
@@ -175,6 +179,7 @@ export default function VillaBuilder() {
       {/* Electric current overlay — only visible at the start, fades on scroll */}
       <svg
         ref={overlayRef}
+        className="kse-desktop-electric"
         viewBox="0 0 1000 600"
         preserveAspectRatio="xMidYMid slice"
         style={{
