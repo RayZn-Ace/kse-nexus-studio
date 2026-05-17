@@ -235,21 +235,21 @@ function Hero() {
           <h1
             data-mobile-reveal
             className="font-black leading-[0.85]"
-            style={{
-              fontSize: "clamp(3.5rem, 13vw, 12rem)",
-              letterSpacing: "-0.05em",
-              "--mobile-reveal-delay": "120ms",
-            }}
+            style={
+              {
+                fontSize: "clamp(3.5rem, 13vw, 12rem)",
+                letterSpacing: "-0.05em",
+                "--mobile-reveal-delay": "120ms",
+              } as React.CSSProperties
+            }
           >
             {headline.map((w, i) => (
               <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
                 <motion.span
-                  data-mobile-reveal
                   className="inline-block"
                   initial={isMobile ? false : { y: 80, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
-                  style={{ "--mobile-reveal-delay": `${200 + i * 120}ms` } as React.CSSProperties}
                 >
                   {i === headline.length - 1 ? (
                     <span style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}>
