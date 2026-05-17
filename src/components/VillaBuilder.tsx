@@ -163,14 +163,17 @@ export default function VillaBuilder() {
     const tick = () => {
       if (frameSequence) {
         const targetFrame = targetProgressRef.current * (frameCount - 1);
-        currentFrame += (targetFrame - currentFrame) * 0.16;
+        currentFrame += (targetFrame - currentFrame) * 0.22;
         const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
-        for (let i = -3; i <= 5; i += 1) {
+        for (let i = -4; i <= 6; i += 1) {
           const nearby = wantedFrame + i;
-          if (nearby >= 0 && nearby < frameCount) loadFrame(nearby);
+          if (nearby >= 0 && nearby < frameCount) loadFrame(nearby, Math.abs(i) <= 2);
         }
         const frameToDraw = nearestLoadedFrame(wantedFrame);
-        if (frameToDraw >= 0) drawFrame(frameToDraw);
+        if (frameToDraw >= 0) {
+          decodeFrame(frameToDraw);
+          drawFrame(frameToDraw);
+        }
       } else if (video.readyState >= 2) {
         const target = targetTimeRef.current;
         // Smooth interpolation toward the scroll target.
@@ -201,7 +204,12 @@ export default function VillaBuilder() {
     const onMediaChange = (event: MediaQueryListEvent) => {
       frameSequence = event.matches;
       setUseFrameSequence(event.matches);
-      if (event.matches) loadFrame(Math.round(targetProgressRef.current * (frameCount - 1)));
+      if (event.matches) {
+        loadFrame(Math.round(targetProgressRef.current * (frameCount - 1)), true);
+        warmFrames();
+      } else {
+        window.clearTimeout(idleLoader);
+      }
     };
 
     const mediaQuery = window.matchMedia('(pointer: coarse), (max-width: 767px)');
@@ -216,6 +224,7 @@ export default function VillaBuilder() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      window.clearTimeout(idleLoader);
       mediaQuery.removeEventListener('change', onMediaChange);
       window.removeEventListener('scroll', readScroll);
       window.removeEventListener('resize', readScroll);
