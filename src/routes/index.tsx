@@ -169,7 +169,7 @@ function Hero() {
       </motion.div>
 
       {/* Top meta row */}
-      <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
+      <div className="absolute top-20 md:top-24 left-6 right-6 flex justify-between text-[9px] md:text-[10px] tracking-[0.3em] md:tracking-[0.4em] uppercase text-foreground/50">
         <span>[ 01 / Hannover · DE ]</span>
         <span className="hidden md:inline">Est. — Independent Studio</span>
       </div>
@@ -702,8 +702,13 @@ function Contact() {
           className="block group"
         >
           <span
-            className="font-black block leading-[0.9] break-all transition-colors group-hover:[color:var(--accent)]"
-            style={{ fontSize: "clamp(2rem, 8vw, 8rem)", letterSpacing: "-0.05em" }}
+            className="font-black block leading-[0.9] transition-colors group-hover:[color:var(--accent)]"
+            style={{
+              fontSize: "clamp(1.5rem, 8vw, 8rem)",
+              letterSpacing: "-0.05em",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
           >
             info@ksegroup.eu
           </span>
@@ -713,7 +718,7 @@ function Contact() {
           />
         </a>
 
-        <div className="mt-16 flex flex-wrap gap-8 text-[11px] uppercase tracking-[0.4em] text-foreground/55">
+        <div className="mt-12 md:mt-16 flex flex-wrap gap-x-6 gap-y-3 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-foreground/55">
           <span>Hannover · DE</span>
           <span>—</span>
           <a href="https://instagram.com/ksegroup" className="link-underline">Instagram</a>
