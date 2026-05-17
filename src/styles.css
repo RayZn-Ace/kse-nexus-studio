@@ -185,4 +185,34 @@
       transform: translate3d(-50%, 0, 0);
     }
   }
+  .kse-mobile-network {
+    display: none;
+  }
+  @media (max-width: 767px), (pointer: coarse) {
+    .kse-mobile-network {
+      display: block;
+    }
+    .kse-mobile-network .network-drift {
+      transform-origin: center;
+      animation: kse-mobile-network-drift 18s ease-in-out infinite alternate;
+    }
+    .kse-mobile-network .villa-draw path {
+      stroke-dasharray: 680;
+      stroke-dashoffset: 680;
+      animation: kse-mobile-villa-draw 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+  }
+  @keyframes kse-mobile-network-drift {
+    from {
+      transform: translate3d(-18px, -10px, 0) scale(1.04);
+    }
+    to {
+      transform: translate3d(18px, 14px, 0) scale(1.08);
+    }
+  }
+  @keyframes kse-mobile-villa-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 }
