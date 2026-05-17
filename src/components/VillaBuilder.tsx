@@ -26,6 +26,10 @@ export default function VillaBuilder() {
     const frameCount = 241;
     const frames: Array<HTMLImageElement | undefined> = [];
     const loadedFrames = new Set<number>();
+    const queuedFrames = new Set<number>();
+    const frameQueue: number[] = [];
+    let loadingFrames = 0;
+    let idleLoader = 0;
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
@@ -33,13 +37,53 @@ export default function VillaBuilder() {
     const frameUrl = (index: number) =>
       `/villa-frames/frame-${String(index + 1).padStart(3, '0')}.jpg`;
 
-    const loadFrame = (index: number) => {
-      if (!frameSequence || frames[index]) return;
-      const img = new Image();
-      img.decoding = 'async';
-      img.onload = () => loadedFrames.add(index);
-      img.src = frameUrl(index);
-      frames[index] = img;
+    const pumpFrameQueue = () => {
+      while (loadingFrames < 4 && frameQueue.length > 0) {
+        const index = frameQueue.shift();
+        if (index === undefined || frames[index]) continue;
+        queuedFrames.delete(index);
+        loadingFrames += 1;
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => {
+          loadedFrames.add(index);
+          loadingFrames -= 1;
+          pumpFrameQueue();
+        };
+        img.onerror = () => {
+          loadingFrames -= 1;
+          pumpFrameQueue();
+        };
+        img.src = frameUrl(index);
+        frames[index] = img;
+      }
+    };
+
+    const loadFrame = (index: number, priority = false) => {
+      if (!frameSequence || index < 0 || index >= frameCount || frames[index] || queuedFrames.has(index)) return;
+      queuedFrames.add(index);
+      if (priority) frameQueue.unshift(index);
+      else frameQueue.push(index);
+      pumpFrameQueue();
+    };
+
+    const warmFrames = () => {
+      for (let i = 0; i < frameCount; i += 10) loadFrame(i, true);
+      let index = 1;
+      const loadNext = () => {
+        while (index < frameCount && frames[index]) index += 1;
+        if (index >= frameCount) return;
+        loadFrame(index);
+        index += 1;
+        idleLoader = window.setTimeout(loadNext, 28);
+      };
+      idleLoader = window.setTimeout(loadNext, 180);
+    };
+
+    const decodeFrame = (index: number) => {
+      const img = frames[index];
+      if (!img || loadedFrames.has(index) || typeof img.decode !== 'function') return;
+      img.decode().then(() => loadedFrames.add(index)).catch(() => {});
     };
 
     const nearestLoadedFrame = (index: number) => {
@@ -73,10 +117,8 @@ export default function VillaBuilder() {
     };
 
     if (frameSequence) {
-      loadFrame(0);
-      window.setTimeout(() => {
-        for (let i = 1; i < frameCount; i += 1) loadFrame(i);
-      }, 80);
+      loadFrame(0, true);
+      warmFrames();
     }
 
     // iOS Safari quirk: a muted/playsInline video will not honor
