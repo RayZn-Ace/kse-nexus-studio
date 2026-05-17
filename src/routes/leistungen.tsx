@@ -377,15 +377,27 @@ function UnboxSectionDesktop({ pkg, index }: { pkg: Pkg; index: number }) {
 function UnboxSectionMobile({ pkg, index }: { pkg: Pkg; index: number }) {
   return (
     <section className="relative border-b border-foreground/15 px-5 py-20">
-      <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-4">
+      <motion.div
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.65, ease: EASE }}
+        className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-4"
+      >
         // Paket {pkg.n} · {String(index + 1).padStart(2, "0")} von 04
-      </div>
-      <h2
+      </motion.div>
+      <motion.h2
+        data-mobile-reveal
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.04 }}
         className="font-black leading-[0.85] tracking-tight mb-4"
-        style={{ fontSize: "clamp(2.2rem, 10vw, 3.6rem)", letterSpacing: "-0.04em" }}
+        style={{ fontSize: "clamp(2.2rem, 10vw, 3.6rem)", letterSpacing: "-0.04em", "--mobile-reveal-delay": "40ms" } as React.CSSProperties}
       >
         {pkg.title}
-      </h2>
+      </motion.h2>
       <p className="text-base text-foreground/75 mb-3">{pkg.kicker}</p>
       <p className="text-sm text-foreground/55 leading-relaxed mb-5">{pkg.intro}</p>
       <div className="text-[11px] uppercase tracking-[0.35em] mb-8" style={{ color: ACCENT }}>
