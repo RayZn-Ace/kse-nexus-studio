@@ -183,8 +183,12 @@ function Intro() {
         <div className="text-[10px] uppercase tracking-[0.4em] text-foreground/50 mb-8">
           // Leistungen · 04 Pakete · ausgepackt
         </div>
-        <h1
+        <motion.h1
+          data-mobile-reveal
           className="font-black leading-[0.85] tracking-tight"
+          initial={{ opacity: 0, y: 38 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: EASE, delay: 0.08 }}
           style={{ fontSize: "clamp(2.6rem, 9vw, 9rem)", letterSpacing: "-0.05em" }}
         >
           <span className="block overflow-hidden">
@@ -210,7 +214,7 @@ function Intro() {
               ausgepackt.
             </motion.span>
           </span>
-        </h1>
+        </motion.h1>
         <p className="mt-10 max-w-xl text-base md:text-lg text-foreground/70 leading-relaxed">
           Scroll dich durch unsere vier Disziplinen. Jedes Paket dreht sich, öffnet sich und legt
           seinen Inhalt vor dir aus — Schritt für Schritt.
