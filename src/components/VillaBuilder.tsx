@@ -23,7 +23,7 @@ export default function VillaBuilder() {
     let primed = false;
     let frameSequence = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches;
     setUseFrameSequence(frameSequence);
-    const frameCount = 161;
+    const frameCount = 241;
     const frames: Array<HTMLImageElement | undefined> = [];
     const loadedFrames = new Set<number>();
     const isIOS =
@@ -121,7 +121,7 @@ export default function VillaBuilder() {
     const tick = () => {
       if (frameSequence) {
         const targetFrame = targetProgressRef.current * (frameCount - 1);
-        currentFrame += (targetFrame - currentFrame) * 0.2;
+        currentFrame += (targetFrame - currentFrame) * 0.16;
         const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
         for (let i = -3; i <= 5; i += 1) {
           const nearby = wantedFrame + i;
