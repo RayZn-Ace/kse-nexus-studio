@@ -9,6 +9,7 @@ export function MobileAnimationFallback() {
     const media = window.matchMedia(MOBILE_QUERY);
     const elements = () =>
       Array.from(document.querySelectorAll<HTMLElement>("[data-mobile-reveal]"));
+    document.documentElement.classList.toggle("mobile-reveal-armed", media.matches);
 
     const revealNow = () => {
       elements().forEach((el) => el.classList.add("is-visible"));
@@ -46,15 +47,19 @@ export function MobileAnimationFallback() {
     }
 
     const onScrollOrResize = () => requestAnimationFrame(revealVisible);
+    const mutationObserver = new MutationObserver(() => requestAnimationFrame(revealVisible));
     window.addEventListener("scroll", onScrollOrResize, { passive: true });
     window.addEventListener("resize", onScrollOrResize);
     window.addEventListener("orientationchange", onScrollOrResize);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     requestAnimationFrame(revealVisible);
     const safety = window.setTimeout(revealVisible, 450);
 
     return () => {
       observer?.disconnect();
+      mutationObserver.disconnect();
+      document.documentElement.classList.remove("mobile-reveal-armed");
       window.clearTimeout(safety);
       window.removeEventListener("scroll", onScrollOrResize);
       window.removeEventListener("resize", onScrollOrResize);
