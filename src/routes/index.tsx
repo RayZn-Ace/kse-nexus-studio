@@ -299,6 +299,52 @@ function HeroDesktop() {
   );
 }
 
+function HeroMobile() {
+  return (
+    <section id="top" className="relative h-[100svh] min-h-[720px] w-full overflow-hidden">
+      <div className="relative z-[1] h-full w-full">
+        <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
+          <span>[ 01 / Hannover · DE ]</span>
+        </div>
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 text-center">
+          <h1
+            className="font-black leading-[0.85] animate-[kse-mobile-hero_900ms_cubic-bezier(0.22,1,0.36,1)_both]"
+            style={{ fontSize: "clamp(3.5rem, 13vw, 12rem)", letterSpacing: "-0.05em" }}
+          >
+            <span className="inline-block mr-[0.18em]">FANG</span>
+            <span className="inline-block mr-[0.18em]">NIEMALS</span>
+            <span className="inline-block mr-[0.18em]">AN</span>
+            <span
+              className="inline-block mr-[0.18em]"
+              style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}
+            >
+              AUFZUHÖREN.
+            </span>
+          </h1>
+          <p className="mt-10 max-w-xl text-[13px] uppercase tracking-[0.3em] text-foreground/70 animate-[kse-mobile-hero_900ms_cubic-bezier(0.22,1,0.36,1)_180ms_both]">
+            Die meisten Marken sind laut.
+            <br />
+            <span className="text-foreground">Wenige sind unvergesslich.</span>
+          </p>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+          <div className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium animate-[kse-mobile-ticker_28s_linear_infinite]" style={{ color: "#e8ff00" }}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span key={i} className="px-8 flex items-center gap-8">
+                KSE Group <span className="text-foreground/30">·</span> Hannover
+                <span className="text-foreground/30">·</span> Charakter
+                <span className="text-foreground/30">·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ───────────── pinned word ───────────── */
 
 function PinnedWord() {
