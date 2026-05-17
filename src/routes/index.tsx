@@ -116,8 +116,8 @@ function ScrollProgress() {
 function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-[70] mix-blend-difference">
-      <div className="flex items-center justify-between px-6 md:px-10 py-5 text-[11px] tracking-[0.3em] uppercase font-medium">
-        <a href="#top" className="link-underline font-black tracking-[-0.04em] text-[15px]">
+      <div className="flex items-center justify-between px-5 md:px-10 py-4 md:py-5 text-[10px] md:text-[11px] tracking-[0.25em] md:tracking-[0.3em] uppercase font-medium">
+        <a href="#top" className="link-underline font-black tracking-[-0.04em] text-[14px] md:text-[15px]">
           KSE / GROUP
         </a>
         <nav className="hidden md:flex items-center gap-8">
@@ -169,7 +169,7 @@ function Hero() {
       </motion.div>
 
       {/* Top meta row */}
-      <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
+      <div className="absolute top-20 md:top-24 left-6 right-6 flex justify-between text-[9px] md:text-[10px] tracking-[0.3em] md:tracking-[0.4em] uppercase text-foreground/50">
         <span>[ 01 / Hannover · DE ]</span>
         <span className="hidden md:inline">Est. — Independent Studio</span>
       </div>
@@ -210,7 +210,7 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
-          className="mt-10 max-w-xl text-[13px] md:text-sm uppercase tracking-[0.3em] text-foreground/70"
+          className="mt-8 md:mt-10 max-w-xl text-[11px] md:text-sm uppercase tracking-[0.25em] md:tracking-[0.3em] text-foreground/70 px-2"
         >
           Die meisten Marken sind laut.
           <br />
@@ -219,9 +219,9 @@ function Hero() {
       </motion.div>
 
       {/* Bottom ticker */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-3 md:py-4">
         <motion.div
-          className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium"
+          className="flex whitespace-nowrap text-[10px] md:text-[13px] tracking-[0.3em] md:tracking-[0.4em] uppercase font-medium"
           style={{ color: "#e8ff00" }}
           animate={{ x: ["0%", "-50%"] }}
           transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
@@ -298,13 +298,12 @@ function PinnedWord() {
         <h2
           className="font-black px-4 text-center"
           style={{
-            fontSize: "clamp(2.2rem, 6.4vw, 8rem)",
+            fontSize: "clamp(1.5rem, 7.5vw, 8rem)",
             fontWeight: 900,
             letterSpacing: "-0.03em",
             color: "#f0ede8",
             lineHeight: 1.05,
-            maxWidth: "92vw",
-            whiteSpace: "nowrap",
+            maxWidth: "94vw",
           }}
         >
           <motion.span style={{ opacity: lineOneOpacity, y: lineOneY, display: "block" }}>
@@ -335,12 +334,12 @@ function Manifest() {
   return (
     <section
       className="relative border-t border-foreground/15"
-      style={{ padding: "15vh 8vw", background: "rgba(0,0,0,0.55)" }}
+      style={{ padding: "clamp(10vh, 15vh, 15vh) clamp(1.5rem, 8vw, 8vw)", background: "rgba(0,0,0,0.55)" }}
     >
       <div className="max-w-6xl mx-auto">
         <h2
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(1.6rem, 3rem, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
+          style={{ fontSize: "clamp(1.5rem, 5.2vw, 3rem)", lineHeight: 1.2, letterSpacing: "-0.03em" }}
         >
           {lines.map((line, i) => (
             <span key={i} className="block overflow-hidden">
@@ -634,7 +633,7 @@ function About() {
       <div className="max-w-6xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24">
         <p
           className="font-black tracking-tight"
-          style={{ fontSize: "clamp(2.25rem, 4rem, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
+          style={{ fontSize: "clamp(1.875rem, 5.5vw, 4rem)", lineHeight: 1.05, letterSpacing: "-0.04em" }}
         >
           Wir bauen Marken, an denen man nicht vorbeiscrollen kann.
         </p>
@@ -703,8 +702,13 @@ function Contact() {
           className="block group"
         >
           <span
-            className="font-black block leading-[0.9] break-all transition-colors group-hover:[color:var(--accent)]"
-            style={{ fontSize: "clamp(2rem, 8vw, 8rem)", letterSpacing: "-0.05em" }}
+            className="font-black block leading-[0.9] transition-colors group-hover:[color:var(--accent)]"
+            style={{
+              fontSize: "clamp(1.5rem, 8vw, 8rem)",
+              letterSpacing: "-0.05em",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
           >
             info@ksegroup.eu
           </span>
@@ -714,7 +718,7 @@ function Contact() {
           />
         </a>
 
-        <div className="mt-16 flex flex-wrap gap-8 text-[11px] uppercase tracking-[0.4em] text-foreground/55">
+        <div className="mt-12 md:mt-16 flex flex-wrap gap-x-6 gap-y-3 md:gap-8 text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-foreground/55">
           <span>Hannover · DE</span>
           <span>—</span>
           <a href="https://instagram.com/ksegroup" className="link-underline">Instagram</a>
