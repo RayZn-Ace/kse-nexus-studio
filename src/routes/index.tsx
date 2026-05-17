@@ -737,13 +737,14 @@ function About() {
       <div className="max-w-6xl mx-auto grid gap-px bg-foreground/15 border border-foreground/15">
         {STATS.map((s, i) => (
           <motion.div
+            data-mobile-reveal
             key={s.label}
             initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-15%" }}
             transition={{ duration: 0.9, ease: EASE, delay: i * 0.12 }}
             className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 px-6 md:px-12 py-12 md:py-16"
-            style={{ background: "rgba(10,10,10,0.82)" }}
+            style={{ background: "rgba(10,10,10,0.82)", "--mobile-reveal-delay": `${i * 120}ms` } as React.CSSProperties}
           >
             <div>
               <div
