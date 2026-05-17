@@ -373,11 +373,13 @@ function Manifest() {
           {lines.map((line, i) => (
             <span key={i} className="block overflow-hidden">
               <motion.span
+                data-mobile-reveal
                 className="inline-block"
                 initial={{ y: "110%" }}
                 whileInView={{ y: "0%" }}
                 viewport={{ once: true, margin: "-10%" }}
                 transition={{ duration: 0.9, ease: EASE, delay: i * 0.08 }}
+                style={{ "--mobile-reveal-delay": `${i * 80}ms` } as React.CSSProperties}
               >
                 {line}
               </motion.span>
@@ -495,13 +497,14 @@ function VerticalServices() {
       <div className="flex flex-col gap-6">
         {SERVICES.map((s) => (
           <motion.article
+            data-mobile-reveal
             key={s.n}
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10%" }}
             transition={{ duration: 0.8, ease: EASE }}
             className="relative border border-foreground/15 p-6"
-            style={{ background: "rgba(10,10,10,0.85)" }}
+            style={{ background: "rgba(10,10,10,0.85)", "--mobile-reveal-delay": `${Number(s.n) * 70}ms` } as React.CSSProperties}
           >
             <span aria-hidden className="absolute top-0 left-0 right-0 h-px" style={{ background: "#e8ff00" }} />
             <div className="flex items-baseline justify-between mb-4">
