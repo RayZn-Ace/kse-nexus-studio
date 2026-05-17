@@ -44,17 +44,11 @@ function SplitReveal({
       {words.map((w, i) => (
         <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.25em]">
           <motion.span
-            data-mobile-reveal
             className="inline-block"
             initial={{ y: "110%" }}
             whileInView={{ y: "0%" }}
             viewport={{ once, margin: "-10%" }}
             transition={{ duration: 1, ease: EASE, delay: delay + i * stagger }}
-            style={
-              {
-                "--mobile-reveal-delay": `${Math.round((delay + i * stagger) * 1000)}ms`,
-              } as React.CSSProperties
-            }
           >
             {w}
           </motion.span>
