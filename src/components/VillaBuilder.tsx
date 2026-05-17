@@ -118,6 +118,7 @@ export default function VillaBuilder() {
 
       {/* Electric current overlay — only visible at the start, fades on scroll */}
       <svg
+        ref={overlayRef}
         viewBox="0 0 1000 600"
         preserveAspectRatio="xMidYMid slice"
         style={{
@@ -125,7 +126,7 @@ export default function VillaBuilder() {
           inset: 0,
           width: '100%',
           height: '100%',
-          opacity: introOpacity,
+          opacity: 1,
           transition: 'opacity 0.2s linear',
           mixBlendMode: 'screen',
         }}
