@@ -25,7 +25,7 @@ export default function VillaBuilder() {
     setUseFrameSequence(frameSequence);
     const frameCount = 241;
     const sheetColumns = 5;
-    const sheetRows = 10;
+    const sheetRows = 5;
     const framesPerSheet = sheetColumns * sheetRows;
     const sheets: Array<HTMLImageElement | undefined> = [];
     const loadedSheets = new Set<number>();
@@ -36,7 +36,7 @@ export default function VillaBuilder() {
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
     const sheetForFrame = (index: number) => Math.floor(index / framesPerSheet);
-    const sheetUrl = (index: number) => `/villa-sprites/sheet-${String(index + 1).padStart(3, '0')}.jpg`;
+    const sheetUrl = (index: number) => `/villa-sprites/sheet-${String(index + 1).padStart(3, '0')}.webp`;
 
     const loadSheet = (index: number) => {
       if (!frameSequence || index < 0 || index >= Math.ceil(frameCount / framesPerSheet) || sheets[index]) return;
@@ -122,12 +122,16 @@ export default function VillaBuilder() {
 
     const readScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      // Compress the animation into the first portion of the page so the build
+      // doesn't drag on for the entire scroll.
+      const ANIM_RANGE = 0.35;
+      const raw = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      const p = Math.min(1, raw / ANIM_RANGE);
       const duration = video.duration || 10;
       targetProgressRef.current = p;
       targetTimeRef.current = p * duration;
-      // Fade the electric overlay out across the first ~5% of scroll
-      const op = Math.max(0, 1 - p / 0.05);
+      // Fade the electric overlay out as the build kicks off
+      const op = Math.max(0, 1 - p / 0.15);
       if (overlayRef.current && Math.abs(op - previousOverlayOpacity) > 0.03) {
         overlayRef.current.style.opacity = String(op);
         previousOverlayOpacity = op;
@@ -137,7 +141,7 @@ export default function VillaBuilder() {
     const tick = () => {
       if (frameSequence) {
         const targetFrame = targetProgressRef.current * (frameCount - 1);
-        currentFrame += (targetFrame - currentFrame) * 0.22;
+        currentFrame += (targetFrame - currentFrame) * 0.35;
         const wantedFrame = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
         const wantedSheet = sheetForFrame(wantedFrame);
         loadSheet(wantedSheet - 1);
