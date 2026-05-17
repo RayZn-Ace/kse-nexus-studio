@@ -4,10 +4,10 @@ import videoAsset from '@/../public/villa-build.mp4.asset.json';
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
   const targetProgressRef = useRef(0);
-  const [introOpacity, setIntroOpacity] = useState(1);
   const [useFrameSequence, setUseFrameSequence] = useState<boolean | null>(null);
 
   useEffect(() => {
