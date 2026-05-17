@@ -44,17 +44,11 @@ function SplitReveal({
       {words.map((w, i) => (
         <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.25em]">
           <motion.span
-            data-mobile-reveal
             className="inline-block"
             initial={{ y: "110%" }}
             whileInView={{ y: "0%" }}
             viewport={{ once, margin: "-10%" }}
             transition={{ duration: 1, ease: EASE, delay: delay + i * stagger }}
-            style={
-              {
-                "--mobile-reveal-delay": `${Math.round((delay + i * stagger) * 1000)}ms`,
-              } as React.CSSProperties
-            }
           >
             {w}
           </motion.span>
@@ -195,6 +189,19 @@ function Header() {
 /* ───────────── hero ───────────── */
 
 function Hero() {
+  return (
+    <>
+      <div className="md:hidden">
+        <HeroMobile />
+      </div>
+      <div className="hidden md:block">
+        <HeroDesktop />
+      </div>
+    </>
+  );
+}
+
+function HeroDesktop() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   // Parallax: background glyph drifts faster than foreground text
@@ -247,12 +254,10 @@ function Hero() {
             {headline.map((w, i) => (
               <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
                 <motion.span
-                  data-mobile-reveal
                   className="inline-block"
                   initial={{ y: 80, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.1, ease: EASE, delay: 0.2 + i * 0.12 }}
-                  style={{ "--mobile-reveal-delay": `${200 + i * 120}ms` } as React.CSSProperties}
                 >
                   {i === headline.length - 1 ? (
                     <span style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}>
@@ -296,6 +301,75 @@ function Hero() {
               </span>
             ))}
           </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeroMobile() {
+  return (
+    <section id="top" className="relative h-[100svh] min-h-[720px] w-full overflow-hidden">
+      <div className="relative z-[1] h-full w-full">
+        <div className="absolute top-24 left-6 right-6 flex justify-between text-[10px] tracking-[0.4em] uppercase text-foreground/50">
+          <span>[ 01 / Hannover · DE ]</span>
+        </div>
+
+        <div
+          className="absolute inset-x-0 z-20 px-4 text-center"
+          style={{ top: "42%", transform: "translateY(-50%)" }}
+        >
+          <h1
+            className="font-black leading-[0.85]"
+            style={{
+              display: "block",
+              maxWidth: "calc(100vw - 32px)",
+              margin: "0 auto",
+              opacity: 1,
+              visibility: "visible",
+              transform: "translate3d(0,0,0)",
+              fontSize: "clamp(3.1rem, 15.5vw, 5.4rem)",
+              letterSpacing: "0",
+              color: "#f0ede8",
+            }}
+          >
+            <span className="block">FANG NIEMALS</span>
+            <span className="block">AN</span>
+            <span
+              className="block"
+              style={{
+                WebkitTextStroke: "1.2px #f0ede8",
+                color: "transparent",
+                fontSize: "clamp(2.65rem, 12.8vw, 4.7rem)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              AUFZUHÖREN.
+            </span>
+          </h1>
+          <p
+            className="mx-auto mt-10 max-w-xl text-[13px] uppercase tracking-[0.3em] text-foreground/70"
+            style={{ opacity: 1, visibility: "visible", transform: "none" }}
+          >
+            Die meisten Marken sind laut.
+            <br />
+            <span className="text-foreground">Wenige sind unvergesslich.</span>
+          </p>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
+          <div
+            className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium animate-[kse-mobile-ticker_28s_linear_infinite]"
+            style={{ color: "#e8ff00" }}
+          >
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span key={i} className="px-8 flex items-center gap-8">
+                KSE Group <span className="text-foreground/30">·</span> Hannover
+                <span className="text-foreground/30">·</span> Charakter
+                <span className="text-foreground/30">·</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
