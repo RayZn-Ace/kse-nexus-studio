@@ -167,4 +167,22 @@
       transform: none !important;
     }
   }
+  @keyframes kse-mobile-hero {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 42px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  @keyframes kse-mobile-ticker {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
 }
