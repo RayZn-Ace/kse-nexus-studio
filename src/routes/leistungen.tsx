@@ -154,7 +154,8 @@ function Intro() {
           style={{ fontSize: "clamp(2.6rem, 9vw, 9rem)", letterSpacing: "-0.05em" }}
         >
           <span className="block overflow-hidden">
-            <motion.span
+              <motion.span
+                data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
@@ -164,12 +165,13 @@ function Intro() {
             </motion.span>
           </span>
           <span className="block overflow-hidden">
-            <motion.span
+              <motion.span
+                data-mobile-reveal
               className="inline-block"
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
               transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-              style={{ color: ACCENT }}
+                style={{ color: ACCENT, "--mobile-reveal-delay": "90ms" } as React.CSSProperties}
             >
               ausgepackt.
             </motion.span>
