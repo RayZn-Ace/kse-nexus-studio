@@ -1,15 +1,41 @@
-import { useEffect, useRef, useState } from 'react';
-import videoAsset from '@/../public/villa-build.mp4.asset.json';
+import { useEffect, useRef } from "react";
+import videoAsset from "@/../public/villa-build.mp4.asset.json";
 
 export default function VillaBuilder() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const overlayRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const targetTimeRef = useRef(0);
-  const [introOpacity, setIntroOpacity] = useState(1);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    const isMobileSafariSafeMode = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (isMobileSafariSafeMode || reduceMotion) {
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      video.preload = "auto";
+
+      const play = () => {
+        void video.play().catch(() => {
+          // iOS can delay autoplay until enough data is buffered; the SVG fallback stays visible.
+        });
+      };
+
+      video.addEventListener("loadeddata", play);
+      video.addEventListener("canplay", play);
+      play();
+
+      return () => {
+        video.removeEventListener("loadeddata", play);
+        video.removeEventListener("canplay", play);
+        video.pause();
+      };
+    }
 
     video.pause();
     let currentTime = 0;
@@ -22,7 +48,7 @@ export default function VillaBuilder() {
       targetTimeRef.current = p * duration;
       // Fade the electric overlay out across the first ~5% of scroll
       const op = Math.max(0, 1 - p / 0.05);
-      setIntroOpacity(op);
+      if (overlayRef.current) overlayRef.current.style.opacity = String(op);
     };
 
     const tick = () => {
@@ -30,8 +56,8 @@ export default function VillaBuilder() {
         const target = targetTimeRef.current;
         currentTime += (target - currentTime) * 0.18;
         if (Math.abs(currentTime - lastApplied) > 0.033) {
-          if (typeof (video as any).fastSeek === 'function') {
-            (video as any).fastSeek(currentTime);
+          if (typeof (video as HTMLVideoElement & { fastSeek?: (time: number) => void }).fastSeek === "function") {
+            (video as HTMLVideoElement & { fastSeek: (time: number) => void }).fastSeek(currentTime);
           } else {
             video.currentTime = currentTime;
           }
@@ -48,17 +74,17 @@ export default function VillaBuilder() {
       lastApplied = currentTime;
     };
 
-    video.addEventListener('loadedmetadata', onLoaded);
-    window.addEventListener('scroll', readScroll, { passive: true });
-    window.addEventListener('resize', readScroll);
+    video.addEventListener("loadedmetadata", onLoaded);
+    window.addEventListener("scroll", readScroll, { passive: true });
+    window.addEventListener("resize", readScroll);
     readScroll();
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('scroll', readScroll);
-      window.removeEventListener('resize', readScroll);
-      video.removeEventListener('loadedmetadata', onLoaded);
+      window.removeEventListener("scroll", readScroll);
+      window.removeEventListener("resize", readScroll);
+      video.removeEventListener("loadedmetadata", onLoaded);
     };
   }, []);
 
