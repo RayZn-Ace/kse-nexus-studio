@@ -8,7 +8,7 @@ export default function VillaBuilder() {
   const targetTimeRef = useRef(0);
   const targetProgressRef = useRef(0);
   const [introOpacity, setIntroOpacity] = useState(1);
-  const [useFrameSequence, setUseFrameSequence] = useState(false);
+  const [useFrameSequence, setUseFrameSequence] = useState<boolean | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -252,20 +252,20 @@ export default function VillaBuilder() {
     >
       <video
         ref={videoRef}
-        src={videoAsset.url}
+        src={useFrameSequence === false ? videoAsset.url : undefined}
         muted
         playsInline
         {...({ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' } as Record<string, string>)}
         disableRemotePlayback
         disablePictureInPicture
         crossOrigin="anonymous"
-        preload="auto"
+        preload={useFrameSequence === false ? 'auto' : 'none'}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          opacity: useFrameSequence ? 0 : 0.85,
-          visibility: useFrameSequence ? 'hidden' : 'visible',
+          opacity: useFrameSequence === false ? 0.85 : 0,
+          visibility: useFrameSequence === false ? 'visible' : 'hidden',
         }}
       />
 
@@ -276,8 +276,8 @@ export default function VillaBuilder() {
           inset: 0,
           width: '100%',
           height: '100%',
-          opacity: useFrameSequence ? 0.85 : 0,
-          visibility: useFrameSequence ? 'visible' : 'hidden',
+          opacity: useFrameSequence === true ? 0.85 : 0,
+          visibility: useFrameSequence === true ? 'visible' : 'hidden',
         }}
       />
 
