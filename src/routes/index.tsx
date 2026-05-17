@@ -323,10 +323,12 @@ function HeroMobile() {
             className="font-black leading-[0.85]"
             style={{
               display: "block",
+              maxWidth: "calc(100vw - 32px)",
+              margin: "0 auto",
               opacity: 1,
               visibility: "visible",
               transform: "translate3d(0,0,0)",
-              fontSize: "clamp(3.6rem, 18vw, 6.5rem)",
+              fontSize: "clamp(3.1rem, 15.5vw, 5.4rem)",
               letterSpacing: "0",
               color: "#f0ede8",
             }}
@@ -335,7 +337,12 @@ function HeroMobile() {
             <span className="block">AN</span>
             <span
               className="block"
-              style={{ WebkitTextStroke: "1.5px #f0ede8", color: "transparent" }}
+              style={{
+                WebkitTextStroke: "1.2px #f0ede8",
+                color: "transparent",
+                fontSize: "clamp(2.65rem, 12.8vw, 4.7rem)",
+                whiteSpace: "nowrap",
+              }}
             >
               AUFZUHÖREN.
             </span>
