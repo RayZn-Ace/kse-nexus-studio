@@ -24,77 +24,37 @@ export default function VillaBuilder() {
     let frameSequence = window.matchMedia('(pointer: coarse), (max-width: 767px)').matches;
     setUseFrameSequence(frameSequence);
     const frameCount = 241;
-    const frames: Array<HTMLImageElement | undefined> = [];
-    const loadedFrames = new Set<number>();
-    const queuedFrames = new Set<number>();
-    const frameQueue: number[] = [];
-    let loadingFrames = 0;
-    let idleLoader = 0;
+    const sheetColumns = 5;
+    const sheetRows = 10;
+    const framesPerSheet = sheetColumns * sheetRows;
+    const sheets: Array<HTMLImageElement | undefined> = [];
+    const loadedSheets = new Set<number>();
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
-    const frameUrl = (index: number) =>
-      `/villa-frames/frame-${String(index + 1).padStart(3, '0')}.jpg`;
+    const sheetForFrame = (index: number) => Math.floor(index / framesPerSheet);
+    const sheetUrl = (index: number) => `/villa-sprites/sheet-${String(index + 1).padStart(3, '0')}.jpg`;
 
-    const pumpFrameQueue = () => {
-      while (loadingFrames < 4 && frameQueue.length > 0) {
-        const index = frameQueue.shift();
-        if (index === undefined || frames[index]) continue;
-        queuedFrames.delete(index);
-        loadingFrames += 1;
-        const img = new Image();
-        img.decoding = 'async';
-        img.onload = () => {
-          loadedFrames.add(index);
-          loadingFrames -= 1;
-          pumpFrameQueue();
-        };
-        img.onerror = () => {
-          loadingFrames -= 1;
-          pumpFrameQueue();
-        };
-        img.src = frameUrl(index);
-        frames[index] = img;
-      }
-    };
-
-    const loadFrame = (index: number, priority = false) => {
-      if (!frameSequence || index < 0 || index >= frameCount || frames[index] || queuedFrames.has(index)) return;
-      queuedFrames.add(index);
-      if (priority) frameQueue.unshift(index);
-      else frameQueue.push(index);
-      pumpFrameQueue();
-    };
-
-    const warmFrames = () => {
-      for (let i = 0; i < frameCount; i += 10) loadFrame(i, true);
-      let index = 1;
-      const loadNext = () => {
-        while (index < frameCount && frames[index]) index += 1;
-        if (index >= frameCount) return;
-        loadFrame(index);
-        index += 1;
-        idleLoader = window.setTimeout(loadNext, 28);
-      };
-      idleLoader = window.setTimeout(loadNext, 180);
-    };
-
-    const decodeFrame = (index: number) => {
-      const img = frames[index];
-      if (!img || loadedFrames.has(index) || typeof img.decode !== 'function') return;
-      img.decode().then(() => loadedFrames.add(index)).catch(() => {});
+    const loadSheet = (index: number) => {
+      if (!frameSequence || index < 0 || index >= Math.ceil(frameCount / framesPerSheet) || sheets[index]) return;
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => loadedSheets.add(index);
+      img.src = sheetUrl(index);
+      sheets[index] = img;
     };
 
     const nearestLoadedFrame = (index: number) => {
-      if (loadedFrames.has(index)) return index;
-      for (let offset = 1; offset < 14; offset += 1) {
-        const before = index - offset;
-        const after = index + offset;
-        if (after < frameCount && loadedFrames.has(after)) return after;
-        if (before >= 0 && loadedFrames.has(before)) return before;
+      const wantedSheet = sheetForFrame(index);
+      if (loadedSheets.has(wantedSheet)) return index;
+      for (let offset = 1; offset < 3; offset += 1) {
+        const afterSheet = wantedSheet + offset;
+        const beforeSheet = wantedSheet - offset;
+        if (loadedSheets.has(afterSheet)) return Math.min(frameCount - 1, afterSheet * framesPerSheet);
+        if (loadedSheets.has(beforeSheet)) return Math.max(0, beforeSheet * framesPerSheet + framesPerSheet - 1);
       }
-      return loadedFrames.has(0) ? 0 : -1;
+      return loadedSheets.has(0) ? 0 : -1;
     };
 
     const drawFrame = (index: number) => {
@@ -106,19 +66,24 @@ export default function VillaBuilder() {
         canvas.height = height;
       }
       const ctx = canvas.getContext('2d');
-      const img = frames[index];
-      if (!ctx || !img || !loadedFrames.has(index)) return;
+      const sheetIndex = sheetForFrame(index);
+      const img = sheets[sheetIndex];
+      if (!ctx || !img || !loadedSheets.has(sheetIndex)) return;
 
-      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
-      const drawWidth = img.naturalWidth * scale;
-      const drawHeight = img.naturalHeight * scale;
+      const frameWidth = img.naturalWidth / sheetColumns;
+      const frameHeight = img.naturalHeight / sheetRows;
+      const localFrame = index % framesPerSheet;
+      const sourceX = (localFrame % sheetColumns) * frameWidth;
+      const sourceY = Math.floor(localFrame / sheetColumns) * frameHeight;
+      const scale = Math.max(width / frameWidth, height / frameHeight);
+      const drawWidth = frameWidth * scale;
+      const drawHeight = frameHeight * scale;
       ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(img, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+      ctx.drawImage(img, sourceX, sourceY, frameWidth, frameHeight, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
     };
 
     if (frameSequence) {
-      loadFrame(0, true);
-      warmFrames();
+      for (let i = 0; i < Math.ceil(frameCount / framesPerSheet); i += 1) loadSheet(i);
     }
 
     // iOS Safari quirk: a muted/playsInline video will not honor
