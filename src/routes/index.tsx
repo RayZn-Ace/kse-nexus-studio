@@ -238,10 +238,10 @@ function HeroDesktop() {
         >
           <h1
             className="font-black leading-[0.85]"
-              style={{
-                fontSize: "clamp(3.5rem, 13vw, 12rem)",
-                letterSpacing: "-0.05em",
-              }}
+            style={{
+              fontSize: "clamp(3.5rem, 13vw, 12rem)",
+              letterSpacing: "-0.05em",
+            }}
           >
             {headline.map((w, i) => (
               <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.18em]">
@@ -330,7 +330,10 @@ function HeroMobile() {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-foreground/15 overflow-hidden py-4">
-          <div className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium animate-[kse-mobile-ticker_28s_linear_infinite]" style={{ color: "#e8ff00" }}>
+          <div
+            className="flex whitespace-nowrap text-[13px] tracking-[0.4em] uppercase font-medium animate-[kse-mobile-ticker_28s_linear_infinite]"
+            style={{ color: "#e8ff00" }}
+          >
             {Array.from({ length: 12 }).map((_, i) => (
               <span key={i} className="px-8 flex items-center gap-8">
                 KSE Group <span className="text-foreground/30">·</span> Hannover
