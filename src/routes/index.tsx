@@ -189,8 +189,16 @@ function Header() {
 /* ───────────── hero ───────────── */
 
 function Hero() {
-  const isMobile = useIsMobile();
-  return isMobile ? <HeroMobile /> : <HeroDesktop />;
+  return (
+    <>
+      <div className="md:hidden">
+        <HeroMobile />
+      </div>
+      <div className="hidden md:block">
+        <HeroDesktop />
+      </div>
+    </>
+  );
 }
 
 function HeroDesktop() {
