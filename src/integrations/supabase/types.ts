@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      automation_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -44,6 +62,45 @@ export type Database = {
           message?: string
           name?: string
           subject?: string | null
+        }
+        Relationships: []
+      }
+      posts_log: {
+        Row: {
+          caption: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          ig_media_id: string | null
+          image_prompt: string | null
+          image_url: string | null
+          status: string
+          triggered_by: string
+          type: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ig_media_id?: string | null
+          image_prompt?: string | null
+          image_url?: string | null
+          status: string
+          triggered_by?: string
+          type: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ig_media_id?: string | null
+          image_prompt?: string | null
+          image_url?: string | null
+          status?: string
+          triggered_by?: string
+          type?: string
         }
         Relationships: []
       }
