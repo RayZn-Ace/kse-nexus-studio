@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
+import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 
 const LeistungenRoute = LeistungenRouteImport.update({
   id: '/leistungen',
@@ -52,12 +53,18 @@ const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   path: '/tutorials',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminInstagramRoute = AdminInstagramRouteImport.update({
+  id: '/instagram',
+  path: '/instagram',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/leistungen'
+    | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
     | '/admin/'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/leistungen'
+    | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
     | '/admin'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/leistungen'
+    | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
     | '/admin/'
@@ -168,15 +180,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTutorialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/instagram': {
+      id: '/admin/instagram'
+      path: '/instagram'
+      fullPath: '/admin/instagram'
+      preLoaderRoute: typeof AdminInstagramRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminInstagramRoute: typeof AdminInstagramRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminInstagramRoute: AdminInstagramRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -193,3 +214,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
