@@ -1,0 +1,1 @@
+ALTER TABLE public.posts_log ADD COLUMN IF NOT EXISTS video_url text;
