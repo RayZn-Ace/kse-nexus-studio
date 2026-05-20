@@ -14,6 +14,7 @@ type LogRow = {
   type: PostType;
   caption: string | null;
   image_url: string | null;
+  video_url: string | null;
   ig_media_id: string | null;
   status: "success" | "failed" | "pending";
   error_message: string | null;
@@ -230,6 +231,7 @@ function InstagramAdmin() {
                 <tr>
                   <th className="py-2 pr-3">Status</th>
                   <th className="py-2 pr-3">Typ</th>
+                  <th className="py-2 pr-3">Media</th>
                   <th className="py-2 pr-3">Caption / Fehler</th>
                   <th className="py-2 pr-3">Quelle</th>
                   <th className="py-2 pr-3 whitespace-nowrap">Zeit</th>
@@ -246,6 +248,31 @@ function InstagramAdmin() {
                       )}
                     </td>
                     <td className="py-2 pr-3 capitalize">{l.type}</td>
+                    <td className="py-2 pr-3">
+                      {l.video_url ? (
+                        <a
+                          href={l.video_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-accent hover:underline"
+                          title="Video ansehen"
+                        >
+                          <Play className="w-3.5 h-3.5" /> Video
+                        </a>
+                      ) : l.image_url ? (
+                        <a
+                          href={l.image_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                          title="Bild ansehen"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" /> Bild
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-3 max-w-md">
                       <div className="line-clamp-2">
                         {l.status === "failed" ? (
