@@ -17,12 +17,15 @@ let _fonts: Uint8Array[] | null = null;
 async function loadFonts(): Promise<Uint8Array[]> {
   if (_fonts) return _fonts;
   const urls = [
-    // Inter Regular + Bold (TTF from rsms/inter via jsdelivr)
-    "https://cdn.jsdelivr.net/gh/rsms/inter@v4.0/docs/font-files/Inter-Regular.ttf",
-    "https://cdn.jsdelivr.net/gh/rsms/inter@v4.0/docs/font-files/Inter-Bold.ttf",
+    "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf",
+    "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Bold.ttf",
   ];
   const bufs = await Promise.all(
-    urls.map(async (u) => new Uint8Array(await (await fetch(u)).arrayBuffer())),
+    urls.map(async (u) => {
+      const r = await fetch(u);
+      if (!r.ok) throw new Error(`Font fetch ${u} failed: ${r.status}`);
+      return new Uint8Array(await r.arrayBuffer());
+    }),
   );
   _fonts = bufs;
   return bufs;
