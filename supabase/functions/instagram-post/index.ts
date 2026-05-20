@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,10 @@ const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
 const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY")!;
 const GRAPH = "https://graph.facebook.com/v21.0";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 
 type PostType = "story" | "reel" | "feed";
+type Slide = { headline: string[]; subtext: string };
 
 const SYSTEM_PROMPT =
   "Du bist ein professioneller Social Media Manager für KSE Group, eine Marketing & New Media Agentur. Erstelle professionellen, corporate Content auf Deutsch. Antworte NUR mit einem JSON-Objekt.";
@@ -22,12 +25,12 @@ function userPrompt(type: PostType) {
   if (type === "story" || type === "reel") {
     return `Erstelle einen ${type} für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "video_script": "Kurzes 15-20 Sekunden Video Script für KSE Group. Professionell, corporate, auf Deutsch. Zeigt Marketing-Expertise. Kein Avatar, nur Text-Animationen und visuelle Effekte im Film Noir Stil."}`;
   }
-  return `Erstelle einen ${type} für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "image_prompt": "English prompt for abstract corporate marketing visual, no text, no people"}`;
+  return `Erstelle einen Instagram-Karussell-Post (5 Slides) für @kse.group. Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, {...}, {...}, {...}, {"headline": ["BEREIT FÜR", "DIE ZUKUNFT?"], "subtext": "Lass uns reden.\\nkse.group"}]}`;
 }
 
 async function generateContent(
   type: PostType,
-): Promise<{ caption: string; image_prompt?: string; video_script?: string }> {
+): Promise<{ caption: string; slides?: Slide[]; video_script?: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -37,7 +40,7 @@ async function generateContent(
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-5",
-      max_tokens: 400,
+      max_tokens: 1200,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt(type) }],
     }),
@@ -52,14 +55,128 @@ async function generateContent(
   if ((type === "story" || type === "reel") && !parsed.video_script) {
     throw new Error("Missing video_script");
   }
-  if (type === "feed" && !parsed.image_prompt) {
-    throw new Error("Missing image_prompt");
+  if (type === "feed") {
+    if (!Array.isArray(parsed.slides) || parsed.slides.length !== 5) {
+      throw new Error("Expected 5 slides");
+    }
   }
   return parsed;
 }
 
-function imageUrl(prompt: string) {
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1080&nologo=true`;
+function generateSlide(headline: string[], subtext: string, slideNum: string): Uint8Array {
+  const canvas = createCanvas(1080, 1080);
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#080808";
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  // Top bar
+  ctx.fillStyle = "#1A1A1A";
+  ctx.fillRect(0, 0, 1080, 5);
+
+  // Bottom bar
+  ctx.fillStyle = "#111111";
+  ctx.fillRect(0, 1030, 1080, 50);
+
+  // Slide number top right
+  ctx.fillStyle = "#2E2E2E";
+  ctx.font = "24px sans-serif";
+  ctx.fillText(slideNum, 900, 75);
+
+  // Accent line
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(80, 390, 80, 8);
+
+  // Headline lines
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "bold 82px sans-serif";
+  let y = 470;
+  for (const line of headline) {
+    ctx.fillText(line, 80, y);
+    y += 95;
+  }
+
+  // Subtext
+  ctx.fillStyle = "#666666";
+  ctx.font = "34px sans-serif";
+  const subLines = subtext.split("\n");
+  let sy = y + 40;
+  for (const line of subLines) {
+    ctx.fillText(line, 80, sy);
+    sy += 46;
+  }
+
+  // Brand bottom
+  ctx.fillStyle = "#333333";
+  ctx.font = "26px sans-serif";
+  ctx.fillText("kse.group  ·  Marketing & New Media Agentur", 80, 1063);
+
+  return canvas.toBuffer("image/png");
+}
+
+async function uploadSlide(
+  supabase: any,
+  png: Uint8Array,
+  filename: string,
+): Promise<string> {
+  const { error } = await supabase.storage
+    .from("instagram")
+    .upload(filename, png, { contentType: "image/png", upsert: true });
+  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
+}
+
+async function postCarouselToInstagram(
+  caption: string,
+  imageUrls: string[],
+): Promise<string> {
+  // Step 1: create child containers (one per image), with 3s pacing
+  const childIds: string[] = [];
+  for (const url of imageUrls) {
+    const p = new URLSearchParams({
+      image_url: url,
+      is_carousel_item: "true",
+      access_token: META_TOKEN,
+    });
+    const r = await fetch(`${GRAPH}/${IG_ID}/media`, { method: "POST", body: p });
+    const d = await r.json();
+    if (!r.ok || !d.id) throw new Error(`Child container failed: ${JSON.stringify(d)}`);
+    childIds.push(d.id);
+    await new Promise((res) => setTimeout(res, 3000));
+  }
+
+  // Step 2: create carousel container
+  const carouselParams = new URLSearchParams({
+    media_type: "CAROUSEL",
+    children: childIds.join(","),
+    caption,
+    access_token: META_TOKEN,
+  });
+  const cRes = await fetch(`${GRAPH}/${IG_ID}/media`, {
+    method: "POST",
+    body: carouselParams,
+  });
+  const cData = await cRes.json();
+  if (!cRes.ok || !cData.id) {
+    throw new Error(`Carousel container failed: ${JSON.stringify(cData)}`);
+  }
+
+  // Step 3: wait then publish
+  await new Promise((res) => setTimeout(res, 5000));
+  const pubParams = new URLSearchParams({
+    creation_id: cData.id,
+    access_token: META_TOKEN,
+  });
+  const pRes = await fetch(`${GRAPH}/${IG_ID}/media_publish`, {
+    method: "POST",
+    body: pubParams,
+  });
+  const pData = await pRes.json();
+  if (!pRes.ok || !pData.id) {
+    throw new Error(`Carousel publish failed: ${JSON.stringify(pData)}`);
+  }
+  return pData.id as string;
 }
 
 async function generateHeyGenVideo(script: string): Promise<string> {
@@ -170,46 +287,76 @@ async function runJob(
   jobId: string,
   type: PostType,
   supabase: any,
+  overrideSlides?: Slide[],
+  overrideCaption?: string,
 ): Promise<void> {
   let caption = "";
-  let image_prompt = "";
+  let slidesMeta = "";
   let image_url = "";
   let video_url = "";
   let video_script = "";
   try {
-    const gen = await generateContent(type);
-    caption = gen.caption;
-
     if (type === "story" || type === "reel") {
+      const gen = await generateContent(type);
+      caption = gen.caption;
       video_script = gen.video_script!;
       video_url = await generateHeyGenVideo(video_script);
+      const media = { video_url };
+      let ig_media_id: string;
+      try {
+        ig_media_id = await postToInstagram(type, caption, media);
+      } catch (e) {
+        console.warn("First attempt failed, retrying in 60s:", (e as Error).message);
+        await new Promise((r) => setTimeout(r, 60_000));
+        ig_media_id = await postToInstagram(type, caption, media);
+      }
+      await supabase
+        .from("posts_log")
+        .update({
+          caption,
+          image_url: null,
+          image_prompt: video_script || null,
+          video_url,
+          ig_media_id,
+          status: "success",
+        })
+        .eq("id", jobId);
     } else {
-      image_prompt = gen.image_prompt!;
-      image_url = imageUrl(image_prompt);
+      // FEED = carousel of 5 generated slides
+      let slides: Slide[];
+      if (overrideSlides && overrideCaption) {
+        slides = overrideSlides;
+        caption = overrideCaption;
+      } else {
+        const gen = await generateContent(type);
+        caption = gen.caption;
+        slides = gen.slides!;
+      }
+      slidesMeta = JSON.stringify(slides);
+
+      const ts = Date.now();
+      const urls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const s = slides[i];
+        const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        const png = generateSlide(s.headline, s.subtext, num);
+        const url = await uploadSlide(supabase, png, `slide_${ts}_${i + 1}.png`);
+        urls.push(url);
+      }
+      image_url = urls[0];
+      const ig_media_id = await postCarouselToInstagram(caption, urls);
+      await supabase
+        .from("posts_log")
+        .update({
+          caption,
+          image_url,
+          image_prompt: slidesMeta,
+          video_url: null,
+          ig_media_id,
+          status: "success",
+        })
+        .eq("id", jobId);
     }
-
-    const media = video_url ? { video_url } : { image_url };
-
-    let ig_media_id: string;
-    try {
-      ig_media_id = await postToInstagram(type, caption, media);
-    } catch (e) {
-      console.warn("First attempt failed, retrying in 60s:", (e as Error).message);
-      await new Promise((r) => setTimeout(r, 60_000));
-      ig_media_id = await postToInstagram(type, caption, media);
-    }
-
-    await supabase
-      .from("posts_log")
-      .update({
-        caption,
-        image_url: image_url || null,
-        image_prompt: image_prompt || video_script || null,
-        video_url: video_url || null,
-        ig_media_id,
-        status: "success",
-      })
-      .eq("id", jobId);
   } catch (e) {
     const msg = (e as Error).message ?? String(e);
     console.error("Job failed", jobId, msg);
@@ -218,7 +365,7 @@ async function runJob(
       .update({
         caption: caption || null,
         image_url: image_url || null,
-        image_prompt: image_prompt || video_script || null,
+        image_prompt: slidesMeta || video_script || null,
         video_url: video_url || null,
         status: "failed",
         error_message: msg,
@@ -235,11 +382,47 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  let body: { type?: PostType; triggered_by?: "cron" | "manual"; force?: boolean } = {};
+  let body: {
+    type?: PostType;
+    triggered_by?: "cron" | "manual";
+    force?: boolean;
+    action?: "one_time_demo";
+  } = {};
   try {
     body = await req.json();
   } catch (_) {
     /* allow empty */
+  }
+
+  // One-time demo carousel using fixed slides
+  if (body.action === "one_time_demo") {
+    const slides: Slide[] = [
+      { headline: ["DEINE MARKE.", "UNSERE MISSION."], subtext: "KSE Group transformiert Unternehmen\nin der digitalen Welt." },
+      { headline: ["KI-MARKETING", "IST JETZT."], subtext: "Automatisierung trifft Kreativität.\nDein Wettbewerb schläft noch." },
+      { headline: ["CONTENT.", "SKALIERT TÄGLICH."], subtext: "Wir produzieren Content der verkauft –\nautomatisch, konsistent, professionell." },
+      { headline: ["NEW MEDIA.", "NEUE REGELN."], subtext: "Die Gewinner von morgen nutzen\ndie Tools von heute." },
+      { headline: ["BEREIT FÜR", "DIE ZUKUNFT?"], subtext: "Lass uns reden.\nkse.group" },
+    ];
+    const caption =
+      "Innovative Strategien für digitale Exzellenz. Wir transformieren Ihre Marke in der digitalen Welt. 🚀 #DigitalMarketing #NewMedia #KSEGroup";
+
+    const { data: job, error: insertErr } = await supabase
+      .from("posts_log")
+      .insert({ type: "feed", status: "pending", triggered_by: "manual" })
+      .select("id")
+      .single();
+    if (insertErr || !job) {
+      return new Response(JSON.stringify({ ok: false, error: insertErr?.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "content-type": "application/json" },
+      });
+    }
+    // @ts-ignore
+    EdgeRuntime.waitUntil(runJob(job.id, "feed", supabase, slides, caption));
+    return new Response(JSON.stringify({ ok: true, jobId: job.id, status: "pending" }), {
+      status: 202,
+      headers: { ...corsHeaders, "content-type": "application/json" },
+    });
   }
 
   const type = body.type;
