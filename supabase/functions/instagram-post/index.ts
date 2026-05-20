@@ -65,27 +65,24 @@ function imageUrl(prompt: string) {
 
 async function generateHeyGenVideo(script: string): Promise<string> {
   // 1. Create session
-  const sessionRes = await fetch("https://api.heygen.com/v2/video_agent/session", {
+  const sessionRes = await fetch("https://api.heygen.com/v2/video_agent/session.create", {
     method: "POST",
     headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ style_id: FILM_NOIR_STYLE_ID, aspect_ratio: "9:16" }),
+    body: JSON.stringify({ style_id: FILM_NOIR_STYLE_ID }),
   });
   if (!sessionRes.ok) {
     throw new Error(`HeyGen session failed: ${sessionRes.status} ${await sessionRes.text()}`);
   }
   const sessionData = await sessionRes.json();
-  const session_id = sessionData.session_id ?? sessionData?.data?.session_id;
+  const session_id = sessionData?.data?.session_id ?? sessionData.session_id;
   if (!session_id) throw new Error(`HeyGen session: no session_id (${JSON.stringify(sessionData)})`);
 
   // 2. Send script
-  const msgRes = await fetch(
-    `https://api.heygen.com/v2/video_agent/session/${session_id}/message`,
-    {
-      method: "POST",
-      headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ message: script }),
-    },
-  );
+  const msgRes = await fetch("https://api.heygen.com/v2/video_agent/session.chat", {
+    method: "POST",
+    headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id, message: script }),
+  });
   if (!msgRes.ok) {
     throw new Error(`HeyGen message failed: ${msgRes.status} ${await msgRes.text()}`);
   }
@@ -94,13 +91,13 @@ async function generateHeyGenVideo(script: string): Promise<string> {
   for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 10_000));
     const statusRes = await fetch(
-      `https://api.heygen.com/v2/video_agent/session/${session_id}`,
+      `https://api.heygen.com/v2/video_agent/session.get?session_id=${encodeURIComponent(session_id)}`,
       { headers: { "X-Api-Key": HEYGEN_API_KEY } },
     );
     if (!statusRes.ok) continue;
     const data = await statusRes.json();
-    const status = data.status ?? data?.data?.status;
-    const video_url = data.video_url ?? data?.data?.video_url;
+    const status = data?.data?.status ?? data.status;
+    const video_url = data?.data?.video_url ?? data.video_url;
     if (status === "completed" && video_url) return video_url;
     if (status === "failed") throw new Error(`HeyGen failed: ${JSON.stringify(data)}`);
   }
