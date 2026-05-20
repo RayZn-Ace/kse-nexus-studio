@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Play, RefreshCw, CheckCircle2, XCircle, Image as ImageIcon, Film, Newspaper } from "lucide-react";
+import { Loader2, Play, RefreshCw, CheckCircle2, XCircle, Image as ImageIcon, Film, Newspaper, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -61,6 +61,14 @@ function InstagramAdmin() {
     loadAll();
   }, []);
 
+  // Auto-refresh every 10s while there are pending jobs
+  const hasPending = useMemo(() => logs.some((l) => l.status === "pending"), [logs]);
+  useEffect(() => {
+    if (!hasPending) return;
+    const t = setInterval(loadAll, 10_000);
+    return () => clearInterval(t);
+  }, [hasPending]);
+
   const stats = useMemo(() => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -103,23 +111,20 @@ function InstagramAdmin() {
     const types: PostType[] = type === "all" ? ["story", "reel", "feed"] : [type];
     try {
       for (const t of types) {
-        const toastId = toast.loading(`${t}: wird gepostet… (kann bis 10 Min dauern)`);
         try {
           const { data, error } = await supabase.functions.invoke("instagram-post", {
             body: { type: t, triggered_by: "manual" },
           });
-          if (error) {
-            const msg = (data as any)?.error || error.message || "Unbekannter Fehler";
-            console.error(`${t} failed`, error, data);
-            toast.error(`${t} fehlgeschlagen: ${msg}`, { id: toastId, duration: 10000 });
-          } else if ((data as any)?.ok === false) {
-            toast.error(`${t} fehlgeschlagen: ${(data as any).error}`, { id: toastId, duration: 10000 });
+          if (error || (data as any)?.ok === false) {
+            const msg = (data as any)?.error || error?.message || "Unbekannter Fehler";
+            console.error(`${t} failed to queue`, error, data);
+            toast.error(`${t}: Start fehlgeschlagen — ${msg}`, { duration: 10000 });
           } else {
-            toast.success(`${t} erfolgreich gepostet`, { id: toastId });
+            toast.success(`${t} läuft im Hintergrund — Tab kann geschlossen werden`);
           }
         } catch (e: any) {
           console.error(`${t} threw`, e);
-          toast.error(`${t}: ${e?.message ?? e}`, { id: toastId, duration: 10000 });
+          toast.error(`${t}: ${e?.message ?? e}`, { duration: 10000 });
         }
         await loadAll();
       }
@@ -258,6 +263,8 @@ function InstagramAdmin() {
                     <td className="py-2 pr-3">
                       {l.status === "success" ? (
                         <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      ) : l.status === "pending" ? (
+                        <Clock className="w-4 h-4 text-yellow-500 animate-pulse" />
                       ) : (
                         <XCircle className="w-4 h-4 text-red-500" />
                       )}
@@ -292,6 +299,8 @@ function InstagramAdmin() {
                       <div className="line-clamp-2">
                         {l.status === "failed" ? (
                           <span className="text-red-400">{l.error_message ?? "Unknown error"}</span>
+                        ) : l.status === "pending" ? (
+                          <span className="text-yellow-500">läuft… (Video-Generierung kann mehrere Min dauern)</span>
                         ) : (
                           l.caption ?? "—"
                         )}

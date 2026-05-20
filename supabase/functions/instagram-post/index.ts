@@ -166,11 +166,11 @@ async function postToInstagram(
   return pubData.id as string;
 }
 
-async function runOnce(
+async function runJob(
+  jobId: string,
   type: PostType,
   supabase: any,
-  triggeredBy: "cron" | "manual",
-): Promise<{ ok: boolean; ig_media_id?: string; error?: string }> {
+): Promise<void> {
   let caption = "";
   let image_prompt = "";
   let image_url = "";
@@ -194,36 +194,36 @@ async function runOnce(
     try {
       ig_media_id = await postToInstagram(type, caption, media);
     } catch (e) {
-      // retry once after 60s
       console.warn("First attempt failed, retrying in 60s:", (e as Error).message);
       await new Promise((r) => setTimeout(r, 60_000));
       ig_media_id = await postToInstagram(type, caption, media);
     }
 
-    await supabase.from("posts_log").insert({
-      type,
-      caption,
-      image_url: image_url || null,
-      image_prompt: image_prompt || video_script || null,
-      video_url: video_url || null,
-      ig_media_id,
-      status: "success",
-      triggered_by: triggeredBy,
-    });
-    return { ok: true, ig_media_id };
+    await supabase
+      .from("posts_log")
+      .update({
+        caption,
+        image_url: image_url || null,
+        image_prompt: image_prompt || video_script || null,
+        video_url: video_url || null,
+        ig_media_id,
+        status: "success",
+      })
+      .eq("id", jobId);
   } catch (e) {
     const msg = (e as Error).message ?? String(e);
-    await supabase.from("posts_log").insert({
-      type,
-      caption: caption || null,
-      image_url: image_url || null,
-      image_prompt: image_prompt || video_script || null,
-      video_url: video_url || null,
-      status: "failed",
-      error_message: msg,
-      triggered_by: triggeredBy,
-    });
-    return { ok: false, error: msg };
+    console.error("Job failed", jobId, msg);
+    await supabase
+      .from("posts_log")
+      .update({
+        caption: caption || null,
+        image_url: image_url || null,
+        image_prompt: image_prompt || video_script || null,
+        video_url: video_url || null,
+        status: "failed",
+        error_message: msg,
+      })
+      .eq("id", jobId);
   }
 }
 
@@ -284,9 +284,30 @@ Deno.serve(async (req) => {
     }
   }
 
-  const result = await runOnce(type, supabase, triggeredBy);
-  return new Response(JSON.stringify(result), {
-    status: result.ok ? 200 : 500,
+  // Create pending job row immediately so the UI shows status right away
+  const { data: job, error: insertErr } = await supabase
+    .from("posts_log")
+    .insert({
+      type,
+      status: "pending",
+      triggered_by: triggeredBy,
+    })
+    .select("id")
+    .single();
+
+  if (insertErr || !job) {
+    return new Response(JSON.stringify({ ok: false, error: insertErr?.message ?? "insert failed" }), {
+      status: 500,
+      headers: { ...corsHeaders, "content-type": "application/json" },
+    });
+  }
+
+  // Run in background — function returns immediately, work continues after response
+  // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime
+  EdgeRuntime.waitUntil(runJob(job.id, type, supabase));
+
+  return new Response(JSON.stringify({ ok: true, jobId: job.id, status: "pending" }), {
+    status: 202,
     headers: { ...corsHeaders, "content-type": "application/json" },
   });
 });
