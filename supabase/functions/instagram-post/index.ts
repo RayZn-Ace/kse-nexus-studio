@@ -30,7 +30,7 @@ async function generateContent(type: PostType): Promise<{ caption: string; image
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-3-5-sonnet-20241022",
+      model: "claude-sonnet-4-5",
       max_tokens: 400,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt(type) }],
