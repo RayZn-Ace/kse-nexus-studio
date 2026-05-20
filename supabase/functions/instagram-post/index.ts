@@ -11,7 +11,6 @@ const IG_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "17841442278138192";
 const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
 const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY")!;
-const HEYGEN_SESSION_ID = Deno.env.get("HEYGEN_SESSION_ID")!;
 const GRAPH = "https://graph.facebook.com/v21.0";
 
 type PostType = "story" | "reel" | "feed";
@@ -64,37 +63,43 @@ function imageUrl(prompt: string) {
 }
 
 async function generateHeyGenVideo(script: string): Promise<string> {
-  // Step 1: Send message
-  const msgResp = await fetch("https://api.heygen.com/v2/video_agent/session.chat", {
+  // Step 1: kick off generation via the real Video Agent endpoint
+  const genResp = await fetch("https://api.heygen.com/v1/video_agent/generate", {
     method: "POST",
     headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: HEYGEN_SESSION_ID, message: script }),
+    body: JSON.stringify({
+      prompt: script,
+      config: { orientation: "portrait", duration_sec: 20 },
+    }),
   });
-  if (!msgResp.ok) {
-    throw new Error(`HeyGen chat failed: ${msgResp.status} ${await msgResp.text()}`);
+  if (!genResp.ok) {
+    throw new Error(`HeyGen generate failed: ${genResp.status} ${await genResp.text()}`);
+  }
+  const genData = await genResp.json();
+  const video_id = genData?.data?.video_id ?? genData?.video_id;
+  if (!video_id) {
+    throw new Error(`HeyGen generate: no video_id (${JSON.stringify(genData)})`);
   }
 
-  // Step 2: Poll until completed (every 15s, max 10 minutes)
+  // Step 2: poll standard video_status endpoint (every 15s, max 10 minutes)
   for (let i = 0; i < 40; i++) {
     await new Promise((r) => setTimeout(r, 15_000));
     const statusResp = await fetch(
-      `https://api.heygen.com/v2/video_agent/session.get?session_id=${HEYGEN_SESSION_ID}`,
+      `https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(video_id)}`,
       { headers: { "X-Api-Key": HEYGEN_API_KEY } },
     );
     if (!statusResp.ok) continue;
-    const status = await statusResp.json();
-    if (status.status === "completed") {
-      // Step 3: Get video list
-      const videosResp = await fetch(
-        `https://api.heygen.com/v2/video_agent/session.list_videos?session_id=${HEYGEN_SESSION_ID}`,
-        { headers: { "X-Api-Key": HEYGEN_API_KEY } },
-      );
-      const videos = await videosResp.json();
-      const videoUrl = videos.items?.[0]?.video_url;
-      if (!videoUrl) {
-        throw new Error(`HeyGen completed but no video_url: ${JSON.stringify(videos)}`);
+    const statusData = await statusResp.json();
+    const status = statusData?.data?.status ?? statusData?.status;
+    if (status === "completed") {
+      const video_url = statusData?.data?.video_url ?? statusData?.video_url;
+      if (!video_url) {
+        throw new Error(`HeyGen completed but no video_url: ${JSON.stringify(statusData)}`);
       }
-      return videoUrl;
+      return video_url;
+    }
+    if (status === "failed") {
+      throw new Error(`HeyGen video failed: ${JSON.stringify(statusData)}`);
     }
   }
   throw new Error("HeyGen timeout after 10 minutes");
