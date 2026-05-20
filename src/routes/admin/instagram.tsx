@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Play, RefreshCw, CheckCircle2, XCircle, Image as ImageIcon, Film, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/instagram")({
   head: () => ({ meta: [{ title: "Instagram Automation — KSE Group" }, { name: "robots", content: "noindex" }] }),
@@ -102,12 +103,26 @@ function InstagramAdmin() {
     const types: PostType[] = type === "all" ? ["story", "reel", "feed"] : [type];
     try {
       for (const t of types) {
-        const { error } = await supabase.functions.invoke("instagram-post", {
-          body: { type: t, triggered_by: "manual" },
-        });
-        if (error) console.error(`${t} failed`, error);
+        const toastId = toast.loading(`${t}: wird gepostet… (kann bis 10 Min dauern)`);
+        try {
+          const { data, error } = await supabase.functions.invoke("instagram-post", {
+            body: { type: t, triggered_by: "manual" },
+          });
+          if (error) {
+            const msg = (data as any)?.error || error.message || "Unbekannter Fehler";
+            console.error(`${t} failed`, error, data);
+            toast.error(`${t} fehlgeschlagen: ${msg}`, { id: toastId, duration: 10000 });
+          } else if ((data as any)?.ok === false) {
+            toast.error(`${t} fehlgeschlagen: ${(data as any).error}`, { id: toastId, duration: 10000 });
+          } else {
+            toast.success(`${t} erfolgreich gepostet`, { id: toastId });
+          }
+        } catch (e: any) {
+          console.error(`${t} threw`, e);
+          toast.error(`${t}: ${e?.message ?? e}`, { id: toastId, duration: 10000 });
+        }
+        await loadAll();
       }
-      await loadAll();
     } finally {
       setBusy(null);
     }
