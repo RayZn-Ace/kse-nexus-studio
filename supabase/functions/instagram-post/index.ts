@@ -13,6 +13,21 @@ async function ensureWasm() {
   return _wasmReady;
 }
 
+let _fonts: Uint8Array[] | null = null;
+async function loadFonts(): Promise<Uint8Array[]> {
+  if (_fonts) return _fonts;
+  const urls = [
+    // Inter Regular + Bold (TTF from rsms/inter via jsdelivr)
+    "https://cdn.jsdelivr.net/gh/rsms/inter@v4.0/docs/font-files/Inter-Regular.ttf",
+    "https://cdn.jsdelivr.net/gh/rsms/inter@v4.0/docs/font-files/Inter-Bold.ttf",
+  ];
+  const bufs = await Promise.all(
+    urls.map(async (u) => new Uint8Array(await (await fetch(u)).arrayBuffer())),
+  );
+  _fonts = bufs;
+  return bufs;
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -121,8 +136,13 @@ async function generateSlide(
   <text x="80" y="1063" fill="#333333" font-family="sans-serif" font-size="26">kse.group  ·  Marketing &amp; New Media Agentur</text>
 </svg>`;
 
+  const fontBuffers = await loadFonts();
   const resvg = new Resvg(svg, {
-    font: { loadSystemFonts: false, defaultFontFamily: "sans-serif" },
+    font: {
+      loadSystemFonts: false,
+      fontBuffers,
+      defaultFontFamily: "Inter",
+    },
   });
   return resvg.render().asPng();
 }
