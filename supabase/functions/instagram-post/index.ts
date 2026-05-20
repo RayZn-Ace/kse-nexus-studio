@@ -129,11 +129,11 @@ async function generateSlide(
   <rect width="1080" height="1080" fill="#080808"/>
   <rect x="0" y="0" width="1080" height="5" fill="#1A1A1A"/>
   <rect x="0" y="1030" width="1080" height="50" fill="#111111"/>
-  <text x="900" y="75" fill="#2E2E2E" font-family="sans-serif" font-size="24">${escapeXml(slideNum)}</text>
+  <text x="900" y="75" fill="#2E2E2E" font-family="Inter" font-size="24">${escapeXml(slideNum)}</text>
   <rect x="80" y="390" width="80" height="8" fill="#FFFFFF"/>
-  <text fill="#FFFFFF" font-family="sans-serif" font-size="82" font-weight="bold">${headlineTspans}</text>
-  <text fill="#666666" font-family="sans-serif" font-size="34">${subTspans}</text>
-  <text x="80" y="1063" fill="#333333" font-family="sans-serif" font-size="26">kse.group  ·  Marketing &amp; New Media Agentur</text>
+  <text fill="#FFFFFF" font-family="Inter" font-size="82" font-weight="bold">${headlineTspans}</text>
+  <text fill="#666666" font-family="Inter" font-size="34">${subTspans}</text>
+  <text x="80" y="1063" fill="#333333" font-family="Inter" font-size="26">kse.group  ·  Marketing &amp; New Media Agentur</text>
 </svg>`;
 
   const fontBuffers = await loadFonts();
