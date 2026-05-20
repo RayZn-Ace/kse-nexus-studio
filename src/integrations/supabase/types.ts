@@ -77,6 +77,7 @@ export type Database = {
           status: string
           triggered_by: string
           type: string
+          video_url: string | null
         }
         Insert: {
           caption?: string | null
@@ -89,6 +90,7 @@ export type Database = {
           status: string
           triggered_by?: string
           type: string
+          video_url?: string | null
         }
         Update: {
           caption?: string | null
@@ -101,6 +103,7 @@ export type Database = {
           status?: string
           triggered_by?: string
           type?: string
+          video_url?: string | null
         }
         Relationships: []
       }
