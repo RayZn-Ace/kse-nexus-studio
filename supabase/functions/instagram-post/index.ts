@@ -351,7 +351,7 @@ async function runJob(
       for (let i = 0; i < slides.length; i++) {
         const s = slides[i];
         const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-        const png = generateSlide(s.headline, s.subtext, num);
+        const png = await generateSlide(s.headline, s.subtext, num);
         const url = await uploadSlide(supabase, png, `slide_${ts}_${i + 1}.png`);
         urls.push(url);
       }
