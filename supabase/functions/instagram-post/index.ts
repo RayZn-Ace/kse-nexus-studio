@@ -10,6 +10,8 @@ const corsHeaders = {
 const IG_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "17841442278138192";
 const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
+const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY")!;
+const FILM_NOIR_STYLE_ID = "0d03454b528141999c6a47e120d7cdd7";
 const GRAPH = "https://graph.facebook.com/v21.0";
 
 type PostType = "story" | "reel" | "feed";
@@ -18,10 +20,15 @@ const SYSTEM_PROMPT =
   "Du bist ein professioneller Social Media Manager für KSE Group, eine Marketing & New Media Agentur. Erstelle professionellen, corporate Content auf Deutsch. Antworte NUR mit einem JSON-Objekt.";
 
 function userPrompt(type: PostType) {
+  if (type === "story" || type === "reel") {
+    return `Erstelle einen ${type} für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "video_script": "Kurzes 15-20 Sekunden Video Script für KSE Group. Professionell, corporate, auf Deutsch. Zeigt Marketing-Expertise. Kein Avatar, nur Text-Animationen und visuelle Effekte im Film Noir Stil."}`;
+  }
   return `Erstelle einen ${type} für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "image_prompt": "English prompt for abstract corporate marketing visual, no text, no people"}`;
 }
 
-async function generateContent(type: PostType): Promise<{ caption: string; image_prompt: string }> {
+async function generateContent(
+  type: PostType,
+): Promise<{ caption: string; image_prompt?: string; video_script?: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -42,7 +49,13 @@ async function generateContent(type: PostType): Promise<{ caption: string; image
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error(`No JSON in Claude response: ${text.slice(0, 200)}`);
   const parsed = JSON.parse(match[0]);
-  if (!parsed.caption || !parsed.image_prompt) throw new Error("Missing caption/image_prompt");
+  if (!parsed.caption) throw new Error("Missing caption");
+  if ((type === "story" || type === "reel") && !parsed.video_script) {
+    throw new Error("Missing video_script");
+  }
+  if (type === "feed" && !parsed.image_prompt) {
+    throw new Error("Missing image_prompt");
+  }
   return parsed;
 }
 
@@ -50,16 +63,67 @@ function imageUrl(prompt: string) {
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1080&nologo=true`;
 }
 
+async function generateHeyGenVideo(script: string): Promise<string> {
+  // 1. Create session
+  const sessionRes = await fetch("https://api.heygen.com/v2/video_agent/session", {
+    method: "POST",
+    headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ style_id: FILM_NOIR_STYLE_ID, aspect_ratio: "9:16" }),
+  });
+  if (!sessionRes.ok) {
+    throw new Error(`HeyGen session failed: ${sessionRes.status} ${await sessionRes.text()}`);
+  }
+  const sessionData = await sessionRes.json();
+  const session_id = sessionData.session_id ?? sessionData?.data?.session_id;
+  if (!session_id) throw new Error(`HeyGen session: no session_id (${JSON.stringify(sessionData)})`);
+
+  // 2. Send script
+  const msgRes = await fetch(
+    `https://api.heygen.com/v2/video_agent/session/${session_id}/message`,
+    {
+      method: "POST",
+      headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ message: script }),
+    },
+  );
+  if (!msgRes.ok) {
+    throw new Error(`HeyGen message failed: ${msgRes.status} ${await msgRes.text()}`);
+  }
+
+  // 3. Poll for completion (every 10s, max 5 minutes)
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 10_000));
+    const statusRes = await fetch(
+      `https://api.heygen.com/v2/video_agent/session/${session_id}`,
+      { headers: { "X-Api-Key": HEYGEN_API_KEY } },
+    );
+    if (!statusRes.ok) continue;
+    const data = await statusRes.json();
+    const status = data.status ?? data?.data?.status;
+    const video_url = data.video_url ?? data?.data?.video_url;
+    if (status === "completed" && video_url) return video_url;
+    if (status === "failed") throw new Error(`HeyGen failed: ${JSON.stringify(data)}`);
+  }
+  throw new Error("HeyGen timeout after 5 minutes");
+}
+
 async function postToInstagram(
   type: PostType,
   caption: string,
-  image_url: string,
+  media: { image_url?: string; video_url?: string },
 ): Promise<string> {
   // Step 1: create media container
-  const createParams = new URLSearchParams({ access_token: META_TOKEN, image_url });
-  if (type === "story" || type === "reel") {
+  const createParams = new URLSearchParams({ access_token: META_TOKEN });
+  if (type === "story") {
     createParams.set("media_type", "STORIES");
+    if (media.video_url) createParams.set("video_url", media.video_url);
+    else if (media.image_url) createParams.set("image_url", media.image_url);
+  } else if (type === "reel") {
+    createParams.set("media_type", "REELS");
+    createParams.set("video_url", media.video_url!);
+    createParams.set("caption", caption);
   } else {
+    createParams.set("image_url", media.image_url!);
     createParams.set("caption", caption);
   }
   const createRes = await fetch(`${GRAPH}/${IG_ID}/media`, {
@@ -72,8 +136,24 @@ async function postToInstagram(
   }
   const creationId = createData.id;
 
-  // Step 2: small wait for container processing (stories esp.)
-  await new Promise((r) => setTimeout(r, 3000));
+  // Step 2: wait for container processing (videos take longer)
+  const isVideo = !!media.video_url;
+  if (isVideo) {
+    // poll status for up to ~2 minutes
+    for (let i = 0; i < 24; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      const statusRes = await fetch(
+        `${GRAPH}/${creationId}?fields=status_code&access_token=${encodeURIComponent(META_TOKEN)}`,
+      );
+      const statusData = await statusRes.json();
+      if (statusData.status_code === "FINISHED") break;
+      if (statusData.status_code === "ERROR") {
+        throw new Error(`Meta container error: ${JSON.stringify(statusData)}`);
+      }
+    }
+  } else {
+    await new Promise((r) => setTimeout(r, 3000));
+  }
 
   // Step 3: publish
   const pubParams = new URLSearchParams({ access_token: META_TOKEN, creation_id: creationId });
@@ -96,27 +176,38 @@ async function runOnce(
   let caption = "";
   let image_prompt = "";
   let image_url = "";
+  let video_url = "";
+  let video_script = "";
   try {
     const gen = await generateContent(type);
     caption = gen.caption;
-    image_prompt = gen.image_prompt;
-    image_url = imageUrl(image_prompt);
+
+    if (type === "story" || type === "reel") {
+      video_script = gen.video_script!;
+      video_url = await generateHeyGenVideo(video_script);
+    } else {
+      image_prompt = gen.image_prompt!;
+      image_url = imageUrl(image_prompt);
+    }
+
+    const media = video_url ? { video_url } : { image_url };
 
     let ig_media_id: string;
     try {
-      ig_media_id = await postToInstagram(type, caption, image_url);
+      ig_media_id = await postToInstagram(type, caption, media);
     } catch (e) {
       // retry once after 60s
       console.warn("First attempt failed, retrying in 60s:", (e as Error).message);
       await new Promise((r) => setTimeout(r, 60_000));
-      ig_media_id = await postToInstagram(type, caption, image_url);
+      ig_media_id = await postToInstagram(type, caption, media);
     }
 
     await supabase.from("posts_log").insert({
       type,
       caption,
-      image_url,
-      image_prompt,
+      image_url: image_url || null,
+      image_prompt: image_prompt || video_script || null,
+      video_url: video_url || null,
       ig_media_id,
       status: "success",
       triggered_by: triggeredBy,
@@ -128,7 +219,8 @@ async function runOnce(
       type,
       caption: caption || null,
       image_url: image_url || null,
-      image_prompt: image_prompt || null,
+      image_prompt: image_prompt || video_script || null,
+      video_url: video_url || null,
       status: "failed",
       error_message: msg,
       triggered_by: triggeredBy,
