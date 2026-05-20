@@ -1,6 +1,26 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
+import { Resvg, initWasm } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
+
+let _wasmReady: Promise<void> | null = null;
+async function ensureWasm() {
+  if (!_wasmReady) {
+    _wasmReady = (async () => {
+      const wasm = await fetch("https://esm.sh/@resvg/resvg-wasm@2.6.2/index_bg.wasm");
+      await initWasm(await wasm.arrayBuffer());
+    })();
+  }
+  return _wasmReady;
+}
+
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,56 +83,48 @@ async function generateContent(
   return parsed;
 }
 
-function generateSlide(headline: string[], subtext: string, slideNum: string): Uint8Array {
-  const canvas = createCanvas(1080, 1080);
-  const ctx = canvas.getContext("2d");
+async function generateSlide(
+  headline: string[],
+  subtext: string,
+  slideNum: string,
+): Promise<Uint8Array> {
+  await ensureWasm();
 
-  // Background
-  ctx.fillStyle = "#080808";
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  // Top bar
-  ctx.fillStyle = "#1A1A1A";
-  ctx.fillRect(0, 0, 1080, 5);
-
-  // Bottom bar
-  ctx.fillStyle = "#111111";
-  ctx.fillRect(0, 1030, 1080, 50);
-
-  // Slide number top right
-  ctx.fillStyle = "#2E2E2E";
-  ctx.font = "24px sans-serif";
-  ctx.fillText(slideNum, 900, 75);
-
-  // Accent line
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fillRect(80, 390, 80, 8);
-
-  // Headline lines
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 82px sans-serif";
-  let y = 470;
-  for (const line of headline) {
-    ctx.fillText(line, 80, y);
-    y += 95;
-  }
-
-  // Subtext
-  ctx.fillStyle = "#666666";
-  ctx.font = "34px sans-serif";
+  const headlineY = 470;
+  const headlineLineH = 95;
+  const subY = headlineY + headline.length * headlineLineH + 40;
   const subLines = subtext.split("\n");
-  let sy = y + 40;
-  for (const line of subLines) {
-    ctx.fillText(line, 80, sy);
-    sy += 46;
-  }
 
-  // Brand bottom
-  ctx.fillStyle = "#333333";
-  ctx.font = "26px sans-serif";
-  ctx.fillText("kse.group  ·  Marketing & New Media Agentur", 80, 1063);
+  const headlineTspans = headline
+    .map(
+      (line, i) =>
+        `<tspan x="80" y="${headlineY + i * headlineLineH}">${escapeXml(line)}</tspan>`,
+    )
+    .join("");
 
-  return canvas.toBuffer("image/png");
+  const subTspans = subLines
+    .map(
+      (line, i) =>
+        `<tspan x="80" y="${subY + i * 46}">${escapeXml(line)}</tspan>`,
+    )
+    .join("");
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#080808"/>
+  <rect x="0" y="0" width="1080" height="5" fill="#1A1A1A"/>
+  <rect x="0" y="1030" width="1080" height="50" fill="#111111"/>
+  <text x="900" y="75" fill="#2E2E2E" font-family="sans-serif" font-size="24">${escapeXml(slideNum)}</text>
+  <rect x="80" y="390" width="80" height="8" fill="#FFFFFF"/>
+  <text fill="#FFFFFF" font-family="sans-serif" font-size="82" font-weight="bold">${headlineTspans}</text>
+  <text fill="#666666" font-family="sans-serif" font-size="34">${subTspans}</text>
+  <text x="80" y="1063" fill="#333333" font-family="sans-serif" font-size="26">kse.group  ·  Marketing &amp; New Media Agentur</text>
+</svg>`;
+
+  const resvg = new Resvg(svg, {
+    font: { loadSystemFonts: false, defaultFontFamily: "sans-serif" },
+  });
+  return resvg.render().asPng();
 }
 
 async function uploadSlide(
