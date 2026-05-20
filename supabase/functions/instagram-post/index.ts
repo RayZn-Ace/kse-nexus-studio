@@ -64,49 +64,40 @@ function imageUrl(prompt: string) {
 }
 
 async function generateHeyGenVideo(script: string): Promise<string> {
-  const session_id = HEYGEN_SESSION_ID;
-
-  // 1. Send script to the existing session
-  const msgRes = await fetch("https://api.heygen.com/v2/video_agent/session.chat", {
+  // Step 1: Send message
+  const msgResp = await fetch("https://api.heygen.com/v2/video_agent/session.chat", {
     method: "POST",
     headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id, message: script }),
+    body: JSON.stringify({ session_id: HEYGEN_SESSION_ID, message: script }),
   });
-  if (!msgRes.ok) {
-    throw new Error(`HeyGen message failed: ${msgRes.status} ${await msgRes.text()}`);
+  if (!msgResp.ok) {
+    throw new Error(`HeyGen chat failed: ${msgResp.status} ${await msgResp.text()}`);
   }
 
-  // 2. Poll for completion (every 10s, max 5 minutes)
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 10_000));
-    const statusRes = await fetch(
-      `https://api.heygen.com/v2/video_agent/session.get?session_id=${encodeURIComponent(session_id)}`,
+  // Step 2: Poll until completed (every 15s, max 10 minutes)
+  for (let i = 0; i < 40; i++) {
+    await new Promise((r) => setTimeout(r, 15_000));
+    const statusResp = await fetch(
+      `https://api.heygen.com/v2/video_agent/session.get?session_id=${HEYGEN_SESSION_ID}`,
       { headers: { "X-Api-Key": HEYGEN_API_KEY } },
     );
-    if (!statusRes.ok) continue;
-    const data = await statusRes.json();
-    const status = data?.data?.status ?? data.status;
-    if (status === "failed") throw new Error(`HeyGen failed: ${JSON.stringify(data)}`);
-    if (status === "completed") {
-      // 3. Fetch the latest video URL from list_videos
-      const listRes = await fetch(
-        `https://api.heygen.com/v2/video_agent/session.list_videos?session_id=${encodeURIComponent(session_id)}`,
+    if (!statusResp.ok) continue;
+    const status = await statusResp.json();
+    if (status.status === "completed") {
+      // Step 3: Get video list
+      const videosResp = await fetch(
+        `https://api.heygen.com/v2/video_agent/session.list_videos?session_id=${HEYGEN_SESSION_ID}`,
         { headers: { "X-Api-Key": HEYGEN_API_KEY } },
       );
-      if (!listRes.ok) {
-        throw new Error(`HeyGen list_videos failed: ${listRes.status} ${await listRes.text()}`);
+      const videos = await videosResp.json();
+      const videoUrl = videos.items?.[0]?.video_url;
+      if (!videoUrl) {
+        throw new Error(`HeyGen completed but no video_url: ${JSON.stringify(videos)}`);
       }
-      const listData = await listRes.json();
-      const videos = listData?.data?.videos ?? listData?.videos ?? listData?.data ?? [];
-      const first = Array.isArray(videos) ? videos[0] : null;
-      const video_url = first?.video_url ?? data?.data?.video_url ?? data.video_url;
-      if (!video_url) {
-        throw new Error(`HeyGen completed but no video_url: ${JSON.stringify(listData)}`);
-      }
-      return video_url;
+      return videoUrl;
     }
   }
-  throw new Error("HeyGen timeout after 5 minutes");
+  throw new Error("HeyGen timeout after 10 minutes");
 }
 
 async function postToInstagram(
