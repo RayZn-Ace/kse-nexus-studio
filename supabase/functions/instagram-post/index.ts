@@ -510,8 +510,8 @@ async function runJob(
       }
       image_url = imageUrls[0];
 
-      // 2. Fetch royalty-free music from Pixabay, upload to storage
-      const mp3 = await fetchPixabayMusic(musicKeywords);
+      // 2. Fetch royalty-free music from curated CDN library, upload to storage
+      const { bytes: mp3 } = await fetchMusicTrack(musicKeywords);
       const musicUrl = await uploadBytes(supabase, mp3, `reel_${ts}_music.mp3`, "audio/mpeg");
 
       // 3. Render MP4 via Creatomate (slideshow + music)
