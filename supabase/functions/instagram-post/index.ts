@@ -49,7 +49,6 @@ const corsHeaders = {
 const IG_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "17841442278138192";
 const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
-const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY")!;
 const GRAPH = "https://graph.facebook.com/v21.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 
@@ -61,14 +60,14 @@ const SYSTEM_PROMPT =
 
 function userPrompt(type: PostType) {
   if (type === "story" || type === "reel") {
-    return `Erstelle einen ${type} für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "video_script": "Kurzes 15-20 Sekunden Video Script für KSE Group. Professionell, corporate, auf Deutsch. Zeigt Marketing-Expertise. Kein Avatar, nur Text-Animationen und visuelle Effekte im Film Noir Stil."}`;
+    return `Erstelle einen ${type} (einzelnes Bild) für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}. Headline: max 2 Zeilen, MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende. Subtext: 2 kurze Zeilen.`;
   }
   return `Erstelle einen Instagram-Karussell-Post (5 Slides) für @kse.group. Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, {...}, {...}, {...}, {"headline": ["BEREIT FÜR", "DIE ZUKUNFT?"], "subtext": "Lass uns reden.\\nkse.group"}]}`;
 }
 
 async function generateContent(
   type: PostType,
-): Promise<{ caption: string; slides?: Slide[]; video_script?: string }> {
+): Promise<{ caption: string; slides?: Slide[]; headline?: string[]; subtext?: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -91,7 +90,9 @@ async function generateContent(
   const parsed = JSON.parse(match[0]);
   if (!parsed.caption) throw new Error("Missing caption");
   if ((type === "story" || type === "reel") && !parsed.video_script) {
-    throw new Error("Missing video_script");
+    if (!Array.isArray(parsed.headline) || !parsed.subtext) {
+      throw new Error("Missing headline/subtext");
+    }
   }
   if (type === "feed") {
     if (!Array.isArray(parsed.slides) || parsed.slides.length !== 5) {
