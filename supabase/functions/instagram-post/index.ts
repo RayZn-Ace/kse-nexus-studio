@@ -187,22 +187,49 @@ async function uploadBytes(
   return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
 }
 
-async function fetchPixabayMusic(keywords: string): Promise<Uint8Array> {
-  const q = encodeURIComponent(keywords || "corporate uplifting");
-  // Pixabay music API: returns JSON with hits[].audio (mp3 url)
-  const url = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${q}&media_type=music&per_page=20&safesearch=true`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Pixabay search ${r.status}: ${await r.text()}`);
-  const data = await r.json();
-  const hits = data?.hits ?? [];
-  if (!hits.length) throw new Error(`No Pixabay tracks for "${keywords}"`);
-  // pick a random hit from the top results for variety
-  const pick = hits[Math.floor(Math.random() * Math.min(hits.length, 10))];
-  const audioUrl: string | undefined = pick.audio ?? pick.audio_url ?? pick?.media?.[0]?.url;
-  if (!audioUrl) throw new Error(`Pixabay hit missing audio url: ${JSON.stringify(pick).slice(0, 200)}`);
-  const mp3 = await fetch(audioUrl);
-  if (!mp3.ok) throw new Error(`Pixabay mp3 download ${mp3.status}`);
-  return new Uint8Array(await mp3.arrayBuffer());
+// Curated royalty-free tracks from Pixabay's public CDN (no API required).
+// All tracks are Pixabay Content License (free for commercial use, no attribution).
+const MUSIC_LIBRARY: Record<string, string[]> = {
+  corporate: [
+    "https://cdn.pixabay.com/audio/2022/10/30/audio_347111d654.mp3", // Corporate
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", // Inspiring Corporate
+    "https://cdn.pixabay.com/audio/2023/06/14/audio_d0c6ff1bdd.mp3", // Corporate Motivational
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_c8e9a52d54.mp3", // Successful
+  ],
+  uplifting: [
+    "https://cdn.pixabay.com/audio/2022/08/02/audio_2dde668d05.mp3", // Uplifting
+    "https://cdn.pixabay.com/audio/2023/02/28/audio_550d815fb0.mp3", // Powerful Energetic
+    "https://cdn.pixabay.com/audio/2024/02/19/audio_3e8a9e3ce6.mp3", // Inspiring
+  ],
+  cinematic: [
+    "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508a42.mp3", // Cinematic Epic
+    "https://cdn.pixabay.com/audio/2023/10/09/audio_64497d292e.mp3", // Cinematic Inspiring
+    "https://cdn.pixabay.com/audio/2022/03/19/audio_c8c8a73467.mp3", // Epic
+  ],
+  tech: [
+    "https://cdn.pixabay.com/audio/2024/01/19/audio_61c8c4e3a8.mp3", // Tech House
+    "https://cdn.pixabay.com/audio/2022/10/14/audio_efa66492a5.mp3", // Modern Tech
+    "https://cdn.pixabay.com/audio/2023/03/29/audio_2ce5a4f08c.mp3", // Future Tech
+  ],
+};
+
+function pickMusicUrl(keywords: string): string {
+  const k = (keywords || "corporate uplifting").toLowerCase();
+  let pool: string[] = [];
+  if (/cinema|epic|dramatic|film/.test(k)) pool = pool.concat(MUSIC_LIBRARY.cinematic);
+  if (/tech|future|digital|electronic|edm|house/.test(k)) pool = pool.concat(MUSIC_LIBRARY.tech);
+  if (/uplift|energ|power|motivat|inspir|happy|positive/.test(k)) pool = pool.concat(MUSIC_LIBRARY.uplifting);
+  if (/corporate|business|professional|success/.test(k) || pool.length === 0) {
+    pool = pool.concat(MUSIC_LIBRARY.corporate);
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function fetchMusicTrack(keywords: string): Promise<{ bytes: Uint8Array; sourceUrl: string }> {
+  const sourceUrl = pickMusicUrl(keywords);
+  const r = await fetch(sourceUrl);
+  if (!r.ok) throw new Error(`Music fetch ${r.status} for ${sourceUrl}`);
+  return { bytes: new Uint8Array(await r.arrayBuffer()), sourceUrl };
 }
 
 async function renderReelWithCreatomate(
