@@ -89,7 +89,7 @@ async function generateContent(
   if (!match) throw new Error(`No JSON in Claude response: ${text.slice(0, 200)}`);
   const parsed = JSON.parse(match[0]);
   if (!parsed.caption) throw new Error("Missing caption");
-  if ((type === "story" || type === "reel") && !parsed.video_script) {
+  if (type === "story" || type === "reel") {
     if (!Array.isArray(parsed.headline) || !parsed.subtext) {
       throw new Error("Missing headline/subtext");
     }
