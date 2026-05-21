@@ -271,23 +271,21 @@ async function renderReelWithCreatomate(
 
   // Each image goes on its own track with an explicit absolute `time`
   // so Creatomate places them sequentially in a deterministic way.
-  // Animations use the documented schema: { time, duration, type, easing, ... }.
+  // Keep text slides static in scale: Instagram compression makes zoomed raster text blurry.
   const imageElements = imageUrls.map((url, i) => ({
     type: "image",
     track: i + 2, // track 1 is reserved for audio
     time: i * slideDuration,
     duration: slideDuration,
     source: url,
-    fit: "cover",
+    fit: "contain",
+    background_color: "#050505",
     animations: [
-      // Ken Burns zoom across the slide
       {
-        type: "scale",
+        type: "fade",
         time: 0,
-        duration: slideDuration,
-        easing: "linear",
-        start_scale: "100%",
-        end_scale: "110%",
+        duration: 0.25,
+        easing: "quadratic-out",
       },
     ],
   }));
