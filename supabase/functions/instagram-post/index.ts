@@ -241,16 +241,35 @@ async function renderReelWithCreatomate(
   const slideDuration = 3; // seconds per slide
   const totalDuration = imageUrls.length * slideDuration;
 
+  // Each image goes on its own track with an explicit absolute `time`
+  // so Creatomate places them sequentially in a deterministic way.
+  // Animations use the documented schema: { time, duration, type, easing, ... }.
   const imageElements = imageUrls.map((url, i) => ({
     type: "image",
-    track: 2,
+    track: i + 2, // track 1 is reserved for audio
+    time: i * slideDuration,
     duration: slideDuration,
     source: url,
     fit: "cover",
     animations: [
-      { type: "scale", easing: "linear", start_scale: "100%", end_scale: "110%" },
-      { type: "fade", duration: 0.4 },
-      { type: "fade", duration: 0.4, reversed: true },
+      // Ken Burns zoom across the slide
+      {
+        type: "scale",
+        time: 0,
+        duration: slideDuration,
+        easing: "linear",
+        start_scale: "100%",
+        end_scale: "110%",
+      },
+      // Fade in
+      { type: "fade", time: 0, duration: 0.5, fade_in: true },
+      // Fade out at end of slide
+      {
+        type: "fade",
+        time: slideDuration - 0.5,
+        duration: 0.5,
+        fade_out: true,
+      },
     ],
   }));
 
@@ -280,7 +299,13 @@ async function renderReelWithCreatomate(
       Authorization: `Bearer ${CREATOMATE_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ source }),
+    body: JSON.stringify({
+      source,
+      output_format: "mp4",
+      frame_rate: 30,
+      width: 1080,
+      height: 1920,
+    }),
   });
   if (!createRes.ok) {
     throw new Error(`Creatomate create ${createRes.status}: ${await createRes.text()}`);
