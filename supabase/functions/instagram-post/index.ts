@@ -51,6 +51,8 @@ const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
 const GRAPH = "https://graph.facebook.com/v21.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const CREATOMATE_KEY = Deno.env.get("CREATOMATE_API_KEY")!;
+const PIXABAY_KEY = Deno.env.get("PIXABAY_API_KEY")!;
 
 type PostType = "story" | "reel" | "feed";
 type Slide = { headline: string[]; subtext: string };
@@ -59,15 +61,18 @@ const SYSTEM_PROMPT =
   "Du bist ein professioneller Social Media Manager für KSE Group, eine Marketing & New Media Agentur. Erstelle professionellen, corporate Content auf Deutsch. Antworte NUR mit einem JSON-Objekt.";
 
 function userPrompt(type: PostType) {
-  if (type === "story" || type === "reel") {
+  if (type === "story") {
     return `Erstelle einen ${type} (einzelnes Bild) für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}. Headline: max 2 Zeilen, MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende. Subtext: 2 kurze Zeilen.`;
+  }
+  if (type === "reel") {
+    return `Erstelle ein Instagram-Reel (Diashow mit Musik) für @kse.group mit GENAU 7 Slides (erlaubt 5-9). Jede Slide: 1-2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 kurze Subtext-Zeilen. Slide 1 ist ein starker Hook, Slides 2-6 liefern Wert/Insights, letzte Slide ist Call-to-Action. Schlage außerdem 2-3 englische Such-Keywords für royalty-free Hintergrundmusik vor, die zum Vibe passt (z.B. "corporate uplifting", "modern tech", "cinematic motivational"). Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "music_keywords": "corporate uplifting", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 ...]}`;
   }
   return `Erstelle einen Instagram-Karussell-Post mit GENAU 7 Slides für @kse.group (erlaubt sind 5-9, wähle 7). Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Slide 1 ist der Hook/Titel, Slides 2-6 liefern Mehrwert/Insights, die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 Einträge ...]}`;
 }
 
 async function generateContent(
   type: PostType,
-): Promise<{ caption: string; slides?: Slide[]; headline?: string[]; subtext?: string }> {
+): Promise<{ caption: string; slides?: Slide[]; headline?: string[]; subtext?: string; music_keywords?: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -89,12 +94,12 @@ async function generateContent(
   if (!match) throw new Error(`No JSON in Claude response: ${text.slice(0, 200)}`);
   const parsed = JSON.parse(match[0]);
   if (!parsed.caption) throw new Error("Missing caption");
-  if (type === "story" || type === "reel") {
+  if (type === "story") {
     if (!Array.isArray(parsed.headline) || !parsed.subtext) {
       throw new Error("Missing headline/subtext");
     }
   }
-  if (type === "feed") {
+  if (type === "reel" || type === "feed") {
     if (!Array.isArray(parsed.slides) || parsed.slides.length < 5 || parsed.slides.length > 9) {
       throw new Error(`Expected 5-9 slides, got ${Array.isArray(parsed.slides) ? parsed.slides.length : "none"}`);
     }
