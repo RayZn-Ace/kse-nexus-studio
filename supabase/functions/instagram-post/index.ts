@@ -121,11 +121,20 @@ async function generateImage(
   const scale = width / 1080;
   const layoutIndex = options.layoutIndex ?? 0;
   const layout = layoutIndex % 5;
-  const headlineSize = Math.round((height > width ? 122 : 88) * scale);
-  const headlineLineH = Math.round(headlineSize * 1.08);
-  const subSize = Math.round((height > width ? 54 : 38) * scale);
-  const subLineH = Math.round(subSize * 1.32);
   const pad = Math.round(82 * scale);
+  const availableTextWidth = width - pad * 2;
+  const maxHeadlineChars = Math.max(...headline.map((line) => line.length), 1);
+  const maxSubChars = Math.max(...subtext.split("\n").map((line) => line.length), 1);
+  const headlineSize = Math.min(
+    Math.round((height > width ? 122 : 88) * scale),
+    Math.floor(availableTextWidth / (maxHeadlineChars * 0.6)),
+  );
+  const headlineLineH = Math.round(headlineSize * 1.08);
+  const subSize = Math.min(
+    Math.round((height > width ? 54 : 38) * scale),
+    Math.floor(availableTextWidth / (maxSubChars * 0.54)),
+  );
+  const subLineH = Math.round(subSize * 1.32);
   const headlineY = Math.round(height * (layout === 1 ? 0.32 : layout === 2 ? 0.47 : layout === 3 ? 0.25 : layout === 4 ? 0.58 : 0.42));
   const subY = headlineY + headline.length * headlineLineH + Math.round(48 * scale);
   const subLines = subtext.split("\n");
