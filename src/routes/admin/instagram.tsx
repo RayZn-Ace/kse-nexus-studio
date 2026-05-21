@@ -271,25 +271,13 @@ function InstagramAdmin() {
                     </td>
                     <td className="py-2 pr-3 capitalize">{l.type}</td>
                     <td className="py-2 pr-3">
-                      {l.video_url ? (
-                        <a
-                          href={l.video_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-accent hover:underline"
-                          title="Video ansehen"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Video
-                        </a>
-                      ) : l.image_url ? (
-                        <a
-                          href={l.image_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
-                          title="Bild ansehen"
-                        >
-                          <ImageIcon className="w-3.5 h-3.5" /> Bild
+                      {l.image_url ? (
+                        <a href={l.image_url} target="_blank" rel="noreferrer" title="Bild ansehen">
+                          <img
+                            src={l.image_url}
+                            alt=""
+                            className="w-[60px] h-[60px] object-cover rounded border border-border"
+                          />
                         </a>
                       ) : (
                         <span className="text-muted-foreground">—</span>
@@ -300,7 +288,7 @@ function InstagramAdmin() {
                         {l.status === "failed" ? (
                           <span className="text-red-400">{l.error_message ?? "Unknown error"}</span>
                         ) : l.status === "pending" ? (
-                          <span className="text-yellow-500">läuft… (Video-Generierung kann mehrere Min dauern)</span>
+                          <span className="text-yellow-500">läuft…</span>
                         ) : (
                           l.caption ?? "—"
                         )}
