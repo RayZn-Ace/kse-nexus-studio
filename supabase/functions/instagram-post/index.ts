@@ -66,7 +66,7 @@ function userPrompt(type: PostType) {
     return `Erstelle einen ${type} (einzelnes Bild) für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}. Headline: max 2 Zeilen, MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende. Subtext: 2 kurze Zeilen.`;
   }
   if (type === "reel") {
-    return `Erstelle ein Instagram-Reel (Diashow mit Musik) für @kse.group mit GENAU 7 Slides (erlaubt 5-9). Jede Slide: 1-2 kurze Headline-Zeilen (MAX 13 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 sehr kurze Subtext-Zeilen (MAX 26 Zeichen pro Zeile). Slide 1 ist ein starker Hook, Slides 2-6 liefern konkrete Wert/Insights, letzte Slide ist Call-to-Action. Inhaltlich muss jede Slide anders klingen: Hook, Zahl/Fakt, Fehler, Lösung, Beispiel, Empfehlung, CTA. Schlage außerdem 2-3 englische Such-Keywords für royalty-free Hintergrundmusik vor, die zum Vibe passt (z.B. "corporate uplifting", "modern tech", "cinematic motivational"). Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "music_keywords": "corporate uplifting", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 ...]}`;
+    return `Erstelle ein Instagram-Reel (Diashow mit Musik) für @kse.group mit GENAU 7 Slides (erlaubt 5-9). Jede Slide: am besten 1 starke Headline-Zeile, maximal 2 Headline-Zeilen (MAX 11 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 1-2 sehr kurze Subtext-Zeilen (MAX 22 Zeichen pro Zeile). Keine langen Wörter, keine überfüllten Headlines, keine drei Textblöcke. Slide 1 ist ein starker Hook, Slides 2-6 liefern konkrete Wert/Insights, letzte Slide ist Call-to-Action. Inhaltlich muss jede Slide anders klingen: Hook, Zahl/Fakt, Fehler, Lösung, Beispiel, Empfehlung, CTA. Schlage außerdem 2-3 englische Such-Keywords für royalty-free Hintergrundmusik vor, die zum Vibe passt (z.B. "corporate uplifting", "modern tech", "cinematic motivational"). Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "music_keywords": "corporate uplifting", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 ...]}`;
   }
   return `Erstelle einen Instagram-Karussell-Post mit GENAU 7 Slides für @kse.group (erlaubt sind 5-9, wähle 7). Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Slide 1 ist der Hook/Titel, Slides 2-6 liefern Mehrwert/Insights, die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 Einträge ...]}`;
 }
@@ -108,6 +108,86 @@ async function generateContent(
   return parsed;
 }
 
+function buildSlideSvg(
+  headline: string[],
+  subtext: string,
+  slideNum: string | null,
+  height = 1080,
+  options: SlideVisualOptions = {},
+): string {
+  const width = options.width ?? 1080;
+  const scale = width / 1080;
+  const layoutIndex = options.layoutIndex ?? 0;
+  const layout = layoutIndex % 5;
+  const pad = Math.round(104 * scale);
+  const availableTextWidth = width - pad * 2;
+  const cleanHeadline = headline.slice(0, 2).map((line) => line.trim()).filter(Boolean);
+  const subLines = subtext.split("\n").slice(0, 2).map((line) => line.trim()).filter(Boolean);
+  const maxHeadlineChars = Math.max(...cleanHeadline.map((line) => line.length), 1);
+  const maxSubChars = Math.max(...subLines.map((line) => line.length), 1);
+  const headlineSize = Math.max(
+    Math.round(76 * scale),
+    Math.min(
+      Math.round((height > width ? 146 : 96) * scale),
+      Math.floor(availableTextWidth / (maxHeadlineChars * 0.56)),
+    ),
+  );
+  const headlineLineH = Math.round(headlineSize * 1.06);
+  const subSize = Math.max(
+    Math.round(40 * scale),
+    Math.min(
+      Math.round((height > width ? 62 : 42) * scale),
+      Math.floor(availableTextWidth / (maxSubChars * 0.5)),
+    ),
+  );
+  const subLineH = Math.round(subSize * 1.28);
+  const headlineY = Math.round(height * (layout === 1 ? 0.36 : layout === 2 ? 0.46 : layout === 3 ? 0.31 : layout === 4 ? 0.56 : 0.41));
+  const subY = headlineY + cleanHeadline.length * headlineLineH + Math.round(62 * scale);
+  const accent = ["#E8FF00", "#FFFFFF", "#33D6FF", "#FF4D4D", "#B8FF5C"][layout];
+  const muted = layout === 3 ? "#202020" : "#F4F4F4";
+  const bg = layout === 3 ? "#F1F1EA" : "#050505";
+  const fg = layout === 3 ? "#050505" : "#FFFFFF";
+  const footer = layout === 3 ? "#202020" : "#DADADA";
+  const textX = layout === 1 || layout === 4 ? Math.round(width / 2) : pad;
+  const textAnchor = layout === 1 || layout === 4 ? "middle" : "start";
+
+  const headlineTspans = cleanHeadline
+    .map((line, i) => `<tspan x="${textX}" y="${headlineY + i * headlineLineH}">${escapeXml(line)}</tspan>`)
+    .join("");
+
+  const subTspans = subLines
+    .map((line, i) => `<tspan x="${textX}" y="${subY + i * subLineH}">${escapeXml(line)}</tspan>`)
+    .join("");
+
+  const numText = slideNum
+    ? `<text x="${width - pad}" y="${Math.round(112 * scale)}" text-anchor="end" fill="${footer}" font-family="Roboto" font-size="${Math.round(34 * scale)}" font-weight="700">${escapeXml(slideNum)}</text>`
+    : "";
+
+  const decor = [
+    `<rect x="0" y="0" width="${Math.round(34 * scale)}" height="${height}" fill="${accent}"/>
+     <rect x="${pad}" y="${headlineY - Math.round(176 * scale)}" width="${Math.round(184 * scale)}" height="${Math.round(14 * scale)}" fill="${accent}"/>`,
+    `<circle cx="${Math.round(width / 2)}" cy="${Math.round(height * 0.22)}" r="${Math.round(132 * scale)}" fill="none" stroke="${accent}" stroke-width="${Math.round(14 * scale)}"/>
+     <text x="${Math.round(width / 2)}" y="${Math.round(height * 0.235)}" text-anchor="middle" fill="${accent}" font-family="Roboto" font-size="${Math.round(72 * scale)}" font-weight="700">${escapeXml(slideNum?.split(" / ")[0] ?? "")}</text>`,
+    `<rect x="${Math.round(width * 0.61)}" y="0" width="${Math.round(width * 0.39)}" height="${height}" fill="#101010"/>
+     <rect x="${pad}" y="${Math.round(height * 0.17)}" width="${Math.round(16 * scale)}" height="${Math.round(height * 0.66)}" fill="${accent}"/>`,
+    `<rect x="0" y="0" width="${width}" height="${height}" fill="#F1F1EA"/>
+     <rect x="${pad}" y="${Math.round(154 * scale)}" width="${width - pad * 2}" height="${height - Math.round(308 * scale)}" fill="none" stroke="#050505" stroke-width="${Math.round(9 * scale)}"/>
+     <rect x="${pad}" y="${Math.round(154 * scale)}" width="${Math.round(width * 0.34)}" height="${Math.round(30 * scale)}" fill="#050505"/>`,
+    `<rect x="0" y="${Math.round(height * 0.64)}" width="${width}" height="${Math.round(height * 0.36)}" fill="#111111"/>
+     <rect x="${Math.round(width * 0.12)}" y="${Math.round(height * 0.13)}" width="${Math.round(width * 0.76)}" height="${Math.round(20 * scale)}" fill="${accent}"/>`,
+  ][layout];
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges" text-rendering="geometricPrecision">
+  <rect width="${width}" height="${height}" fill="${bg}"/>
+  ${decor}
+  ${numText}
+  <text fill="${fg}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${headlineSize}" font-weight="700" letter-spacing="0" paint-order="stroke" stroke="${layout === 3 ? '#F1F1EA' : '#050505'}" stroke-width="${Math.round(3 * scale)}" stroke-linejoin="round">${headlineTspans}</text>
+  <text fill="${muted}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${subSize}" font-weight="700" letter-spacing="0" paint-order="stroke" stroke="${layout === 3 ? '#F1F1EA' : '#050505'}" stroke-width="${Math.round(2 * scale)}" stroke-linejoin="round">${subTspans}</text>
+  <text x="${pad}" y="${height - Math.round(104 * scale)}" fill="${footer}" font-family="Roboto" font-size="${Math.round(36 * scale)}" font-weight="700">kse.group  ·  Marketing &amp; New Media</text>
+</svg>`;
+}
+
 async function generateImage(
   headline: string[],
   subtext: string,
@@ -116,78 +196,7 @@ async function generateImage(
   options: SlideVisualOptions = {},
 ): Promise<Uint8Array> {
   await ensureWasm();
-
-  const width = options.width ?? 1080;
-  const scale = width / 1080;
-  const layoutIndex = options.layoutIndex ?? 0;
-  const layout = layoutIndex % 5;
-  const pad = Math.round(82 * scale);
-  const availableTextWidth = width - pad * 2;
-  const maxHeadlineChars = Math.max(...headline.map((line) => line.length), 1);
-  const maxSubChars = Math.max(...subtext.split("\n").map((line) => line.length), 1);
-  const headlineSize = Math.min(
-    Math.round((height > width ? 122 : 88) * scale),
-    Math.floor(availableTextWidth / (maxHeadlineChars * 0.6)),
-  );
-  const headlineLineH = Math.round(headlineSize * 1.08);
-  const subSize = Math.min(
-    Math.round((height > width ? 54 : 38) * scale),
-    Math.floor(availableTextWidth / (maxSubChars * 0.54)),
-  );
-  const subLineH = Math.round(subSize * 1.32);
-  const headlineY = Math.round(height * (layout === 1 ? 0.32 : layout === 2 ? 0.47 : layout === 3 ? 0.25 : layout === 4 ? 0.58 : 0.42));
-  const subY = headlineY + headline.length * headlineLineH + Math.round(48 * scale);
-  const subLines = subtext.split("\n");
-  const accent = ["#E8FF00", "#FFFFFF", "#33D6FF", "#FF4D4D", "#B8FF5C"][layout];
-  const muted = layout === 1 || layout === 3 ? "#D7D7D7" : "#F0F0F0";
-  const bg = layout === 3 ? "#F1F1EA" : "#050505";
-  const fg = layout === 3 ? "#050505" : "#FFFFFF";
-  const footer = layout === 3 ? "#202020" : "#CFCFCF";
-  const textX = layout === 1 || layout === 4 ? Math.round(width / 2) : pad;
-  const textAnchor = layout === 1 || layout === 4 ? "middle" : "start";
-
-  const headlineTspans = headline
-    .map(
-      (line, i) =>
-        `<tspan x="${textX}" y="${headlineY + i * headlineLineH}">${escapeXml(line)}</tspan>`,
-    )
-    .join("");
-
-  const subTspans = subLines
-    .map(
-      (line, i) =>
-        `<tspan x="${textX}" y="${subY + i * subLineH}">${escapeXml(line)}</tspan>`,
-    )
-    .join("");
-
-  const numText = slideNum
-    ? `<text x="${width - pad}" y="${Math.round(82 * scale)}" text-anchor="end" fill="${footer}" font-family="Roboto" font-size="${Math.round(32 * scale)}" font-weight="bold">${escapeXml(slideNum)}</text>`
-    : "";
-
-  const decor = [
-    `<rect x="0" y="0" width="${Math.round(26 * scale)}" height="${height}" fill="${accent}"/>
-     <rect x="${pad}" y="${headlineY - Math.round(150 * scale)}" width="${Math.round(150 * scale)}" height="${Math.round(12 * scale)}" fill="${accent}"/>`,
-    `<circle cx="${Math.round(width / 2)}" cy="${Math.round(height * 0.21)}" r="${Math.round(150 * scale)}" fill="none" stroke="${accent}" stroke-width="${Math.round(14 * scale)}"/>
-     <text x="${Math.round(width / 2)}" y="${Math.round(height * 0.225)}" text-anchor="middle" fill="${accent}" font-family="Roboto" font-size="${Math.round(70 * scale)}" font-weight="bold">${escapeXml(slideNum?.split(" / ")[0] ?? "")}</text>`,
-    `<rect x="${Math.round(width * 0.58)}" y="0" width="${Math.round(width * 0.42)}" height="${height}" fill="#111111"/>
-     <rect x="${pad}" y="${Math.round(height * 0.18)}" width="${Math.round(14 * scale)}" height="${Math.round(height * 0.64)}" fill="${accent}"/>`,
-    `<rect x="0" y="0" width="${width}" height="${height}" fill="#F1F1EA"/>
-     <rect x="${pad}" y="${pad}" width="${width - pad * 2}" height="${height - pad * 2}" fill="none" stroke="#050505" stroke-width="${Math.round(8 * scale)}"/>
-     <rect x="${pad}" y="${pad}" width="${Math.round(width * 0.32)}" height="${Math.round(28 * scale)}" fill="#050505"/>`,
-    `<rect x="0" y="${Math.round(height * 0.63)}" width="${width}" height="${Math.round(height * 0.37)}" fill="#111111"/>
-     <rect x="${Math.round(width * 0.13)}" y="${Math.round(height * 0.12)}" width="${Math.round(width * 0.74)}" height="${Math.round(18 * scale)}" fill="${accent}"/>`,
-  ][layout];
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="${bg}"/>
-  ${decor}
-  ${numText}
-  <text fill="${fg}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${headlineSize}" font-weight="bold">${headlineTspans}</text>
-  <text fill="${muted}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${subSize}" font-weight="bold">${subTspans}</text>
-  <text x="${pad}" y="${height - Math.round(54 * scale)}" fill="${footer}" font-family="Roboto" font-size="${Math.round(34 * scale)}" font-weight="bold">kse.group  ·  Marketing &amp; New Media</text>
-</svg>`;
-
+  const svg = buildSlideSvg(headline, subtext, slideNum, height, options);
   const fontBuffers = await loadFonts();
   const resvg = new Resvg(svg, {
     font: {
@@ -553,12 +562,12 @@ async function runJob(
       slidesMeta = JSON.stringify({ slides, music_keywords: musicKeywords });
 
       const ts = Date.now();
-      // 1. Render each slide as portrait PNG (1080x1920 — Reel native size, kept low to stay within Edge Function CPU budget)
+      // 1. Render each slide as high-resolution portrait PNG (1440x2560) so Instagram compression keeps text readable
       const imageUrls: string[] = [];
       for (let i = 0; i < slides.length; i++) {
         const s = slides[i];
         const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-        const png = await generateImage(s.headline, s.subtext, num, 1920, { layoutIndex: i, width: 1080 });
+        const png = await generateImage(s.headline, s.subtext, num, 2560, { layoutIndex: i, width: 1440 });
         const u = await uploadImage(supabase, png, `reel_${ts}_slide_${i + 1}.png`);
         imageUrls.push(u);
       }
