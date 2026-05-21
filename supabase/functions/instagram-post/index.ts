@@ -434,13 +434,14 @@ async function runJob(
   let caption = "";
   let slidesMeta = "";
   let image_url = "";
+  let video_url: string | null = null;
   try {
-    if (type === "story" || type === "reel") {
+    if (type === "story") {
       const gen = await generateContent(type);
       caption = gen.caption;
       const headline = gen.headline!;
       const subtext = gen.subtext!;
-      const height = 1920; // story/reel format
+      const height = 1920; // story format
       const png = await generateImage(headline, subtext, null, height);
       image_url = await uploadImage(supabase, png, `${type}_${Date.now()}.png`);
       let ig_media_id: string;
@@ -458,6 +459,54 @@ async function runJob(
           image_url,
           image_prompt: JSON.stringify({ headline, subtext }),
           video_url: null,
+          ig_media_id,
+          status: "success",
+        })
+        .eq("id", jobId);
+    } else if (type === "reel") {
+      // REEL = video slideshow with background music
+      const gen = await generateContent("reel");
+      caption = gen.caption;
+      const slides = gen.slides!;
+      const musicKeywords = gen.music_keywords ?? "corporate uplifting";
+      slidesMeta = JSON.stringify({ slides, music_keywords: musicKeywords });
+
+      const ts = Date.now();
+      // 1. Render each slide as portrait PNG (1080x1920) and upload
+      const imageUrls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const s = slides[i];
+        const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        const png = await generateImage(s.headline, s.subtext, num, 1920);
+        const u = await uploadImage(supabase, png, `reel_${ts}_slide_${i + 1}.png`);
+        imageUrls.push(u);
+      }
+      image_url = imageUrls[0];
+
+      // 2. Fetch royalty-free music from Pixabay, upload to storage
+      const mp3 = await fetchPixabayMusic(musicKeywords);
+      const musicUrl = await uploadBytes(supabase, mp3, `reel_${ts}_music.mp3`, "audio/mpeg");
+
+      // 3. Render MP4 via Creatomate (slideshow + music)
+      const mp4 = await renderReelWithCreatomate(imageUrls, musicUrl);
+      video_url = await uploadBytes(supabase, mp4, `reel_${ts}.mp4`, "video/mp4");
+
+      // 4. Publish as Instagram Reel
+      let ig_media_id: string;
+      try {
+        ig_media_id = await postReelToInstagram(caption, video_url);
+      } catch (e) {
+        console.warn("Reel publish failed, retrying in 60s:", (e as Error).message);
+        await new Promise((r) => setTimeout(r, 60_000));
+        ig_media_id = await postReelToInstagram(caption, video_url);
+      }
+      await supabase
+        .from("posts_log")
+        .update({
+          caption,
+          image_url,
+          image_prompt: slidesMeta,
+          video_url,
           ig_media_id,
           status: "success",
         })
@@ -507,7 +556,7 @@ async function runJob(
         caption: caption || null,
         image_url: image_url || null,
         image_prompt: slidesMeta || null,
-        video_url: null,
+        video_url,
         status: "failed",
         error_message: msg,
       })
