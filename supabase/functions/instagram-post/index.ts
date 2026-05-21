@@ -51,6 +51,8 @@ const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
 const GRAPH = "https://graph.facebook.com/v21.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const CREATOMATE_KEY = Deno.env.get("CREATOMATE_API_KEY")!;
+const PIXABAY_KEY = Deno.env.get("PIXABAY_API_KEY")!;
 
 type PostType = "story" | "reel" | "feed";
 type Slide = { headline: string[]; subtext: string };
@@ -59,15 +61,18 @@ const SYSTEM_PROMPT =
   "Du bist ein professioneller Social Media Manager für KSE Group, eine Marketing & New Media Agentur. Erstelle professionellen, corporate Content auf Deutsch. Antworte NUR mit einem JSON-Objekt.";
 
 function userPrompt(type: PostType) {
-  if (type === "story" || type === "reel") {
+  if (type === "story") {
     return `Erstelle einen ${type} (einzelnes Bild) für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}. Headline: max 2 Zeilen, MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende. Subtext: 2 kurze Zeilen.`;
+  }
+  if (type === "reel") {
+    return `Erstelle ein Instagram-Reel (Diashow mit Musik) für @kse.group mit GENAU 7 Slides (erlaubt 5-9). Jede Slide: 1-2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 kurze Subtext-Zeilen. Slide 1 ist ein starker Hook, Slides 2-6 liefern Wert/Insights, letzte Slide ist Call-to-Action. Schlage außerdem 2-3 englische Such-Keywords für royalty-free Hintergrundmusik vor, die zum Vibe passt (z.B. "corporate uplifting", "modern tech", "cinematic motivational"). Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "music_keywords": "corporate uplifting", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 ...]}`;
   }
   return `Erstelle einen Instagram-Karussell-Post mit GENAU 7 Slides für @kse.group (erlaubt sind 5-9, wähle 7). Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Slide 1 ist der Hook/Titel, Slides 2-6 liefern Mehrwert/Insights, die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 Einträge ...]}`;
 }
 
 async function generateContent(
   type: PostType,
-): Promise<{ caption: string; slides?: Slide[]; headline?: string[]; subtext?: string }> {
+): Promise<{ caption: string; slides?: Slide[]; headline?: string[]; subtext?: string; music_keywords?: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -89,12 +94,12 @@ async function generateContent(
   if (!match) throw new Error(`No JSON in Claude response: ${text.slice(0, 200)}`);
   const parsed = JSON.parse(match[0]);
   if (!parsed.caption) throw new Error("Missing caption");
-  if (type === "story" || type === "reel") {
+  if (type === "story") {
     if (!Array.isArray(parsed.headline) || !parsed.subtext) {
       throw new Error("Missing headline/subtext");
     }
   }
-  if (type === "feed") {
+  if (type === "reel" || type === "feed") {
     if (!Array.isArray(parsed.slides) || parsed.slides.length < 5 || parsed.slides.length > 9) {
       throw new Error(`Expected 5-9 slides, got ${Array.isArray(parsed.slides) ? parsed.slides.length : "none"}`);
     }
@@ -167,6 +172,160 @@ async function uploadImage(
     .upload(filename, png, { contentType: "image/png", upsert: true });
   if (error) throw new Error(`Storage upload failed: ${error.message}`);
   return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
+}
+
+async function uploadBytes(
+  supabase: any,
+  bytes: Uint8Array,
+  filename: string,
+  contentType: string,
+): Promise<string> {
+  const { error } = await supabase.storage
+    .from("instagram")
+    .upload(filename, bytes, { contentType, upsert: true });
+  if (error) throw new Error(`Storage upload (${contentType}) failed: ${error.message}`);
+  return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
+}
+
+async function fetchPixabayMusic(keywords: string): Promise<Uint8Array> {
+  const q = encodeURIComponent(keywords || "corporate uplifting");
+  // Pixabay music API: returns JSON with hits[].audio (mp3 url)
+  const url = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${q}&media_type=music&per_page=20&safesearch=true`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Pixabay search ${r.status}: ${await r.text()}`);
+  const data = await r.json();
+  const hits = data?.hits ?? [];
+  if (!hits.length) throw new Error(`No Pixabay tracks for "${keywords}"`);
+  // pick a random hit from the top results for variety
+  const pick = hits[Math.floor(Math.random() * Math.min(hits.length, 10))];
+  const audioUrl: string | undefined = pick.audio ?? pick.audio_url ?? pick?.media?.[0]?.url;
+  if (!audioUrl) throw new Error(`Pixabay hit missing audio url: ${JSON.stringify(pick).slice(0, 200)}`);
+  const mp3 = await fetch(audioUrl);
+  if (!mp3.ok) throw new Error(`Pixabay mp3 download ${mp3.status}`);
+  return new Uint8Array(await mp3.arrayBuffer());
+}
+
+async function renderReelWithCreatomate(
+  imageUrls: string[],
+  musicUrl: string,
+): Promise<Uint8Array> {
+  const slideDuration = 3; // seconds per slide
+  const totalDuration = imageUrls.length * slideDuration;
+
+  const imageElements = imageUrls.map((url, i) => ({
+    type: "image",
+    track: 2,
+    duration: slideDuration,
+    source: url,
+    fit: "cover",
+    animations: [
+      { type: "scale", easing: "linear", start_scale: "100%", end_scale: "110%" },
+      { type: "fade", duration: 0.4 },
+      { type: "fade", duration: 0.4, reversed: true },
+    ],
+  }));
+
+  const source = {
+    output_format: "mp4",
+    width: 1080,
+    height: 1920,
+    frame_rate: 30,
+    duration: totalDuration,
+    elements: [
+      ...imageElements,
+      {
+        type: "audio",
+        track: 1,
+        source: musicUrl,
+        duration: totalDuration,
+        audio_fade_in: 0.5,
+        audio_fade_out: 1.5,
+      },
+    ],
+  };
+
+  // 1. Create render job
+  const createRes = await fetch("https://api.creatomate.com/v1/renders", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${CREATOMATE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ source }),
+  });
+  if (!createRes.ok) {
+    throw new Error(`Creatomate create ${createRes.status}: ${await createRes.text()}`);
+  }
+  const createData = await createRes.json();
+  const job = Array.isArray(createData) ? createData[0] : createData;
+  const renderId: string = job.id;
+  if (!renderId) throw new Error(`Creatomate: no render id in ${JSON.stringify(job)}`);
+
+  // 2. Poll until succeeded
+  let videoUrl = "";
+  for (let i = 0; i < 60; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const s = await fetch(`https://api.creatomate.com/v1/renders/${renderId}`, {
+      headers: { Authorization: `Bearer ${CREATOMATE_KEY}` },
+    });
+    if (!s.ok) continue;
+    const sd = await s.json();
+    if (sd.status === "succeeded" && sd.url) {
+      videoUrl = sd.url;
+      break;
+    }
+    if (sd.status === "failed") {
+      throw new Error(`Creatomate render failed: ${sd.error_message ?? JSON.stringify(sd)}`);
+    }
+  }
+  if (!videoUrl) throw new Error("Creatomate render timed out after 3 minutes");
+
+  const dl = await fetch(videoUrl);
+  if (!dl.ok) throw new Error(`Download rendered video ${dl.status}`);
+  return new Uint8Array(await dl.arrayBuffer());
+}
+
+async function postReelToInstagram(caption: string, videoUrl: string): Promise<string> {
+  const createParams = new URLSearchParams({
+    media_type: "REELS",
+    video_url: videoUrl,
+    caption,
+    share_to_feed: "true",
+    access_token: META_TOKEN,
+  });
+  const createRes = await fetch(`${GRAPH}/${IG_ID}/media`, {
+    method: "POST",
+    body: createParams,
+  });
+  const createData = await createRes.json();
+  if (!createRes.ok || !createData.id) {
+    throw new Error(`Reel container failed: ${JSON.stringify(createData)}`);
+  }
+  const creationId = createData.id;
+
+  // Poll status (Reels need encoding time)
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
+    const st = await fetch(
+      `${GRAPH}/${creationId}?fields=status_code,status&access_token=${META_TOKEN}`,
+    );
+    const sd = await st.json();
+    if (sd.status_code === "FINISHED") break;
+    if (sd.status_code === "ERROR") {
+      throw new Error(`Reel processing error: ${JSON.stringify(sd)}`);
+    }
+  }
+
+  const pubParams = new URLSearchParams({ access_token: META_TOKEN, creation_id: creationId });
+  const pubRes = await fetch(`${GRAPH}/${IG_ID}/media_publish`, {
+    method: "POST",
+    body: pubParams,
+  });
+  const pubData = await pubRes.json();
+  if (!pubRes.ok || !pubData.id) {
+    throw new Error(`Reel publish failed: ${JSON.stringify(pubData)}`);
+  }
+  return pubData.id as string;
 }
 
 async function postCarouselToInstagram(
@@ -275,13 +434,14 @@ async function runJob(
   let caption = "";
   let slidesMeta = "";
   let image_url = "";
+  let video_url: string | null = null;
   try {
-    if (type === "story" || type === "reel") {
+    if (type === "story") {
       const gen = await generateContent(type);
       caption = gen.caption;
       const headline = gen.headline!;
       const subtext = gen.subtext!;
-      const height = 1920; // story/reel format
+      const height = 1920; // story format
       const png = await generateImage(headline, subtext, null, height);
       image_url = await uploadImage(supabase, png, `${type}_${Date.now()}.png`);
       let ig_media_id: string;
@@ -299,6 +459,54 @@ async function runJob(
           image_url,
           image_prompt: JSON.stringify({ headline, subtext }),
           video_url: null,
+          ig_media_id,
+          status: "success",
+        })
+        .eq("id", jobId);
+    } else if (type === "reel") {
+      // REEL = video slideshow with background music
+      const gen = await generateContent("reel");
+      caption = gen.caption;
+      const slides = gen.slides!;
+      const musicKeywords = gen.music_keywords ?? "corporate uplifting";
+      slidesMeta = JSON.stringify({ slides, music_keywords: musicKeywords });
+
+      const ts = Date.now();
+      // 1. Render each slide as portrait PNG (1080x1920) and upload
+      const imageUrls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const s = slides[i];
+        const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+        const png = await generateImage(s.headline, s.subtext, num, 1920);
+        const u = await uploadImage(supabase, png, `reel_${ts}_slide_${i + 1}.png`);
+        imageUrls.push(u);
+      }
+      image_url = imageUrls[0];
+
+      // 2. Fetch royalty-free music from Pixabay, upload to storage
+      const mp3 = await fetchPixabayMusic(musicKeywords);
+      const musicUrl = await uploadBytes(supabase, mp3, `reel_${ts}_music.mp3`, "audio/mpeg");
+
+      // 3. Render MP4 via Creatomate (slideshow + music)
+      const mp4 = await renderReelWithCreatomate(imageUrls, musicUrl);
+      video_url = await uploadBytes(supabase, mp4, `reel_${ts}.mp4`, "video/mp4");
+
+      // 4. Publish as Instagram Reel
+      let ig_media_id: string;
+      try {
+        ig_media_id = await postReelToInstagram(caption, video_url);
+      } catch (e) {
+        console.warn("Reel publish failed, retrying in 60s:", (e as Error).message);
+        await new Promise((r) => setTimeout(r, 60_000));
+        ig_media_id = await postReelToInstagram(caption, video_url);
+      }
+      await supabase
+        .from("posts_log")
+        .update({
+          caption,
+          image_url,
+          image_prompt: slidesMeta,
+          video_url,
           ig_media_id,
           status: "success",
         })
@@ -348,7 +556,7 @@ async function runJob(
         caption: caption || null,
         image_url: image_url || null,
         image_prompt: slidesMeta || null,
-        video_url: null,
+        video_url,
         status: "failed",
         error_message: msg,
       })
