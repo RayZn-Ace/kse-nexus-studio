@@ -261,15 +261,6 @@ async function renderReelWithCreatomate(
         start_scale: "100%",
         end_scale: "110%",
       },
-      // Fade in
-      { type: "fade", time: 0, duration: 0.5, fade_in: true },
-      // Fade out at end of slide
-      {
-        type: "fade",
-        time: slideDuration - 0.5,
-        duration: 0.5,
-        fade_out: true,
-      },
     ],
   }));
 
