@@ -562,12 +562,12 @@ async function runJob(
       slidesMeta = JSON.stringify({ slides, music_keywords: musicKeywords });
 
       const ts = Date.now();
-      // 1. Render each slide as portrait PNG (1080x1920 — Reel native size, kept low to stay within Edge Function CPU budget)
+      // 1. Render each slide as high-resolution portrait PNG (1440x2560) so Instagram compression keeps text readable
       const imageUrls: string[] = [];
       for (let i = 0; i < slides.length; i++) {
         const s = slides[i];
         const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-        const png = await generateImage(s.headline, s.subtext, num, 1920, { layoutIndex: i, width: 1080 });
+        const png = await generateImage(s.headline, s.subtext, num, 2560, { layoutIndex: i, width: 1440 });
         const u = await uploadImage(supabase, png, `reel_${ts}_slide_${i + 1}.png`);
         imageUrls.push(u);
       }
