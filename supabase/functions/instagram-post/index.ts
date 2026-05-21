@@ -221,66 +221,22 @@ async function postCarouselToInstagram(
   return pData.id as string;
 }
 
-async function generateHeyGenVideo(script: string): Promise<string> {
-  // Step 1: kick off generation via the real Video Agent endpoint
-  const genResp = await fetch("https://api.heygen.com/v1/video_agent/generate", {
-    method: "POST",
-    headers: { "X-Api-Key": HEYGEN_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt: script,
-      config: { orientation: "portrait", duration_sec: 20 },
-    }),
-  });
-  if (!genResp.ok) {
-    throw new Error(`HeyGen generate failed: ${genResp.status} ${await genResp.text()}`);
-  }
-  const genData = await genResp.json();
-  const video_id = genData?.data?.video_id ?? genData?.video_id;
-  if (!video_id) {
-    throw new Error(`HeyGen generate: no video_id (${JSON.stringify(genData)})`);
-  }
-
-  // Step 2: poll standard video_status endpoint (every 15s, max 10 minutes)
-  for (let i = 0; i < 40; i++) {
-    await new Promise((r) => setTimeout(r, 15_000));
-    const statusResp = await fetch(
-      `https://api.heygen.com/v1/video_status.get?video_id=${encodeURIComponent(video_id)}`,
-      { headers: { "X-Api-Key": HEYGEN_API_KEY } },
-    );
-    if (!statusResp.ok) continue;
-    const statusData = await statusResp.json();
-    const status = statusData?.data?.status ?? statusData?.status;
-    if (status === "completed") {
-      const video_url = statusData?.data?.video_url ?? statusData?.video_url;
-      if (!video_url) {
-        throw new Error(`HeyGen completed but no video_url: ${JSON.stringify(statusData)}`);
-      }
-      return video_url;
-    }
-    if (status === "failed") {
-      throw new Error(`HeyGen video failed: ${JSON.stringify(statusData)}`);
-    }
-  }
-  throw new Error("HeyGen timeout after 10 minutes");
-}
-
 async function postToInstagram(
   type: PostType,
   caption: string,
-  media: { image_url?: string; video_url?: string },
+  media: { image_url: string },
 ): Promise<string> {
   // Step 1: create media container
   const createParams = new URLSearchParams({ access_token: META_TOKEN });
   if (type === "story") {
     createParams.set("media_type", "STORIES");
-    if (media.video_url) createParams.set("video_url", media.video_url);
-    else if (media.image_url) createParams.set("image_url", media.image_url);
+    createParams.set("image_url", media.image_url);
   } else if (type === "reel") {
-    createParams.set("media_type", "REELS");
-    createParams.set("video_url", media.video_url!);
+    // Satori = images only; post reel-equivalent as a single feed image
+    createParams.set("image_url", media.image_url);
     createParams.set("caption", caption);
   } else {
-    createParams.set("image_url", media.image_url!);
+    createParams.set("image_url", media.image_url);
     createParams.set("caption", caption);
   }
   const createRes = await fetch(`${GRAPH}/${IG_ID}/media`, {
@@ -293,24 +249,8 @@ async function postToInstagram(
   }
   const creationId = createData.id;
 
-  // Step 2: wait for container processing (videos take longer)
-  const isVideo = !!media.video_url;
-  if (isVideo) {
-    // poll status for up to ~2 minutes
-    for (let i = 0; i < 24; i++) {
-      await new Promise((r) => setTimeout(r, 5000));
-      const statusRes = await fetch(
-        `${GRAPH}/${creationId}?fields=status_code&access_token=${encodeURIComponent(META_TOKEN)}`,
-      );
-      const statusData = await statusRes.json();
-      if (statusData.status_code === "FINISHED") break;
-      if (statusData.status_code === "ERROR") {
-        throw new Error(`Meta container error: ${JSON.stringify(statusData)}`);
-      }
-    }
-  } else {
-    await new Promise((r) => setTimeout(r, 3000));
-  }
+  // Step 2: brief wait for container processing
+  await new Promise((r) => setTimeout(r, 3000));
 
   // Step 3: publish
   const pubParams = new URLSearchParams({ access_token: META_TOKEN, creation_id: creationId });
@@ -335,30 +275,30 @@ async function runJob(
   let caption = "";
   let slidesMeta = "";
   let image_url = "";
-  let video_url = "";
-  let video_script = "";
   try {
     if (type === "story" || type === "reel") {
       const gen = await generateContent(type);
       caption = gen.caption;
-      video_script = gen.video_script!;
-      video_url = await generateHeyGenVideo(video_script);
-      const media = { video_url };
+      const headline = gen.headline!;
+      const subtext = gen.subtext!;
+      const height = 1920; // story/reel format
+      const png = await generateImage(headline, subtext, null, height);
+      image_url = await uploadImage(supabase, png, `${type}_${Date.now()}.png`);
       let ig_media_id: string;
       try {
-        ig_media_id = await postToInstagram(type, caption, media);
+        ig_media_id = await postToInstagram(type, caption, { image_url });
       } catch (e) {
         console.warn("First attempt failed, retrying in 60s:", (e as Error).message);
         await new Promise((r) => setTimeout(r, 60_000));
-        ig_media_id = await postToInstagram(type, caption, media);
+        ig_media_id = await postToInstagram(type, caption, { image_url });
       }
       await supabase
         .from("posts_log")
         .update({
           caption,
-          image_url: null,
-          image_prompt: video_script || null,
-          video_url,
+          image_url,
+          image_prompt: JSON.stringify({ headline, subtext }),
+          video_url: null,
           ig_media_id,
           status: "success",
         })
@@ -381,8 +321,8 @@ async function runJob(
       for (let i = 0; i < slides.length; i++) {
         const s = slides[i];
         const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-        const png = await generateSlide(s.headline, s.subtext, num);
-        const url = await uploadSlide(supabase, png, `slide_${ts}_${i + 1}.png`);
+        const png = await generateImage(s.headline, s.subtext, num, 1080);
+        const url = await uploadImage(supabase, png, `slide_${ts}_${i + 1}.png`);
         urls.push(url);
       }
       image_url = urls[0];
@@ -407,8 +347,8 @@ async function runJob(
       .update({
         caption: caption || null,
         image_url: image_url || null,
-        image_prompt: slidesMeta || video_script || null,
-        video_url: video_url || null,
+        image_prompt: slidesMeta || null,
+        video_url: null,
         status: "failed",
         error_message: msg,
       })
