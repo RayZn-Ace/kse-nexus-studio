@@ -62,7 +62,7 @@ function userPrompt(type: PostType) {
   if (type === "story" || type === "reel") {
     return `Erstelle einen ${type} (einzelnes Bild) für @kse.group. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 2-3 Hashtags", "headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}. Headline: max 2 Zeilen, MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende. Subtext: 2 kurze Zeilen.`;
   }
-  return `Erstelle einen Instagram-Karussell-Post (5 Slides) für @kse.group. Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, {...}, {...}, {...}, {"headline": ["BEREIT FÜR", "DIE ZUKUNFT?"], "subtext": "Lass uns reden.\\nkse.group"}]}`;
+  return `Erstelle einen Instagram-Karussell-Post mit GENAU 7 Slides für @kse.group (erlaubt sind 5-9, wähle 7). Jede Slide hat max. 2 kurze Headline-Zeilen (MAX 15 Zeichen pro Zeile, GROSSBUCHSTABEN, mit Punkt am Ende) und 2 Zeilen Subtext. Slide 1 ist der Hook/Titel, Slides 2-6 liefern Mehrwert/Insights, die letzte Slide ist immer ein Call-to-Action. Gib NUR JSON zurück: {"caption": "max 150 Zeichen, professionell, 3 Hashtags", "slides": [{"headline": ["LINE ONE.", "LINE TWO."], "subtext": "Zeile eins\\nZeile zwei"}, ... insgesamt 7 Einträge ...]}`;
 }
 
 async function generateContent(
@@ -95,8 +95,8 @@ async function generateContent(
     }
   }
   if (type === "feed") {
-    if (!Array.isArray(parsed.slides) || parsed.slides.length !== 5) {
-      throw new Error("Expected 5 slides");
+    if (!Array.isArray(parsed.slides) || parsed.slides.length < 5 || parsed.slides.length > 9) {
+      throw new Error(`Expected 5-9 slides, got ${Array.isArray(parsed.slides) ? parsed.slides.length : "none"}`);
     }
   }
   return parsed;
