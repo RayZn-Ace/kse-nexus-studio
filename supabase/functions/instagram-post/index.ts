@@ -174,6 +174,160 @@ async function uploadImage(
   return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
 }
 
+async function uploadBytes(
+  supabase: any,
+  bytes: Uint8Array,
+  filename: string,
+  contentType: string,
+): Promise<string> {
+  const { error } = await supabase.storage
+    .from("instagram")
+    .upload(filename, bytes, { contentType, upsert: true });
+  if (error) throw new Error(`Storage upload (${contentType}) failed: ${error.message}`);
+  return `${SUPABASE_URL}/storage/v1/object/public/instagram/${filename}`;
+}
+
+async function fetchPixabayMusic(keywords: string): Promise<Uint8Array> {
+  const q = encodeURIComponent(keywords || "corporate uplifting");
+  // Pixabay music API: returns JSON with hits[].audio (mp3 url)
+  const url = `https://pixabay.com/api/?key=${PIXABAY_KEY}&q=${q}&media_type=music&per_page=20&safesearch=true`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Pixabay search ${r.status}: ${await r.text()}`);
+  const data = await r.json();
+  const hits = data?.hits ?? [];
+  if (!hits.length) throw new Error(`No Pixabay tracks for "${keywords}"`);
+  // pick a random hit from the top results for variety
+  const pick = hits[Math.floor(Math.random() * Math.min(hits.length, 10))];
+  const audioUrl: string | undefined = pick.audio ?? pick.audio_url ?? pick?.media?.[0]?.url;
+  if (!audioUrl) throw new Error(`Pixabay hit missing audio url: ${JSON.stringify(pick).slice(0, 200)}`);
+  const mp3 = await fetch(audioUrl);
+  if (!mp3.ok) throw new Error(`Pixabay mp3 download ${mp3.status}`);
+  return new Uint8Array(await mp3.arrayBuffer());
+}
+
+async function renderReelWithCreatomate(
+  imageUrls: string[],
+  musicUrl: string,
+): Promise<Uint8Array> {
+  const slideDuration = 3; // seconds per slide
+  const totalDuration = imageUrls.length * slideDuration;
+
+  const imageElements = imageUrls.map((url, i) => ({
+    type: "image",
+    track: 2,
+    duration: slideDuration,
+    source: url,
+    fit: "cover",
+    animations: [
+      { type: "scale", easing: "linear", start_scale: "100%", end_scale: "110%" },
+      { type: "fade", duration: 0.4 },
+      { type: "fade", duration: 0.4, reversed: true },
+    ],
+  }));
+
+  const source = {
+    output_format: "mp4",
+    width: 1080,
+    height: 1920,
+    frame_rate: 30,
+    duration: totalDuration,
+    elements: [
+      ...imageElements,
+      {
+        type: "audio",
+        track: 1,
+        source: musicUrl,
+        duration: totalDuration,
+        audio_fade_in: 0.5,
+        audio_fade_out: 1.5,
+      },
+    ],
+  };
+
+  // 1. Create render job
+  const createRes = await fetch("https://api.creatomate.com/v1/renders", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${CREATOMATE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ source }),
+  });
+  if (!createRes.ok) {
+    throw new Error(`Creatomate create ${createRes.status}: ${await createRes.text()}`);
+  }
+  const createData = await createRes.json();
+  const job = Array.isArray(createData) ? createData[0] : createData;
+  const renderId: string = job.id;
+  if (!renderId) throw new Error(`Creatomate: no render id in ${JSON.stringify(job)}`);
+
+  // 2. Poll until succeeded
+  let videoUrl = "";
+  for (let i = 0; i < 60; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const s = await fetch(`https://api.creatomate.com/v1/renders/${renderId}`, {
+      headers: { Authorization: `Bearer ${CREATOMATE_KEY}` },
+    });
+    if (!s.ok) continue;
+    const sd = await s.json();
+    if (sd.status === "succeeded" && sd.url) {
+      videoUrl = sd.url;
+      break;
+    }
+    if (sd.status === "failed") {
+      throw new Error(`Creatomate render failed: ${sd.error_message ?? JSON.stringify(sd)}`);
+    }
+  }
+  if (!videoUrl) throw new Error("Creatomate render timed out after 3 minutes");
+
+  const dl = await fetch(videoUrl);
+  if (!dl.ok) throw new Error(`Download rendered video ${dl.status}`);
+  return new Uint8Array(await dl.arrayBuffer());
+}
+
+async function postReelToInstagram(caption: string, videoUrl: string): Promise<string> {
+  const createParams = new URLSearchParams({
+    media_type: "REELS",
+    video_url: videoUrl,
+    caption,
+    share_to_feed: "true",
+    access_token: META_TOKEN,
+  });
+  const createRes = await fetch(`${GRAPH}/${IG_ID}/media`, {
+    method: "POST",
+    body: createParams,
+  });
+  const createData = await createRes.json();
+  if (!createRes.ok || !createData.id) {
+    throw new Error(`Reel container failed: ${JSON.stringify(createData)}`);
+  }
+  const creationId = createData.id;
+
+  // Poll status (Reels need encoding time)
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
+    const st = await fetch(
+      `${GRAPH}/${creationId}?fields=status_code,status&access_token=${META_TOKEN}`,
+    );
+    const sd = await st.json();
+    if (sd.status_code === "FINISHED") break;
+    if (sd.status_code === "ERROR") {
+      throw new Error(`Reel processing error: ${JSON.stringify(sd)}`);
+    }
+  }
+
+  const pubParams = new URLSearchParams({ access_token: META_TOKEN, creation_id: creationId });
+  const pubRes = await fetch(`${GRAPH}/${IG_ID}/media_publish`, {
+    method: "POST",
+    body: pubParams,
+  });
+  const pubData = await pubRes.json();
+  if (!pubRes.ok || !pubData.id) {
+    throw new Error(`Reel publish failed: ${JSON.stringify(pubData)}`);
+  }
+  return pubData.id as string;
+}
+
 async function postCarouselToInstagram(
   caption: string,
   imageUrls: string[],
