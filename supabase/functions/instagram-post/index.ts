@@ -238,7 +238,7 @@ async function renderReelWithCreatomate(
   imageUrls: string[],
   musicUrl: string,
 ): Promise<Uint8Array> {
-  const slideDuration = 3; // seconds per slide
+  const slideDuration = 5; // seconds per slide — enough time to read
   const totalDuration = imageUrls.length * slideDuration;
 
   // Each image goes on its own track with an explicit absolute `time`
@@ -296,6 +296,7 @@ async function renderReelWithCreatomate(
       frame_rate: 30,
       width: 1080,
       height: 1920,
+      render_scale: 1.0,
     }),
   });
   if (!createRes.ok) {
