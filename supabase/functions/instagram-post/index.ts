@@ -56,6 +56,7 @@ const PIXABAY_KEY = Deno.env.get("PIXABAY_API_KEY")!;
 
 type PostType = "story" | "reel" | "feed";
 type Slide = { headline: string[]; subtext: string };
+type SlideVisualOptions = { layoutIndex?: number; width?: number };
 
 const SYSTEM_PROMPT =
   "Du bist ein professioneller Social Media Manager für KSE Group, eine Marketing & New Media Agentur. Erstelle professionellen, corporate Content auf Deutsch. Antworte NUR mit einem JSON-Objekt.";
@@ -112,43 +113,70 @@ async function generateImage(
   subtext: string,
   slideNum: string | null,
   height = 1080,
+  options: SlideVisualOptions = {},
 ): Promise<Uint8Array> {
   await ensureWasm();
 
-  const width = 1080;
-  const headlineY = Math.round(height / 2) - 70;
-  const headlineLineH = 95;
-  const subY = headlineY + headline.length * headlineLineH + 40;
+  const width = options.width ?? 1080;
+  const scale = width / 1080;
+  const layoutIndex = options.layoutIndex ?? 0;
+  const layout = layoutIndex % 5;
+  const headlineSize = Math.round((height > width ? 122 : 88) * scale);
+  const headlineLineH = Math.round(headlineSize * 1.08);
+  const subSize = Math.round((height > width ? 54 : 38) * scale);
+  const subLineH = Math.round(subSize * 1.32);
+  const pad = Math.round(82 * scale);
+  const headlineY = Math.round(height * (layout === 1 ? 0.32 : layout === 2 ? 0.47 : layout === 3 ? 0.25 : layout === 4 ? 0.58 : 0.42));
+  const subY = headlineY + headline.length * headlineLineH + Math.round(48 * scale);
   const subLines = subtext.split("\n");
+  const accent = ["#E8FF00", "#FFFFFF", "#33D6FF", "#FF4D4D", "#B8FF5C"][layout];
+  const muted = layout === 1 || layout === 3 ? "#D7D7D7" : "#F0F0F0";
+  const bg = layout === 3 ? "#F1F1EA" : "#050505";
+  const fg = layout === 3 ? "#050505" : "#FFFFFF";
+  const footer = layout === 3 ? "#202020" : "#CFCFCF";
+  const textX = layout === 1 || layout === 4 ? Math.round(width / 2) : pad;
+  const textAnchor = layout === 1 || layout === 4 ? "middle" : "start";
 
   const headlineTspans = headline
     .map(
       (line, i) =>
-        `<tspan x="80" y="${headlineY + i * headlineLineH}">${escapeXml(line)}</tspan>`,
+        `<tspan x="${textX}" y="${headlineY + i * headlineLineH}">${escapeXml(line)}</tspan>`,
     )
     .join("");
 
   const subTspans = subLines
     .map(
       (line, i) =>
-        `<tspan x="80" y="${subY + i * 46}">${escapeXml(line)}</tspan>`,
+        `<tspan x="${textX}" y="${subY + i * subLineH}">${escapeXml(line)}</tspan>`,
     )
     .join("");
 
   const numText = slideNum
-    ? `<text x="900" y="75" fill="#2E2E2E" font-family="Roboto" font-size="24">${escapeXml(slideNum)}</text>`
+    ? `<text x="${width - pad}" y="${Math.round(82 * scale)}" text-anchor="end" fill="${footer}" font-family="Roboto" font-size="${Math.round(32 * scale)}" font-weight="bold">${escapeXml(slideNum)}</text>`
     : "";
+
+  const decor = [
+    `<rect x="0" y="0" width="${Math.round(26 * scale)}" height="${height}" fill="${accent}"/>
+     <rect x="${pad}" y="${headlineY - Math.round(150 * scale)}" width="${Math.round(150 * scale)}" height="${Math.round(12 * scale)}" fill="${accent}"/>`,
+    `<circle cx="${Math.round(width / 2)}" cy="${Math.round(height * 0.21)}" r="${Math.round(150 * scale)}" fill="none" stroke="${accent}" stroke-width="${Math.round(14 * scale)}"/>
+     <text x="${Math.round(width / 2)}" y="${Math.round(height * 0.225)}" text-anchor="middle" fill="${accent}" font-family="Roboto" font-size="${Math.round(70 * scale)}" font-weight="bold">${escapeXml(slideNum?.split(" / ")[0] ?? "")}</text>`,
+    `<rect x="${Math.round(width * 0.58)}" y="0" width="${Math.round(width * 0.42)}" height="${height}" fill="#111111"/>
+     <rect x="${pad}" y="${Math.round(height * 0.18)}" width="${Math.round(14 * scale)}" height="${Math.round(height * 0.64)}" fill="${accent}"/>`,
+    `<rect x="0" y="0" width="${width}" height="${height}" fill="#F1F1EA"/>
+     <rect x="${pad}" y="${pad}" width="${width - pad * 2}" height="${height - pad * 2}" fill="none" stroke="#050505" stroke-width="${Math.round(8 * scale)}"/>
+     <rect x="${pad}" y="${pad}" width="${Math.round(width * 0.32)}" height="${Math.round(28 * scale)}" fill="#050505"/>`,
+    `<rect x="0" y="${Math.round(height * 0.63)}" width="${width}" height="${Math.round(height * 0.37)}" fill="#111111"/>
+     <rect x="${Math.round(width * 0.13)}" y="${Math.round(height * 0.12)}" width="${Math.round(width * 0.74)}" height="${Math.round(18 * scale)}" fill="${accent}"/>`,
+  ][layout];
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="#080808"/>
-  <rect x="0" y="0" width="${width}" height="5" fill="#1A1A1A"/>
-  <rect x="0" y="${height - 50}" width="${width}" height="50" fill="#111111"/>
+  <rect width="${width}" height="${height}" fill="${bg}"/>
+  ${decor}
   ${numText}
-  <rect x="80" y="${headlineY - 110}" width="80" height="8" fill="#FFFFFF"/>
-  <text fill="#FFFFFF" font-family="Roboto" font-size="82" font-weight="bold">${headlineTspans}</text>
-  <text fill="#666666" font-family="Roboto" font-size="34">${subTspans}</text>
-  <text x="80" y="${height - 17}" fill="#333333" font-family="Roboto" font-size="26">kse.group  ·  Marketing &amp; New Media Agentur</text>
+  <text fill="${fg}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${headlineSize}" font-weight="bold">${headlineTspans}</text>
+  <text fill="${muted}" text-anchor="${textAnchor}" font-family="Roboto" font-size="${subSize}" font-weight="bold">${subTspans}</text>
+  <text x="${pad}" y="${height - Math.round(54 * scale)}" fill="${footer}" font-family="Roboto" font-size="${Math.round(34 * scale)}" font-weight="bold">kse.group  ·  Marketing &amp; New Media</text>
 </svg>`;
 
   const fontBuffers = await loadFonts();
