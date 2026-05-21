@@ -564,10 +564,12 @@ async function runJob(
       const ts = Date.now();
       // 1. Render each slide as high-resolution portrait PNG (1440x2560) so Instagram compression keeps text readable
       const imageUrls: string[] = [];
+      // Pick ONE consistent layout/theme for the whole Reel; vary between Reels by rotating across 5 themes
+      const reelTheme = Math.floor(Math.random() * 5);
       for (let i = 0; i < slides.length; i++) {
         const s = slides[i];
         const num = `${String(i + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-        const png = await generateImage(s.headline, s.subtext, num, 2560, { layoutIndex: i, width: 1440 });
+        const png = await generateImage(s.headline, s.subtext, num, 2560, { layoutIndex: reelTheme, width: 1440 });
         const u = await uploadImage(supabase, png, `reel_${ts}_slide_${i + 1}.png`);
         imageUrls.push(u);
       }
