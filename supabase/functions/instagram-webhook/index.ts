@@ -181,12 +181,40 @@ Deno.serve(async (req) => {
   try {
     rawBody = await req.text();
     console.log("[webhook] POST raw body:", rawBody);
+
+    // ALWAYS log the complete raw body BEFORE any parsing
+    try {
+      await logMessage({
+        type: "debug",
+        incoming_text: rawBody.slice(0, 8000),
+        status: "raw",
+        error_message: "raw body received",
+      });
+    } catch (_) { /* swallow */ }
+
     let body: any = {};
     try { body = JSON.parse(rawBody); } catch (_) {
       console.error("[webhook] body not JSON");
       await logMessage({ type: "debug", incoming_text: rawBody, status: "failed", error_message: "non-JSON body" });
       return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
     }
+
+    // Meta "Test" button payload — different shape: { sample: { field, value: { sender, message, ... } } }
+    if (body.sample && typeof body.sample === "object") {
+      const field = body.sample.field;
+      const value = body.sample.value ?? {};
+      console.log("[webhook] Meta test sample received, field:", field, "value:", JSON.stringify(value));
+      await logMessage({
+        type: "debug",
+        sender_id: value.sender?.id ?? null,
+        sender_username: `meta_test:${field}`,
+        incoming_text: value.message?.text ?? JSON.stringify(value).slice(0, 8000),
+        status: "test",
+        error_message: "Meta webhook test payload",
+      });
+      return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
+    }
+
     const objectType = body.object ?? "unknown";
     const entryIds = Array.isArray(body.entry) ? body.entry.map((e: any) => e.id).join(",") : "";
     console.log("[webhook] parsed object:", objectType, "entryIds:", entryIds, "body:", JSON.stringify(body));
