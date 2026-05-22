@@ -17,6 +17,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
+import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 
 const LeistungenRoute = LeistungenRouteImport.update({
   id: '/leistungen',
@@ -58,12 +59,18 @@ const AdminInstagramRoute = AdminInstagramRouteImport.update({
   path: '/instagram',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminChatbotRoute = AdminChatbotRouteImport.update({
+  id: '/chatbot',
+  path: '/chatbot',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/leistungen': typeof LeistungenRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/share/$token': typeof ShareTokenRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/leistungen'
+    | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/leistungen'
+    | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/leistungen'
+    | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/tutorials'
     | '/share/$token'
@@ -187,16 +199,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInstagramRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/chatbot': {
+      id: '/admin/chatbot'
+      path: '/chatbot'
+      fullPath: '/admin/chatbot'
+      preLoaderRoute: typeof AdminChatbotRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminChatbotRoute: typeof AdminChatbotRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminChatbotRoute: AdminChatbotRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminIndexRoute: AdminIndexRoute,
