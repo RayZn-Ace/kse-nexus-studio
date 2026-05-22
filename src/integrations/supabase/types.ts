@@ -32,6 +32,24 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -62,6 +80,45 @@ export type Database = {
           message?: string
           name?: string
           subject?: string | null
+        }
+        Relationships: []
+      }
+      messages_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          incoming_text: string | null
+          outgoing_text: string | null
+          post_id: string | null
+          sender_id: string | null
+          sender_username: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          incoming_text?: string | null
+          outgoing_text?: string | null
+          post_id?: string | null
+          sender_id?: string | null
+          sender_username?: string | null
+          status?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          incoming_text?: string | null
+          outgoing_text?: string | null
+          post_id?: string | null
+          sender_id?: string | null
+          sender_username?: string | null
+          status?: string
+          type?: string
         }
         Relationships: []
       }
