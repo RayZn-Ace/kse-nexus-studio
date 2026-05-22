@@ -265,7 +265,7 @@ function ChatbotAdmin() {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <p className="text-sm font-semibold">Page Subscription aktivieren</p>
-              <p className="text-xs text-muted-foreground">Abonniert die Page (811569008714670) für: messages, messaging_postbacks, message_reactions, mention, feed, standby, messaging_handovers</p>
+              <p className="text-xs text-muted-foreground">Abonniert die Page (1065280196677910) für: messages, messaging_postbacks, message_reactions, mention, feed, standby, messaging_handovers</p>
             </div>
             <button
               onClick={activateWebhook}
