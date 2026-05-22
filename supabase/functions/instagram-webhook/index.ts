@@ -5,7 +5,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VERIFY_TOKEN = Deno.env.get("WEBHOOK_VERIFY_TOKEN") ?? "";
-const META_TOKEN = Deno.env.get("INSTAGRAM_USER_TOKEN") ?? Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
+const PAGE_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? "";
+const META_TOKEN = PAGE_TOKEN || Deno.env.get("INSTAGRAM_USER_TOKEN") || Deno.env.get("META_ACCESS_TOKEN") || "";
 const IG_ACCOUNT_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "17841442278138192";
 const PAGE_ID = Deno.env.get("META_PAGE_ID") ?? "1065280196677910";
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
@@ -81,11 +82,13 @@ async function generateReply(type: string, incoming: string, systemPrompt: strin
 async function sendDM(recipientId: string, message: string) {
   const res = await fetch(`https://graph.facebook.com/v21.0/me/messages`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${PAGE_TOKEN}`,
+    },
     body: JSON.stringify({
       recipient: { id: recipientId },
       message: { text: message },
-      access_token: META_TOKEN,
     }),
   });
   if (!res.ok) throw new Error(`sendDM ${res.status}: ${await res.text()}`);
