@@ -61,6 +61,27 @@ function ChatbotAdmin() {
   const [filterType, setFilterType] = useState<"all" | MsgRow["type"]>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | MsgRow["status"]>("all");
   const [selected, setSelected] = useState<MsgRow | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeResult, setSubscribeResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function activateWebhook() {
+    setSubscribing(true);
+    setSubscribeResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("instagram-subscribe", { body: {} });
+      if (error) throw error;
+      const ok = !!data?.ok;
+      const text = JSON.stringify(data, null, 2);
+      setSubscribeResult({ ok, text });
+      if (ok) toast.success("Webhook aktiviert");
+      else toast.error("Webhook-Aktivierung fehlgeschlagen");
+    } catch (e: any) {
+      setSubscribeResult({ ok: false, text: e?.message ?? String(e) });
+      toast.error("Fehler: " + (e?.message ?? String(e)));
+    } finally {
+      setSubscribing(false);
+    }
+  }
 
   async function loadAll() {
     const [{ data: rows }, { data: cfgRows }] = await Promise.all([
