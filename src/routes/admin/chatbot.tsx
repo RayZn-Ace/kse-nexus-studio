@@ -63,6 +63,8 @@ function ChatbotAdmin() {
   const [selected, setSelected] = useState<MsgRow | null>(null);
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeResult, setSubscribeResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function activateWebhook() {
     setSubscribing(true);
@@ -80,6 +82,26 @@ function ChatbotAdmin() {
       toast.error("Fehler: " + (e?.message ?? String(e)));
     } finally {
       setSubscribing(false);
+    }
+  }
+
+  async function verifySubscription() {
+    setVerifying(true);
+    setVerifyResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("instagram-subscribe", {
+        body: { action: "verify" },
+      });
+      if (error) throw error;
+      const ok = !!data?.ok;
+      setVerifyResult({ ok, text: JSON.stringify(data, null, 2) });
+      if (ok) toast.success("Subscription geprüft");
+      else toast.error("Prüfung fehlgeschlagen");
+    } catch (e: any) {
+      setVerifyResult({ ok: false, text: e?.message ?? String(e) });
+      toast.error("Fehler: " + (e?.message ?? String(e)));
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -275,10 +297,23 @@ function ChatbotAdmin() {
               {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               Webhook aktivieren
             </button>
+            <button
+              onClick={verifySubscription}
+              disabled={verifying}
+              className="px-4 py-2 rounded-lg bg-card border border-border text-sm font-semibold hover:bg-card/80 disabled:opacity-50 flex items-center gap-2"
+            >
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              Subscription prüfen
+            </button>
           </div>
           {subscribeResult && (
             <pre className={`p-3 rounded-lg text-xs font-mono whitespace-pre-wrap overflow-x-auto border ${subscribeResult.ok ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
               {subscribeResult.text}
+            </pre>
+          )}
+          {verifyResult && (
+            <pre className={`p-3 rounded-lg text-xs font-mono whitespace-pre-wrap overflow-x-auto border ${verifyResult.ok ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
+              {verifyResult.text}
             </pre>
           )}
         </div>
