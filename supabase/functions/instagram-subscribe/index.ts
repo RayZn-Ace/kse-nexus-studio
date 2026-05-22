@@ -30,10 +30,46 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Step 1: Exchange user token for a Page Access Token.
+    // Error (#210) means META_ACCESS_TOKEN is a USER token, not a PAGE token.
+    // We try /me/accounts first, then fall back to /{PAGE_ID}?fields=access_token.
+    let pageToken = META_TOKEN;
+    let tokenSource = "input (assumed page token)";
+    let tokenDebug: any = null;
+
+    const accountsRes = await fetch(
+      `https://graph.facebook.com/v21.0/me/accounts?access_token=${encodeURIComponent(META_TOKEN)}`,
+    );
+    const accountsJson = await accountsRes.json().catch(() => ({}));
+    tokenDebug = { accountsStatus: accountsRes.status, accountsBody: accountsJson };
+
+    if (accountsRes.ok && Array.isArray(accountsJson?.data)) {
+      const match = accountsJson.data.find((p: any) => String(p.id) === PAGE_ID);
+      if (match?.access_token) {
+        pageToken = match.access_token;
+        tokenSource = "/me/accounts";
+      }
+    }
+
+    if (pageToken === META_TOKEN) {
+      // Fallback: directly request the page access_token
+      const pageRes = await fetch(
+        `https://graph.facebook.com/v21.0/${PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(META_TOKEN)}`,
+      );
+      const pageJson = await pageRes.json().catch(() => ({}));
+      tokenDebug.pageStatus = pageRes.status;
+      tokenDebug.pageBody = pageJson;
+      if (pageRes.ok && pageJson?.access_token) {
+        pageToken = pageJson.access_token;
+        tokenSource = "/{PAGE_ID}?fields=access_token";
+      }
+    }
+
+    // Step 2: subscribe the app to the page with the (hopefully) page token
     const url = `https://graph.facebook.com/v21.0/${PAGE_ID}/subscribed_apps`;
     const form = new URLSearchParams({
       subscribed_fields: FIELDS,
-      access_token: META_TOKEN,
+      access_token: pageToken,
     });
 
     const res = await fetch(url, {
@@ -46,9 +82,17 @@ Deno.serve(async (req) => {
     let data: any;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
-    console.log("[subscribe] status:", res.status, "body:", text);
+    console.log("[subscribe] tokenSource:", tokenSource, "status:", res.status, "body:", text);
 
-    return new Response(JSON.stringify({ ok: res.ok, status: res.status, response: data, fields: FIELDS.split(",") }), {
+    return new Response(JSON.stringify({
+      ok: res.ok,
+      status: res.status,
+      response: data,
+      fields: FIELDS.split(","),
+      tokenSource,
+      tokenDebug,
+      hint: res.ok ? undefined : "Falls #210: Stelle sicher, dass das META_ACCESS_TOKEN ein User Access Token mit den Scopes pages_manage_metadata, pages_show_list, instagram_basic, instagram_manage_messages ist — oder direkt ein Page Access Token der Page 811569008714670.",
+    }), {
       status: 200,
       headers: { ...cors, "content-type": "application/json" },
     });
