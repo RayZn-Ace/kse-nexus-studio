@@ -6,7 +6,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VERIFY_TOKEN = Deno.env.get("WEBHOOK_VERIFY_TOKEN") ?? "";
 const META_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
-const IG_ACCOUNT_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "";
+const IG_ACCOUNT_ID = Deno.env.get("META_IG_ACCOUNT_ID") ?? "17841442278138192";
+const PAGE_ID = Deno.env.get("META_PAGE_ID") ?? "1065280196677910";
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 
 const supa = createClient(SUPABASE_URL, SERVICE_ROLE, {
@@ -186,14 +187,22 @@ Deno.serve(async (req) => {
       await logMessage({ type: "debug", incoming_text: rawBody, status: "failed", error_message: "non-JSON body" });
       return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
     }
-    console.log("[webhook] parsed object:", JSON.stringify(body));
+    const objectType = body.object ?? "unknown";
+    const entryIds = Array.isArray(body.entry) ? body.entry.map((e: any) => e.id).join(",") : "";
+    console.log("[webhook] parsed object:", objectType, "entryIds:", entryIds, "body:", JSON.stringify(body));
 
-    // Always log raw payload for debugging visibility
+    // Always log raw payload BEFORE any parsing/filtering
     await logMessage({
       type: "debug",
+      sender_id: entryIds || null,
+      sender_username: objectType,
       incoming_text: JSON.stringify(body).slice(0, 8000),
       status: "pending",
     });
+
+    // Accept both "instagram" and "page" objects; do NOT filter by recipient.
+    // The Meta App is only ever subscribed to our Page + linked IG account,
+    // so every event that arrives is for us.
 
     const entries = body.entry ?? [];
     let handledAny = false;
@@ -203,7 +212,7 @@ Deno.serve(async (req) => {
       if (Array.isArray(entry.messaging)) {
         for (const event of entry.messaging) {
           handledAny = true;
-          console.log("[webhook] messaging event:", JSON.stringify(event));
+          console.log("[webhook] messaging event (object=", objectType, "):", JSON.stringify(event));
           if (event.message && !event.message.is_echo && event.message.text) {
             // Story replies arrive as messaging events with reply_to.story
             const isStoryReply = !!event.message.reply_to?.story;
