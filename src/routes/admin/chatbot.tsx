@@ -119,7 +119,7 @@ function ChatbotAdmin() {
     if (error) toast.error(`Speichern fehlgeschlagen: ${error.message}`);
   }
 
-  async function saveTextCfg(key: string, value: string) {
+  async function saveTextCfg(key: string, value: string | number) {
     setSaving(true);
     await updateCfg(key, value);
     setSaving(false);
