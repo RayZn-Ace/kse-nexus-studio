@@ -61,6 +61,27 @@ function ChatbotAdmin() {
   const [filterType, setFilterType] = useState<"all" | MsgRow["type"]>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | MsgRow["status"]>("all");
   const [selected, setSelected] = useState<MsgRow | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeResult, setSubscribeResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function activateWebhook() {
+    setSubscribing(true);
+    setSubscribeResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("instagram-subscribe", { body: {} });
+      if (error) throw error;
+      const ok = !!data?.ok;
+      const text = JSON.stringify(data, null, 2);
+      setSubscribeResult({ ok, text });
+      if (ok) toast.success("Webhook aktiviert");
+      else toast.error("Webhook-Aktivierung fehlgeschlagen");
+    } catch (e: any) {
+      setSubscribeResult({ ok: false, text: e?.message ?? String(e) });
+      toast.error("Fehler: " + (e?.message ?? String(e)));
+    } finally {
+      setSubscribing(false);
+    }
+  }
 
   async function loadAll() {
     const [{ data: rows }, { data: cfgRows }] = await Promise.all([
@@ -239,6 +260,28 @@ function ChatbotAdmin() {
             <p>App auf <strong>Live Mode</strong> stellen und Instagram Account verbinden.</p>
           </li>
         </ol>
+
+        <div className="pt-4 border-t border-border/60 space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold">Page Subscription aktivieren</p>
+              <p className="text-xs text-muted-foreground">Abonniert die Page (811569008714670) für: messages, messaging_postbacks, message_reactions, mention, feed, standby, messaging_handovers</p>
+            </div>
+            <button
+              onClick={activateWebhook}
+              disabled={subscribing}
+              className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-semibold hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+            >
+              {subscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Webhook aktivieren
+            </button>
+          </div>
+          {subscribeResult && (
+            <pre className={`p-3 rounded-lg text-xs font-mono whitespace-pre-wrap overflow-x-auto border ${subscribeResult.ok ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
+              {subscribeResult.text}
+            </pre>
+          )}
+        </div>
       </section>
 
       {/* Live Monitor / Log */}
