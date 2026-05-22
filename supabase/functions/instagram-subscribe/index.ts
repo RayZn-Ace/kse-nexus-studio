@@ -1,7 +1,7 @@
 // One-time setup: subscribe the Page to webhook fields
 // POST https://graph.facebook.com/v21.0/{PAGE_ID}/subscribed_apps
 
-const META_TOKEN = Deno.env.get("INSTAGRAM_USER_TOKEN") ?? Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
+const META_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("INSTAGRAM_USER_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
 const PAGE_ID = "1065280196677910";
 const FIELDS = [
   "messages",
