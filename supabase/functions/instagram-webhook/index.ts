@@ -165,6 +165,7 @@ Deno.serve(async (req) => {
     const mode = params.get("hub.mode");
     const token = params.get("hub.verify_token");
     const challenge = params.get("hub.challenge");
+    console.log("[webhook] GET verify", { mode, tokenMatch: token === VERIFY_TOKEN, hasChallenge: !!challenge });
     if (mode === "subscribe" && token === VERIFY_TOKEN && challenge) {
       return new Response(challenge, { status: 200 });
     }
@@ -172,17 +173,37 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405, headers: cors });
+    return new Response("ok", { status: 200, headers: cors });
   }
 
+  let rawBody = "";
   try {
-    const body = await req.json();
+    rawBody = await req.text();
+    console.log("[webhook] POST raw body:", rawBody);
+    let body: any = {};
+    try { body = JSON.parse(rawBody); } catch (_) {
+      console.error("[webhook] body not JSON");
+      await logMessage({ type: "debug", incoming_text: rawBody, status: "failed", error_message: "non-JSON body" });
+      return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
+    }
+    console.log("[webhook] parsed object:", JSON.stringify(body));
+
+    // Always log raw payload for debugging visibility
+    await logMessage({
+      type: "debug",
+      incoming_text: JSON.stringify(body).slice(0, 8000),
+      status: "pending",
+    });
+
     const entries = body.entry ?? [];
+    let handledAny = false;
 
     for (const entry of entries) {
       // DMs (messaging)
       if (Array.isArray(entry.messaging)) {
         for (const event of entry.messaging) {
+          handledAny = true;
+          console.log("[webhook] messaging event:", JSON.stringify(event));
           if (event.message && !event.message.is_echo && event.message.text) {
             // Story replies arrive as messaging events with reply_to.story
             const isStoryReply = !!event.message.reply_to?.story;
@@ -203,19 +224,42 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Comments + other change events
+      // Comments + other change events (page messaging format)
       if (Array.isArray(entry.changes)) {
         for (const change of entry.changes) {
+          handledAny = true;
+          console.log("[webhook] change event:", JSON.stringify(change));
           if (change.field === "comments") {
             await handleComment(change.value);
+          } else if (change.field === "messages") {
+            // Page messaging format
+            const v = change.value ?? {};
+            const senderId = v.sender?.id ?? v.from?.id ?? null;
+            const text = v.message?.text ?? v.text ?? "";
+            if (senderId && text) {
+              await handleDM(senderId, text);
+            } else {
+              await logMessage({ type: "debug", incoming_text: JSON.stringify(change), status: "skipped", error_message: "messages change without sender/text" });
+            }
+          } else {
+            await logMessage({ type: "debug", incoming_text: JSON.stringify(change), status: "skipped", error_message: `unhandled change field: ${change.field}` });
           }
         }
       }
     }
 
+    if (!handledAny) {
+      console.warn("[webhook] no messaging/changes entries found");
+      await logMessage({ type: "debug", incoming_text: JSON.stringify(body).slice(0, 8000), status: "skipped", error_message: "no messaging/changes in payload" });
+    }
+
     return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
   } catch (e: any) {
-    console.error("webhook error", e);
-    return new Response(JSON.stringify({ error: e.message }), { status: 200, headers: { ...cors, "content-type": "application/json" } });
+    console.error("[webhook] error", e);
+    try {
+      await logMessage({ type: "debug", incoming_text: rawBody.slice(0, 8000), status: "failed", error_message: e?.message ?? String(e) });
+    } catch (_) { /* swallow */ }
+    // ALWAYS return 200 so Meta keeps delivering
+    return new Response("EVENT_RECEIVED", { status: 200, headers: cors });
   }
 });
