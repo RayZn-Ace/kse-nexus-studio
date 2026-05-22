@@ -1,8 +1,8 @@
 // One-time setup: subscribe the Page to webhook fields
 // POST https://graph.facebook.com/v21.0/{PAGE_ID}/subscribed_apps
 
-const META_TOKEN = Deno.env.get("META_ACCESS_TOKEN") ?? "";
-const PAGE_ID = "811569008714670";
+const META_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
+const PAGE_ID = "1065280196677910";
 const FIELDS = [
   "messages",
   "messaging_postbacks",
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       fields: FIELDS.split(","),
       tokenSource,
       tokenDebug,
-      hint: res.ok ? undefined : "Falls #210: Stelle sicher, dass das META_ACCESS_TOKEN ein User Access Token mit den Scopes pages_manage_metadata, pages_show_list, instagram_basic, instagram_manage_messages ist — oder direkt ein Page Access Token der Page 811569008714670.",
+      hint: res.ok ? undefined : "Falls #210: META_PAGE_ACCESS_TOKEN muss ein Page Access Token der Page 1065280196677910 sein (oder ein User Token mit pages_manage_metadata, pages_show_list, instagram_basic, instagram_manage_messages).",
     }), {
       status: 200,
       headers: { ...cors, "content-type": "application/json" },
