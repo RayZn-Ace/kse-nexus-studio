@@ -1,7 +1,7 @@
 // One-time setup: subscribe the Page to webhook fields
 // POST https://graph.facebook.com/v21.0/{PAGE_ID}/subscribed_apps
 
-const META_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
+const META_TOKEN = Deno.env.get("INSTAGRAM_USER_TOKEN") ?? Deno.env.get("META_PAGE_ACCESS_TOKEN") ?? Deno.env.get("META_ACCESS_TOKEN") ?? "";
 const PAGE_ID = "1065280196677910";
 const FIELDS = [
   "messages",
@@ -16,7 +16,7 @@ const FIELDS = [
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 Deno.serve(async (req) => {
@@ -24,10 +24,28 @@ Deno.serve(async (req) => {
 
   try {
     if (!META_TOKEN) {
-      return new Response(JSON.stringify({ ok: false, error: "META_ACCESS_TOKEN not configured" }), {
+      return new Response(JSON.stringify({ ok: false, error: "INSTAGRAM_USER_TOKEN not configured" }), {
         status: 500,
         headers: { ...cors, "content-type": "application/json" },
       });
+    }
+
+    // Verification mode: GET or ?action=verify -> call /me/subscribed_apps
+    const url0 = new URL(req.url);
+    const action = url0.searchParams.get("action");
+    if (req.method === "GET" || action === "verify") {
+      const vRes = await fetch(
+        `https://graph.facebook.com/v21.0/me/subscribed_apps?access_token=${encodeURIComponent(META_TOKEN)}`,
+      );
+      const vText = await vRes.text();
+      let vData: any;
+      try { vData = JSON.parse(vText); } catch { vData = { raw: vText }; }
+      console.log("[verify] status:", vRes.status, "body:", vText);
+      return new Response(JSON.stringify({
+        ok: vRes.ok,
+        status: vRes.status,
+        response: vData,
+      }), { status: 200, headers: { ...cors, "content-type": "application/json" } });
     }
 
     // Step 1: Exchange user token for a Page Access Token.
