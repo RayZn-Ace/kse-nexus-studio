@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Inbox, Video, Instagram, MessageCircle, LogOut, Loader2, ArrowUpRight } from "lucide-react";
+import { Inbox, Video, Instagram, MessageCircle, LogOut, Loader2, ArrowUpRight, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin")({
@@ -40,6 +40,7 @@ function AdminLayout() {
   const nav = [
     { to: "/admin", label: "Inbox", icon: Inbox, exact: true },
     { to: "/admin/tutorials", label: "Tutorials", icon: Video },
+    { to: "/admin/media", label: "Medien", icon: ImageIcon },
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
     { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
   ];
