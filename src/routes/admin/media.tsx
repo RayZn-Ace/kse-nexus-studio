@@ -14,8 +14,10 @@ type MediaItem = {
 };
 
 function publicUrlFor(path: string) {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}/api/public/media/${path.split("/").map(encodeURIComponent).join("/")}`;
+  // Always use the production domain so links work in emails / signatures,
+  // even when copied from the sandbox preview.
+  const PROD_ORIGIN = "https://ksegroup.eu";
+  return `${PROD_ORIGIN}/api/public/media/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 function MediaPage() {
