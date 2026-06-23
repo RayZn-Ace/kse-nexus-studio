@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import VillaBuilder from "@/components/VillaBuilder";
+import ImmersiveHero from "@/components/ImmersiveHero";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -778,7 +779,7 @@ function Index() {
       <div className="relative" style={{ zIndex: 1 }}>
       <ScrollProgress />
       <Header />
-      <Hero />
+      <ImmersiveHero />
       <PinnedWord />
       <Manifest />
       <HorizontalServices />
