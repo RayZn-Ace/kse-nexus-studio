@@ -1,126 +1,23 @@
-import { useEffect, useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Environment, MeshTransmissionMaterial, Float } from "@react-three/drei";
+import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
+import * as THREE from "three";
+import type { MotionValue } from "framer-motion";
 
 /**
- * Persistent fixed-position visual stage that lives behind every section.
- * Active-Theory-inspired: deep space vignette + drifting particle field +
- * volumetric light beam + central metallic orb that scales/drifts with scroll.
- *
- * Pure Canvas2D + CSS. SSR-safe (effects gated on mount).
+ * Active-Theory-inspired persistent 3D stage.
+ * Real Three.js: refractive metallic orb, instanced drifting particles,
+ * bloom + chromatic aberration + vignette postprocessing.
+ * SSR-safe — Canvas only mounts after client hydration.
  */
-export default function CinemaStage({
-  progress,
-}: {
-  progress: MotionValue<number>;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointer = useRef({ x: 0.5, y: 0.5 });
+export default function CinemaStage({ progress }: { progress: MotionValue<number> }) {
+  const [mounted, setMounted] = useState(false);
+  const progressRef = useRef(0);
 
-  // Orb behaviour across the whole page scroll
-  const orbY = useTransform(progress, [0, 0.5, 1], ["0vh", "-12vh", "8vh"]);
-  const orbScale = useTransform(progress, [0, 0.25, 0.55, 1], [1, 0.55, 0.35, 0.9]);
-  const orbX = useTransform(progress, [0, 0.25, 0.55, 0.8, 1], ["0vw", "22vw", "-26vw", "18vw", "0vw"]);
-  const orbOpacity = useTransform(progress, [0, 0.6, 0.95, 1], [1, 0.55, 0.25, 0.4]);
-  const beamRotate = useTransform(progress, [0, 1], [-12, 18]);
-  const beamOpacity = useTransform(progress, [0, 0.4, 0.8, 1], [1, 0.35, 0.15, 0.05]);
-
-  const orbYS = useSpring(orbY, { stiffness: 70, damping: 22, mass: 0.4 });
-  const orbXS = useSpring(orbX, { stiffness: 70, damping: 22, mass: 0.4 });
-  const orbScaleS = useSpring(orbScale, { stiffness: 70, damping: 22, mass: 0.4 });
-
-  /* particle field */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let raf = 0;
-    let w = 0;
-    let h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    type P = {
-      x: number; y: number; z: number;
-      vx: number; vy: number;
-      r: number; warm: boolean;
-      tw: number; tp: number;
-    };
-    let parts: P[] = [];
-
-    const seed = () => {
-      const count = Math.floor((w * h) / 9000);
-      parts = Array.from({ length: count }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        z: Math.random() * 0.9 + 0.1,
-        vx: (Math.random() - 0.5) * 0.08,
-        vy: -Math.random() * 0.12 - 0.02,
-        r: Math.random() * 1.6 + 0.4,
-        warm: Math.random() < 0.18,
-        tw: Math.random() * Math.PI * 2,
-        tp: Math.random() * 0.04 + 0.015,
-      }));
-    };
-
-    const resize = () => {
-      w = canvas.clientWidth;
-      h = canvas.clientHeight;
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
-    };
-    resize();
-    const onResize = () => resize();
-    window.addEventListener("resize", onResize);
-
-    const onMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.current.x = (e.clientX - rect.left) / rect.width;
-      pointer.current.y = (e.clientY - rect.top) / rect.height;
-    };
-    window.addEventListener("pointermove", onMove);
-
-    const tick = () => {
-      ctx.clearRect(0, 0, w, h);
-      const px = (pointer.current.x - 0.5) * 30;
-      const py = (pointer.current.y - 0.5) * 30;
-
-      for (const p of parts) {
-        p.x += p.vx + px * 0.0008 * p.z;
-        p.y += p.vy + py * 0.0008 * p.z;
-        p.tw += p.tp;
-        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
-
-        const a = (0.35 + Math.sin(p.tw) * 0.35) * p.z;
-        const r = p.r * (0.6 + p.z * 0.8);
-        if (p.warm) {
-          ctx.fillStyle = `rgba(232,255,0,${a * 0.7})`;
-          ctx.shadowColor = "rgba(232,255,0,0.9)";
-          ctx.shadowBlur = 8;
-        } else {
-          ctx.fillStyle = `rgba(140,180,230,${a * 0.55})`;
-          ctx.shadowColor = "rgba(120,160,220,0.7)";
-          ctx.shadowBlur = 6;
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onMove);
-    };
-  }, []);
+  useEffect(() => setMounted(true), []);
+  useEffect(() => progress.on("change", (v) => (progressRef.current = v)), [progress]);
 
   return (
     <div
@@ -128,7 +25,7 @@ export default function CinemaStage({
       className="fixed inset-0 pointer-events-none"
       style={{ zIndex: 0, background: "#020207" }}
     >
-      {/* vignette */}
+      {/* radial vignette below the canvas for depth even before mount */}
       <div
         className="absolute inset-0"
         style={{
@@ -136,154 +33,271 @@ export default function CinemaStage({
             "radial-gradient(ellipse at 50% 55%, rgba(20,28,60,0.55) 0%, rgba(4,4,12,0.92) 45%, #000 100%)",
         }}
       />
-      {/* particles */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-
-      {/* light beam */}
-      <motion.div
-        className="absolute left-1/2 top-1/2"
-        style={{
-          width: "180vmax",
-          height: "12vmax",
-          x: "-50%",
-          y: "-50%",
-          rotate: beamRotate,
-          opacity: beamOpacity,
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(180,200,255,0.05) 30%, rgba(220,230,255,0.18) 50%, rgba(180,200,255,0.05) 70%, transparent 100%)",
-          filter: "blur(14px)",
-          mixBlendMode: "screen",
-        }}
-      />
-
-      {/* orb */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ x: orbXS, y: orbYS, scale: orbScaleS, opacity: orbOpacity }}
-      >
-        <Orb />
-      </motion.div>
-
-      {/* jellyfish silhouettes */}
-      <Jelly className="absolute left-[10%] top-[60%]" delay={0} scale={0.7} />
-      <Jelly className="absolute right-[8%] top-[28%]" delay={2.8} scale={0.5} />
-      <Jelly className="absolute left-[60%] bottom-[12%]" delay={4.2} scale={0.6} />
-    </div>
-  );
-}
-
-function Orb() {
-  return (
-    <div className="relative" style={{ width: "min(64vw, 520px)", aspectRatio: "1 / 1" }}>
-      <motion.div
-        className="absolute inset-0 rounded-full"
-        style={{
-          border: "1px solid rgba(200,215,255,0.18)",
-          boxShadow: "0 0 80px rgba(120,140,220,0.18), inset 0 0 60px rgba(120,140,220,0.12)",
-        }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div
-        className="absolute rounded-full"
-        style={{ inset: "8%", border: "1px dashed rgba(200,215,255,0.22)" }}
-        animate={{ rotate: -360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div
-        className="absolute rounded-full overflow-hidden"
-        style={{
-          inset: "18%",
-          background:
-            "conic-gradient(from 210deg, #b9c8ff, #6e7bd1 18%, #1a1830 32%, #0a0a1a 48%, #2a223a 58%, #b87a4a 70%, #e8b86a 78%, #f5e8a0 86%, #b9c8ff 100%)",
-          filter: "saturate(1.1) brightness(0.95)",
-          boxShadow:
-            "0 0 60px rgba(120,140,220,0.45), inset 0 -20px 60px rgba(0,0,0,0.6), inset 0 20px 40px rgba(255,255,255,0.08)",
-        }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 32% 28%, rgba(255,255,255,0.6) 0%, transparent 22%), radial-gradient(circle at 70% 75%, rgba(232,255,0,0.18) 0%, transparent 35%)",
-            mixBlendMode: "screen",
-          }}
-        />
-      </motion.div>
-      <div
-        className="absolute rounded-full flex items-center justify-center"
-        style={{
-          inset: "18%",
-          background: "radial-gradient(circle at 40% 35%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)",
-          border: "1px solid rgba(255,255,255,0.18)",
-          boxShadow: "inset 0 0 40px rgba(0,0,0,0.4)",
-        }}
-      >
-        <span
-          className="font-black select-none"
-          style={{
-            fontSize: "min(18vw, 150px)",
-            color: "#f0ede8",
-            letterSpacing: "-0.06em",
-            textShadow:
-              "0 2px 0 rgba(0,0,0,0.25), 0 0 24px rgba(180,200,255,0.45), 0 0 60px rgba(232,255,0,0.18)",
-            mixBlendMode: "screen",
-          }}
+      {mounted && (
+        <Canvas
+          dpr={[1, 2]}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          camera={{ position: [0, 0, 6], fov: 38 }}
+          style={{ position: "absolute", inset: 0 }}
         >
-          k
-        </span>
-      </div>
-      <motion.div
-        className="absolute left-1/2 -translate-x-1/2 rounded-full"
-        style={{
-          bottom: "-22%",
-          width: "8%",
-          height: "44%",
-          border: "1px solid rgba(180,200,255,0.35)",
-          borderTop: "none",
-          borderRadius: "0 0 100% 100% / 0 0 60% 60%",
-        }}
-        animate={{ opacity: [0.4, 0.9, 0.4] }}
-        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-      />
+          <color attach="background" args={["#000004"]} />
+          <fog attach="fog" args={["#000004", 8, 22]} />
+
+          <ambientLight intensity={0.25} />
+          <pointLight position={[8, 6, 4]} intensity={2.2} color="#b9c8ff" />
+          <pointLight position={[-6, -4, 3]} intensity={1.6} color="#e8ff00" />
+          <pointLight position={[0, 0, -8]} intensity={1.4} color="#6e7bd1" />
+
+          <Environment preset="night" />
+
+          <Scene progressRef={progressRef} />
+
+          <EffectComposer multisampling={0}>
+            <Bloom intensity={0.9} luminanceThreshold={0.35} luminanceSmoothing={0.85} mipmapBlur />
+            <ChromaticAberration
+              offset={new THREE.Vector2(0.0014, 0.0014)}
+              radialModulation={false}
+              modulationOffset={0}
+              blendFunction={BlendFunction.NORMAL}
+            />
+            <Vignette eskil={false} offset={0.2} darkness={0.85} />
+          </EffectComposer>
+        </Canvas>
+      )}
     </div>
   );
 }
 
-function Jelly({
-  className = "",
-  delay = 0,
-  scale = 1,
-}: { className?: string; delay?: number; scale?: number }) {
+function Scene({ progressRef }: { progressRef: React.MutableRefObject<number> }) {
+  const group = useRef<THREE.Group>(null);
+  const orb = useRef<THREE.Mesh>(null);
+  const ringA = useRef<THREE.Mesh>(null);
+  const ringB = useRef<THREE.Mesh>(null);
+  const ringC = useRef<THREE.Mesh>(null);
+  const pointer = useRef(new THREE.Vector2());
+  const { size } = useThree();
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      pointer.current.x = (e.clientX / size.width) * 2 - 1;
+      pointer.current.y = -((e.clientY / size.height) * 2 - 1);
+    };
+    window.addEventListener("pointermove", onMove);
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [size]);
+
+  useFrame((state, dt) => {
+    const p = progressRef.current;
+    // Orb travels across the page as user scrolls
+    if (group.current) {
+      const tx = Math.sin(p * Math.PI * 1.4) * 2.5;
+      const ty = -p * 1.5 + Math.cos(p * Math.PI) * 0.3;
+      const tz = -p * 2.2;
+      group.current.position.x += (tx - group.current.position.x) * 0.04;
+      group.current.position.y += (ty - group.current.position.y) * 0.04;
+      group.current.position.z += (tz - group.current.position.z) * 0.04;
+      // pointer parallax
+      group.current.rotation.x += (pointer.current.y * 0.25 - group.current.rotation.x) * 0.04;
+      group.current.rotation.y += (pointer.current.x * 0.4 - group.current.rotation.y) * 0.04;
+
+      const targetScale = 1 - p * 0.45;
+      group.current.scale.setScalar(
+        group.current.scale.x + (targetScale - group.current.scale.x) * 0.05,
+      );
+    }
+    if (orb.current) orb.current.rotation.y += dt * 0.25;
+    if (ringA.current) ringA.current.rotation.z += dt * 0.08;
+    if (ringB.current) {
+      ringB.current.rotation.x += dt * 0.12;
+      ringB.current.rotation.y -= dt * 0.06;
+    }
+    if (ringC.current) ringC.current.rotation.y += dt * 0.18;
+  });
+
   return (
-    <motion.svg
-      viewBox="0 0 100 160"
-      className={className}
-      width={80 * scale}
-      height={128 * scale}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: [0, 0.35, 0.2, 0.4], y: [20, -20, 0, -10] }}
-      transition={{ duration: 9, delay, repeat: Infinity, ease: "easeInOut" }}
-      style={{ filter: "blur(0.4px)" }}
-    >
-      <defs>
-        <radialGradient id={`jb-${delay}`} cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="rgba(180,210,255,0.55)" />
-          <stop offset="100%" stopColor="rgba(60,90,160,0)" />
-        </radialGradient>
-      </defs>
-      <path
-        d="M50 8 C 78 8, 92 38, 88 60 C 86 70, 78 72, 72 68 C 66 64, 64 70, 66 76 C 70 92, 60 110, 56 130 C 54 142, 52 150, 50 156 C 48 150, 46 142, 44 130 C 40 110, 30 92, 34 76 C 36 70, 34 64, 28 68 C 22 72, 14 70, 12 60 C 8 38, 22 8, 50 8 Z"
-        fill={`url(#jb-${delay})`}
+    <>
+      <group ref={group}>
+        {/* Refractive orb */}
+        <mesh ref={orb}>
+          <icosahedronGeometry args={[1.1, 24]} />
+          <MeshTransmissionMaterial
+            transmission={1}
+            thickness={1.6}
+            roughness={0.05}
+            ior={1.55}
+            chromaticAberration={0.18}
+            anisotropy={0.4}
+            distortion={0.35}
+            distortionScale={0.4}
+            temporalDistortion={0.15}
+            attenuationDistance={1.5}
+            attenuationColor="#b9c8ff"
+            color="#e8ecff"
+            backside
+          />
+        </mesh>
+
+        {/* Inner glowing core */}
+        <mesh scale={0.55}>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshStandardMaterial
+            color="#e8ff00"
+            emissive="#e8ff00"
+            emissiveIntensity={1.6}
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* Rings */}
+        <mesh ref={ringA} rotation={[Math.PI / 2.4, 0, 0]}>
+          <torusGeometry args={[1.7, 0.008, 16, 200]} />
+          <meshStandardMaterial
+            color="#b9c8ff"
+            emissive="#6e7bd1"
+            emissiveIntensity={1.2}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh ref={ringB} rotation={[0, 0, Math.PI / 3]}>
+          <torusGeometry args={[2.1, 0.006, 16, 200]} />
+          <meshStandardMaterial
+            color="#e8ff00"
+            emissive="#e8ff00"
+            emissiveIntensity={0.8}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh ref={ringC} rotation={[Math.PI / 1.5, Math.PI / 6, 0]}>
+          <torusGeometry args={[2.5, 0.004, 16, 200]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            emissive="#b9c8ff"
+            emissiveIntensity={0.9}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+
+      <Particles count={1400} />
+      <Particles count={300} warm size={0.04} radius={9} />
+
+      <Float speed={1.2} rotationIntensity={0.4} floatIntensity={1.2}>
+        <Jelly position={[-3.5, -1.5, -2]} />
+      </Float>
+      <Float speed={0.9} rotationIntensity={0.3} floatIntensity={1.4}>
+        <Jelly position={[3.8, 1.2, -3]} scale={0.7} />
+      </Float>
+    </>
+  );
+}
+
+/* ───────── Particle field ───────── */
+function Particles({
+  count = 1200,
+  warm = false,
+  size = 0.025,
+  radius = 12,
+}: { count?: number; warm?: boolean; size?: number; radius?: number }) {
+  const ref = useRef<THREE.Points>(null);
+
+  const { positions, speeds } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sp = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      const r = Math.cbrt(Math.random()) * radius;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      pos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi) - 2;
+      sp[i] = 0.02 + Math.random() * 0.08;
+    }
+    return { positions: pos, speeds: sp };
+  }, [count, radius]);
+
+  useFrame((_, dt) => {
+    if (!ref.current) return;
+    const attr = ref.current.geometry.attributes.position as THREE.BufferAttribute;
+    const arr = attr.array as Float32Array;
+    for (let i = 0; i < count; i++) {
+      arr[i * 3 + 1] += speeds[i] * dt;
+      if (arr[i * 3 + 1] > radius) arr[i * 3 + 1] = -radius;
+    }
+    attr.needsUpdate = true;
+    ref.current.rotation.y += dt * 0.02;
+  });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+          count={positions.length / 3}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={size}
+        color={warm ? "#e8ff00" : "#9fb8ff"}
+        transparent
+        opacity={warm ? 0.95 : 0.75}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        sizeAttenuation
+        toneMapped={false}
       />
-      <path
-        d="M40 70 Q42 110 38 150 M50 72 Q52 120 50 158 M60 70 Q58 110 62 150"
-        stroke="rgba(180,210,255,0.45)"
-        strokeWidth="0.6"
-        fill="none"
-      />
-    </motion.svg>
+    </points>
+  );
+}
+
+/* ───────── Jellyfish ───────── */
+function Jelly({
+  position = [0, 0, 0] as [number, number, number],
+  scale = 1,
+}: { position?: [number, number, number]; scale?: number }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((s) => {
+    if (!ref.current) return;
+    const t = s.clock.elapsedTime;
+    ref.current.rotation.y = Math.sin(t * 0.3) * 0.3;
+  });
+  return (
+    <group ref={ref} position={position} scale={scale}>
+      <mesh>
+        <sphereGeometry args={[0.5, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <MeshTransmissionMaterial
+          transmission={1}
+          thickness={0.4}
+          roughness={0.15}
+          ior={1.4}
+          chromaticAberration={0.08}
+          color="#a8c0ff"
+          attenuationColor="#6e7bd1"
+          attenuationDistance={0.6}
+          backside
+        />
+      </mesh>
+      {/* tendrils */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const a = (i / 8) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.35, -0.5, Math.sin(a) * 0.35]}
+          >
+            <cylinderGeometry args={[0.005, 0.002, 0.8, 6]} />
+            <meshStandardMaterial
+              color="#b9c8ff"
+              emissive="#6e7bd1"
+              emissiveIntensity={0.4}
+              transparent
+              opacity={0.5}
+              toneMapped={false}
+            />
+          </mesh>
+        );
+      })}
+    </group>
   );
 }
