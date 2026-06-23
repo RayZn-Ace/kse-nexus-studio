@@ -1,31 +1,34 @@
-import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
 
 /**
- * Active-Theory–inspired immersive hero.
- * Pure Canvas2D + CSS — no WebGL, no GSAP. SSR-safe (effects gated on mount).
+ * Persistent fixed-position visual stage that lives behind every section.
+ * Active-Theory-inspired: deep space vignette + drifting particle field +
+ * volumetric light beam + central metallic orb that scales/drifts with scroll.
  *
- * Layers (back → front):
- *  1. Pitch black background with radial vignette
- *  2. Canvas particle field (cool blue dust + warm yellow embers, parallax drift)
- *  3. Volumetric light beam (CSS conic + blur)
- *  4. Metallic orb: concentric rings + chromatic logo glyph + reflection trail
- *  5. Tiny tracked HUD label, top-centered
+ * Pure Canvas2D + CSS. SSR-safe (effects gated on mount).
  */
-export default function ImmersiveHero() {
+export default function CinemaStage({
+  progress,
+}: {
+  progress: MotionValue<number>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sectionRef = useRef<HTMLDivElement>(null);
   const pointer = useRef({ x: 0.5, y: 0.5 });
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const orbY = useTransform(scrollYProgress, [0, 1], ["0%", "-25%"]);
-  const orbScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
-  const labelOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
+  // Orb behaviour across the whole page scroll
+  const orbY = useTransform(progress, [0, 0.5, 1], ["0vh", "-12vh", "8vh"]);
+  const orbScale = useTransform(progress, [0, 0.25, 0.55, 1], [1, 0.55, 0.35, 0.9]);
+  const orbX = useTransform(progress, [0, 0.25, 0.55, 0.8, 1], ["0vw", "22vw", "-26vw", "18vw", "0vw"]);
+  const orbOpacity = useTransform(progress, [0, 0.6, 0.95, 1], [1, 0.55, 0.25, 0.4]);
+  const beamRotate = useTransform(progress, [0, 1], [-12, 18]);
+  const beamOpacity = useTransform(progress, [0, 0.4, 0.8, 1], [1, 0.35, 0.15, 0.05]);
 
-  /* ─── particle field ─── */
+  const orbYS = useSpring(orbY, { stiffness: 70, damping: 22, mass: 0.4 });
+  const orbXS = useSpring(orbX, { stiffness: 70, damping: 22, mass: 0.4 });
+  const orbScaleS = useSpring(orbScale, { stiffness: 70, damping: 22, mass: 0.4 });
+
+  /* particle field */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -40,27 +43,24 @@ export default function ImmersiveHero() {
     type P = {
       x: number; y: number; z: number;
       vx: number; vy: number;
-      r: number; hue: "cool" | "warm";
+      r: number; warm: boolean;
       tw: number; tp: number;
     };
     let parts: P[] = [];
 
     const seed = () => {
       const count = Math.floor((w * h) / 9000);
-      parts = Array.from({ length: count }, () => {
-        const warm = Math.random() < 0.18;
-        return {
-          x: Math.random() * w,
-          y: Math.random() * h,
-          z: Math.random() * 0.9 + 0.1,
-          vx: (Math.random() - 0.5) * 0.08,
-          vy: -Math.random() * 0.12 - 0.02,
-          r: Math.random() * 1.6 + 0.4,
-          hue: warm ? "warm" : "cool",
-          tw: Math.random() * Math.PI * 2,
-          tp: Math.random() * 0.04 + 0.015,
-        };
-      });
+      parts = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        z: Math.random() * 0.9 + 0.1,
+        vx: (Math.random() - 0.5) * 0.08,
+        vy: -Math.random() * 0.12 - 0.02,
+        r: Math.random() * 1.6 + 0.4,
+        warm: Math.random() < 0.18,
+        tw: Math.random() * Math.PI * 2,
+        tp: Math.random() * 0.04 + 0.015,
+      }));
     };
 
     const resize = () => {
@@ -91,15 +91,13 @@ export default function ImmersiveHero() {
         p.x += p.vx + px * 0.0008 * p.z;
         p.y += p.vy + py * 0.0008 * p.z;
         p.tw += p.tp;
-
         if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
 
         const a = (0.35 + Math.sin(p.tw) * 0.35) * p.z;
         const r = p.r * (0.6 + p.z * 0.8);
-
-        if (p.hue === "warm") {
+        if (p.warm) {
           ctx.fillStyle = `rgba(232,255,0,${a * 0.7})`;
           ctx.shadowColor = "rgba(232,255,0,0.9)";
           ctx.shadowBlur = 8;
@@ -125,50 +123,32 @@ export default function ImmersiveHero() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="top"
-      className="relative w-full overflow-hidden"
-      style={{ height: "100vh", background: "#020207" }}
+    <div
+      aria-hidden
+      className="fixed inset-0 pointer-events-none"
+      style={{ zIndex: 0, background: "#020207" }}
     >
-      {/* Deep radial vignette */}
+      {/* vignette */}
       <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 55%, rgba(20,28,60,0.55) 0%, rgba(4,4,12,0.9) 45%, #000 100%)",
+            "radial-gradient(ellipse at 50% 55%, rgba(20,28,60,0.55) 0%, rgba(4,4,12,0.92) 45%, #000 100%)",
         }}
       />
+      {/* particles */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-      {/* Particle canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ display: "block" }}
-      />
-
-      {/* Tiny tracked label, top centered */}
+      {/* light beam */}
       <motion.div
-        style={{ opacity: labelOpacity }}
-        className="absolute left-0 right-0 top-[18vh] md:top-[14vh] flex justify-center pointer-events-none z-[3]"
-      >
-        <span
-          className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase font-semibold"
-          style={{ color: "#f0ede8", textShadow: "0 0 18px rgba(0,0,0,0.9)" }}
-        >
-          KSE / GROUP — Independent Studio
-        </span>
-      </motion.div>
-
-      {/* Volumetric light beam — angled, behind orb */}
-      <div
-        aria-hidden
-        className="absolute left-1/2 top-1/2 pointer-events-none z-[1]"
+        className="absolute left-1/2 top-1/2"
         style={{
           width: "180vmax",
           height: "12vmax",
-          transform: "translate(-50%,-50%) rotate(-12deg)",
+          x: "-50%",
+          y: "-50%",
+          rotate: beamRotate,
+          opacity: beamOpacity,
           background:
             "linear-gradient(90deg, transparent 0%, rgba(180,200,255,0.05) 30%, rgba(220,230,255,0.18) 50%, rgba(180,200,255,0.05) 70%, transparent 100%)",
           filter: "blur(14px)",
@@ -176,66 +156,40 @@ export default function ImmersiveHero() {
         }}
       />
 
-      {/* The orb */}
+      {/* orb */}
       <motion.div
-        style={{ y: orbY, scale: orbScale }}
-        className="absolute inset-0 flex items-center justify-center z-[2] pointer-events-none"
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ x: orbXS, y: orbYS, scale: orbScaleS, opacity: orbOpacity }}
       >
         <Orb />
       </motion.div>
 
-      {/* Faint floating jellyfish silhouette (left) */}
-      <Jelly className="absolute left-[12%] top-[55%] z-[2]" delay={0} scale={0.7} />
-      <Jelly className="absolute right-[8%] bottom-[18%] z-[2]" delay={2.8} scale={0.5} />
-
-      {/* Scroll hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 1, 1, 0.4] }}
-        transition={{ duration: 2.5, delay: 1.4, times: [0, 0.4, 0.7, 1] }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-[4] pointer-events-none"
-      >
-        <span className="text-[9px] tracking-[0.5em] uppercase text-foreground/60">scroll</span>
-        <motion.span
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="block w-px h-8"
-          style={{ background: "linear-gradient(to bottom, transparent, #e8ff00)" }}
-        />
-      </motion.div>
-    </section>
+      {/* jellyfish silhouettes */}
+      <Jelly className="absolute left-[10%] top-[60%]" delay={0} scale={0.7} />
+      <Jelly className="absolute right-[8%] top-[28%]" delay={2.8} scale={0.5} />
+      <Jelly className="absolute left-[60%] bottom-[12%]" delay={4.2} scale={0.6} />
+    </div>
   );
 }
 
-/* ───────── Orb ───────── */
 function Orb() {
   return (
-    <div
-      className="relative"
-      style={{ width: "min(64vw, 520px)", aspectRatio: "1 / 1" }}
-    >
-      {/* Outer slow ring */}
+    <div className="relative" style={{ width: "min(64vw, 520px)", aspectRatio: "1 / 1" }}>
       <motion.div
         className="absolute inset-0 rounded-full"
         style={{
           border: "1px solid rgba(200,215,255,0.18)",
-          boxShadow:
-            "0 0 80px rgba(120,140,220,0.18), inset 0 0 60px rgba(120,140,220,0.12)",
+          boxShadow: "0 0 80px rgba(120,140,220,0.18), inset 0 0 60px rgba(120,140,220,0.12)",
         }}
         animate={{ rotate: 360 }}
         transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
       />
-      {/* Mid ring, dashed */}
       <motion.div
         className="absolute rounded-full"
-        style={{
-          inset: "8%",
-          border: "1px dashed rgba(200,215,255,0.22)",
-        }}
+        style={{ inset: "8%", border: "1px dashed rgba(200,215,255,0.22)" }}
         animate={{ rotate: -360 }}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       />
-      {/* Inner chromatic disc */}
       <motion.div
         className="absolute rounded-full overflow-hidden"
         style={{
@@ -249,7 +203,6 @@ function Orb() {
         animate={{ rotate: 360 }}
         transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
       >
-        {/* Specular highlight */}
         <div
           className="absolute inset-0"
           style={{
@@ -259,14 +212,11 @@ function Orb() {
           }}
         />
       </motion.div>
-
-      {/* Glass dome over disc (counter-rotates to keep letter upright) */}
       <div
         className="absolute rounded-full flex items-center justify-center"
         style={{
           inset: "18%",
-          background:
-            "radial-gradient(circle at 40% 35%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)",
+          background: "radial-gradient(circle at 40% 35%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)",
           border: "1px solid rgba(255,255,255,0.18)",
           boxShadow: "inset 0 0 40px rgba(0,0,0,0.4)",
         }}
@@ -285,8 +235,6 @@ function Orb() {
           k
         </span>
       </div>
-
-      {/* Bottom reflection / drip ring */}
       <motion.div
         className="absolute left-1/2 -translate-x-1/2 rounded-full"
         style={{
@@ -296,7 +244,6 @@ function Orb() {
           border: "1px solid rgba(180,200,255,0.35)",
           borderTop: "none",
           borderRadius: "0 0 100% 100% / 0 0 60% 60%",
-          filter: "blur(0.3px)",
         }}
         animate={{ opacity: [0.4, 0.9, 0.4] }}
         transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
@@ -305,7 +252,6 @@ function Orb() {
   );
 }
 
-/* ───────── Jellyfish silhouette ───────── */
 function Jelly({
   className = "",
   delay = 0,
@@ -323,15 +269,14 @@ function Jelly({
       style={{ filter: "blur(0.4px)" }}
     >
       <defs>
-        <radialGradient id="jbody" cx="50%" cy="40%" r="60%">
+        <radialGradient id={`jb-${delay}`} cx="50%" cy="40%" r="60%">
           <stop offset="0%" stopColor="rgba(180,210,255,0.55)" />
           <stop offset="100%" stopColor="rgba(60,90,160,0)" />
         </radialGradient>
       </defs>
       <path
         d="M50 8 C 78 8, 92 38, 88 60 C 86 70, 78 72, 72 68 C 66 64, 64 70, 66 76 C 70 92, 60 110, 56 130 C 54 142, 52 150, 50 156 C 48 150, 46 142, 44 130 C 40 110, 30 92, 34 76 C 36 70, 34 64, 28 68 C 22 72, 14 70, 12 60 C 8 38, 22 8, 50 8 Z"
-        fill="url(#jbody)"
-        opacity="0.9"
+        fill={`url(#jb-${delay})`}
       />
       <path
         d="M40 70 Q42 110 38 150 M50 72 Q52 120 50 158 M60 70 Q58 110 62 150"
