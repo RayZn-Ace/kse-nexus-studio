@@ -59,8 +59,8 @@ function Field() {
     return () => window.removeEventListener("pointermove", onMove);
   }, [size]);
 
-  const TOTAL = 2200;
-  const ACCENT_RATIO = 0.07; // ~7% yellow
+  const TOTAL = 420;
+  const ACCENT_RATIO = 0.08; // ~8% yellow
   const accentCount = Math.round(TOTAL * ACCENT_RATIO);
   const greyCount = TOTAL - accentCount;
 
@@ -73,13 +73,13 @@ function Field() {
     current.current.y += (target.current.y - current.current.y) * 0.03;
 
     if (wrap.current) {
-      // 15px at typical viewport => translate world by ~0.03 units
-      wrap.current.position.x = current.current.x * 0.15;
-      wrap.current.position.y = current.current.y * 0.15;
+      // ~20px max offset at typical viewport
+      wrap.current.position.x = current.current.x * 0.2;
+      wrap.current.position.y = current.current.y * 0.2;
     }
     // very slow drift
-    if (grey.current) grey.current.rotation.y += dt * 0.008;
-    if (accent.current) accent.current.rotation.y += dt * 0.006;
+    if (grey.current) grey.current.rotation.y += dt * 0.005;
+    if (accent.current) accent.current.rotation.y += dt * 0.004;
   });
 
   return (
@@ -94,10 +94,10 @@ function Field() {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.018}
-          color="#8a8780"
+          size={0.04}
+          color="#4a4a4a"
           transparent
-          opacity={0.55}
+          opacity={0.7}
           depthWrite={false}
           sizeAttenuation
         />
@@ -112,7 +112,7 @@ function Field() {
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.03}
+          size={0.06}
           color="#e8ff00"
           transparent
           opacity={0.9}
