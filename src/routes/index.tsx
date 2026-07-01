@@ -272,7 +272,7 @@ function Services() {
           <span>scroll →</span>
         </div>
 
-        <motion.div style={{ x: xS }} className="flex h-full w-[400%] items-center pt-24">
+        <motion.div style={{ x: xS }} className="services-track group/track flex h-full w-[400%] items-center pt-24">
           <div className="w-1/4 h-full shrink-0 flex flex-col justify-center px-8 md:px-16">
             <h2
               className="font-black leading-[0.85]"
