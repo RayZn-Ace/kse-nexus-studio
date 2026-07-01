@@ -140,10 +140,12 @@ function SectionFade({
     offset: ["start end", "end start"],
   });
   // fade in over first 15%, fade out over last 15%
+  // seamless outro: hold full opacity, then fade over the last ~15% before
+  // handing off to the next section.
   const opacity = useTransform(
     scrollYProgress,
-    [0, 0.15, 0.85, 1],
-    reduced ? [1, 1, 1, 1] : [0.15, 1, 1, 0.15]
+    [0, 0.85, 1],
+    reduced ? [1, 1, 1] : [1, 1, 0.15]
   );
   return (
     <motion.div ref={ref} id={id} className={className} style={{ ...style, opacity }}>
