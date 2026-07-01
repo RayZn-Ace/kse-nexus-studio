@@ -308,7 +308,7 @@ function ServiceCard({
   const tx = useTransform(progress, [start, start + 0.1], [120, 0]);
 
   return (
-    <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
+    <div className="service-card group/card w-1/4 h-full shrink-0 flex items-center px-6 md:px-10 transition-[opacity,transform] duration-500 ease-out group-hover/track:opacity-40 group-hover/track:scale-[0.98] hover:!opacity-100 hover:!scale-100">
       <motion.article
         className="relative w-full h-[70vh] flex flex-col md:flex-row overflow-hidden"
         style={{
