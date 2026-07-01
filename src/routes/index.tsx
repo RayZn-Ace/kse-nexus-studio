@@ -371,59 +371,33 @@ function ServiceCard({
   return (
     <div className="service-card group/card w-1/4 h-full shrink-0 flex items-center px-6 md:px-10 transition-[opacity,transform] duration-500 ease-out group-hover/track:opacity-40 group-hover/track:scale-[0.98] hover:!opacity-100 hover:!scale-100">
       <motion.article
-        className="relative w-full h-[70vh] flex flex-col md:flex-row overflow-hidden"
-        style={{
-          opacity, x: tx,
-          background: "rgba(10,10,20,0.65)",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
-          border: "1px solid rgba(232,255,0,0.18)",
-          borderRadius: "2px",
-        }}
+        className="relative w-full h-[70vh] flex flex-col justify-between p-10 md:p-14 bg-transparent transition-[transform,filter] duration-500 ease-out hover:scale-[1.02] hover:brightness-125"
+        style={{ opacity, x: tx }}
       >
-        <span aria-hidden className="absolute top-0 left-0 right-0 h-px" style={{ background: "#e8ff00" }} />
+        <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/45">
+          / {s.n}
+        </span>
 
-        <div className="relative md:w-2/5 h-1/3 md:h-full border-b md:border-b-0 md:border-r border-foreground/15 overflow-hidden flex items-center justify-center">
-          <svg aria-hidden className="absolute inset-0 w-full h-full" style={{ opacity: 0.05 }}>
-            <defs>
-              <pattern id={`grid-${s.n}`} width="32" height="32" patternUnits="userSpaceOnUse">
-                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#e8ff00" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill={`url(#grid-${s.n})`} />
-          </svg>
-          <span
-            className="relative font-black leading-none select-none"
-            style={{ fontSize: "20vw", color: "#e8ff00", opacity: 0.1, letterSpacing: "-0.06em" }}
+        <div>
+          <h3
+            className="font-black mb-6"
+            style={{ fontSize: "clamp(2rem, 4.5vw, 4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
           >
-            {s.n}
-          </span>
-          <span className="absolute top-6 left-6 text-[11px] uppercase tracking-[0.4em] text-foreground/50">
-            / {s.n}
-          </span>
-        </div>
-
-        <div className="relative md:w-3/5 h-2/3 md:h-full flex flex-col justify-between p-6 md:p-10">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/50">/ Service</span>
-          <div>
-            <h3
-              className="font-black mb-4"
-              style={{ fontSize: "clamp(1.5rem, 3.5vw, 3.4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
-            >
-              {s.title.toUpperCase()}
-            </h3>
-            <p className="text-foreground/85 text-sm md:text-base leading-relaxed max-w-sm">{s.body}</p>
-            <div className="mt-5 text-[10px] uppercase tracking-[0.3em] text-foreground/60">
-              {s.tags.join(" · ")}
-            </div>
-            <a
-              href="#contact"
-              className="mt-6 inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current"
-              style={{ color: "#e8ff00" }}
-            >
-              Projekt anfragen →
-            </a>
+            {s.title.toUpperCase()}
+          </h3>
+          <p className="text-foreground/70 text-sm md:text-base leading-relaxed max-w-sm">
+            {s.body}
+          </p>
+          <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-foreground/40">
+            {s.tags.join(" · ")}
           </div>
+          <a
+            href="#contact"
+            className="mt-8 inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current"
+            style={{ color: "#e8ff00" }}
+          >
+            Projekt anfragen →
+          </a>
         </div>
       </motion.article>
     </div>
