@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CinemaStage from "@/components/CinemaStage";
+import { Intro } from "@/components/Intro";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -19,8 +20,15 @@ const EASE = [0.77, 0, 0.175, 1] as const;
 /* ───────────── magnetic button ───────────── */
 
 function MagneticButton({
-  href, children, external,
-}: { href: string; children: React.ReactNode; external?: boolean }) {
+  href, children, external, className, radius = 40, style,
+}: {
+  href: string;
+  children: React.ReactNode;
+  external?: boolean;
+  className?: string;
+  radius?: number;
+  style?: React.CSSProperties;
+}) {
   const ref = useRef<HTMLAnchorElement>(null);
   const inner = useRef<HTMLSpanElement>(null);
 
@@ -32,13 +40,25 @@ function MagneticButton({
 
     let raf = 0;
     let tx = 0, ty = 0, cx = 0, cy = 0;
-    const strength = 0.35;
-    const labelStrength = 0.55;
+    // spring-like damped follow (heavier lerp for return-to-origin)
+    const strength = 0.3;
+    const labelStrength = 0.6;
 
     const onMove = (e: PointerEvent) => {
       const r = el.getBoundingClientRect();
-      tx = (e.clientX - (r.left + r.width / 2)) * strength;
-      ty = (e.clientY - (r.top + r.height / 2)) * strength;
+      const midX = r.left + r.width / 2;
+      const midY = r.top + r.height / 2;
+      // distance from cursor to nearest edge of the button rect
+      const hx = Math.max(0, Math.abs(e.clientX - midX) - r.width / 2);
+      const hy = Math.max(0, Math.abs(e.clientY - midY) - r.height / 2);
+      const dist = Math.hypot(hx, hy);
+      if (dist <= radius) {
+        tx = (e.clientX - midX) * strength;
+        ty = (e.clientY - midY) * strength;
+      } else {
+        tx = 0;
+        ty = 0;
+      }
       if (!raf) raf = requestAnimationFrame(loop);
     };
     const onLeave = () => {
@@ -46,34 +66,89 @@ function MagneticButton({
       if (!raf) raf = requestAnimationFrame(loop);
     };
     const loop = () => {
-      cx += (tx - cx) * 0.18;
-      cy += (ty - cy) * 0.18;
+      // damped spring: soft return, no linear pop-back
+      cx += (tx - cx) * 0.14;
+      cy += (ty - cy) * 0.14;
       el.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
       label.style.transform = `translate(${(cx * labelStrength).toFixed(2)}px, ${(cy * labelStrength).toFixed(2)}px)`;
-      if (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1) {
+      if (
+        Math.abs(tx - cx) > 0.05 ||
+        Math.abs(ty - cy) > 0.05
+      ) {
         raf = requestAnimationFrame(loop);
       } else {
+        el.style.transform = `translate(0px, 0px)`;
+        label.style.transform = `translate(0px, 0px)`;
         raf = 0;
       }
     };
-    el.addEventListener("pointermove", onMove);
+    window.addEventListener("pointermove", onMove);
     el.addEventListener("pointerleave", onLeave);
     return () => {
-      el.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [radius]);
 
   return (
     <a
       ref={ref}
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors will-change-transform"
+      style={style}
+      className={
+        className ??
+        "inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors will-change-transform"
+      }
     >
       <span ref={inner} className="inline-block will-change-transform">{children}</span>
     </a>
+  );
+}
+
+/* ───────────── section fade (seamless transitions) ───────────── */
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener?.("change", on);
+    return () => mq.removeEventListener?.("change", on);
+  }, []);
+  return reduced;
+}
+
+function SectionFade({
+  children,
+  className,
+  id,
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  id?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  // fade in over first 15%, fade out over last 15%
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.15, 0.85, 1],
+    reduced ? [1, 1, 1, 1] : [0.15, 1, 1, 0.15]
+  );
+  return (
+    <motion.div ref={ref} id={id} className={className} style={{ ...style, opacity }}>
+      {children}
+    </motion.div>
   );
 }
 
