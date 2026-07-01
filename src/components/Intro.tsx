@@ -19,19 +19,13 @@ export function Intro() {
     setReduced(r);
     setShow(true);
 
-    // lock scroll while intro plays
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
     const duration = r ? 700 : 2100;
     const t = window.setTimeout(() => {
       setShow(false);
-      document.body.style.overflow = prev;
     }, duration);
 
     return () => {
       window.clearTimeout(t);
-      document.body.style.overflow = prev;
     };
   }, []);
 
