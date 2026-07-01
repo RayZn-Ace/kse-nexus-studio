@@ -608,13 +608,15 @@ function ServiceTile({ s }: { s: (typeof SERVICES)[number] }) {
         <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-foreground/40">
           {s.tags.join(" · ")}
         </div>
-        <a
-          href="#contact"
-          className="mt-8 inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current"
-          style={{ color: "#e8ff00" }}
-        >
-          Projekt anfragen →
-        </a>
+        <div className="mt-8 inline-block">
+          <MagneticButton
+            href="#contact"
+            className="inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current will-change-transform"
+            style={{ color: "#e8ff00" }}
+          >
+            Projekt anfragen →
+          </MagneticButton>
+        </div>
       </div>
     </div>
   );
@@ -791,14 +793,15 @@ function Index() {
 
   return (
     <main className="relative text-foreground" style={{ background: "transparent" }}>
+      <Intro />
       <CinemaStage progress={scrollYProgress} />
       <ScrollProgress progress={scrollYProgress} />
       <Header />
-      <Hero progress={scrollYProgress} />
-      <Manifest />
-      <Services />
-      <About />
-      <Contact />
+      <SectionFade><Hero progress={scrollYProgress} /></SectionFade>
+      <SectionFade><Manifest /></SectionFade>
+      <SectionFade><Services /></SectionFade>
+      <SectionFade><About /></SectionFade>
+      <SectionFade><Contact /></SectionFade>
       <Footer />
     </main>
   );
