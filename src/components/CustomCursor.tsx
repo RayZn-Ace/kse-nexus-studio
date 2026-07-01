@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Custom cursor: large 48px ring that lerps after the mouse and shrinks to
- * a 12px filled dot over interactive elements. Switches to the brand
- * accent (#e8ff00) on links / CTAs / [data-cursor="accent"].
+ * Active-Theory-style custom cursor:
+ * - default: 8px filled dot in accent yellow (#E8FF00)
+ * - over clickable elements: 40px empty ring in accent yellow
+ * Uses damped lerp for a smooth trailing motion.
  */
 export function CustomCursor() {
-  const ringRef = useRef<HTMLDivElement>(null);
-  const hoverRef = useRef<"default" | "link" | "hover">("default");
+  const ref = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [hovering, setHovering] = useState<"default" | "link" | "hover">("default");
+  const [hover, setHover] = useState(false);
+  const hoverRef = useRef(false);
 
   useEffect(() => {
-    // Skip on touch devices
     if (typeof window === "undefined" || window.matchMedia("(hover: none)").matches) return;
     setMounted(true);
 
@@ -20,21 +20,13 @@ export function CustomCursor() {
     const pos = { ...target };
     let raf = 0;
 
-    const setHover = (next: "default" | "link" | "hover") => {
-      if (hoverRef.current === next) return;
-      hoverRef.current = next;
-      setHovering(next);
-    };
-
     const tick = () => {
-      pos.x += (target.x - pos.x) * 0.18;
-      pos.y += (target.y - pos.y) * 0.18;
-      const dx = target.x - pos.x;
-      const dy = target.y - pos.y;
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -50%)`;
+      pos.x += (target.x - pos.x) * 0.22;
+      pos.y += (target.y - pos.y) * 0.22;
+      if (ref.current) {
+        ref.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) translate(-50%, -50%)`;
       }
-      if (Math.abs(dx) > 0.2 || Math.abs(dy) > 0.2) {
+      if (Math.abs(target.x - pos.x) > 0.2 || Math.abs(target.y - pos.y) > 0.2) {
         raf = requestAnimationFrame(tick);
       } else {
         raf = 0;
@@ -45,15 +37,14 @@ export function CustomCursor() {
       target.x = e.clientX;
       target.y = e.clientY;
       const el = e.target as HTMLElement | null;
-      if (!el) return;
-      if (el.closest('a, button, [role="button"], [data-cursor="accent"]')) {
-        setHover(el.closest('a, [data-cursor="accent"]') ? "link" : "hover");
-      } else {
-        setHover("default");
+      const isInteractive = !!el?.closest(
+        'a, button, [role="button"], input, textarea, select, label, [data-cursor="accent"]'
+      );
+      if (isInteractive !== hoverRef.current) {
+        hoverRef.current = isInteractive;
+        setHover(isInteractive);
       }
-      if (!raf) {
-        raf = requestAnimationFrame(tick);
-      }
+      if (!raf) raf = requestAnimationFrame(tick);
     };
 
     window.addEventListener("mousemove", onMove);
@@ -65,13 +56,11 @@ export function CustomCursor() {
 
   if (!mounted) return null;
 
-  const size = hovering === "default" ? 48 : 12;
-  const bg = hovering === "default" ? "transparent" : hovering === "link" ? "#e8ff00" : "#f0ede8";
-  const border = hovering === "link" ? "#e8ff00" : "#f0ede8";
+  const size = hover ? 40 : 8;
 
   return (
     <div
-      ref={ringRef}
+      ref={ref}
       aria-hidden
       style={{
         position: "fixed",
@@ -80,13 +69,14 @@ export function CustomCursor() {
         width: size,
         height: size,
         borderRadius: "9999px",
-        border: `1.5px solid ${border}`,
-        background: bg,
+        border: hover ? "1.5px solid #e8ff00" : "0 solid transparent",
+        background: hover ? "transparent" : "#e8ff00",
         pointerEvents: "none",
         zIndex: 9999,
-        mixBlendMode: "difference",
-        transition: "width 220ms cubic-bezier(0.77,0,0.175,1), height 220ms cubic-bezier(0.77,0,0.175,1), background 220ms, border-color 220ms",
+        transition:
+          "width 260ms cubic-bezier(0.77,0,0.175,1), height 260ms cubic-bezier(0.77,0,0.175,1), background 220ms, border-width 220ms",
         willChange: "transform",
+        boxShadow: hover ? "none" : "0 0 12px rgba(232,255,0,0.55)",
       }}
     />
   );
