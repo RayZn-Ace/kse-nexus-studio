@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, MeshTransmissionMaterial, Float } from "@react-three/drei";
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import type { MotionValue } from "framer-motion";
 
@@ -51,17 +49,6 @@ export default function CinemaStage({ progress }: { progress: MotionValue<number
           <Environment preset="night" />
 
           <Scene progressRef={progressRef} />
-
-          <EffectComposer multisampling={0}>
-            <Bloom intensity={0.9} luminanceThreshold={0.35} luminanceSmoothing={0.85} mipmapBlur />
-            <ChromaticAberration
-              offset={new THREE.Vector2(0.0014, 0.0014)}
-              radialModulation={false}
-              modulationOffset={0}
-              blendFunction={BlendFunction.NORMAL}
-            />
-            <Vignette eskil={false} offset={0.2} darkness={0.85} />
-          </EffectComposer>
         </Canvas>
       )}
     </div>

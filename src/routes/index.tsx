@@ -14,6 +14,67 @@ export const Route = createFileRoute("/")({ component: Index });
 
 const EASE = [0.77, 0, 0.175, 1] as const;
 
+/* ───────────── magnetic button ───────────── */
+
+function MagneticButton({
+  href, children, external,
+}: { href: string; children: React.ReactNode; external?: boolean }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const inner = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    const label = inner.current;
+    if (!el || !label) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    const strength = 0.35;
+    const labelStrength = 0.55;
+
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      tx = (e.clientX - (r.left + r.width / 2)) * strength;
+      ty = (e.clientY - (r.top + r.height / 2)) * strength;
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    const onLeave = () => {
+      tx = 0; ty = 0;
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    const loop = () => {
+      cx += (tx - cx) * 0.18;
+      cy += (ty - cy) * 0.18;
+      el.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
+      label.style.transform = `translate(${(cx * labelStrength).toFixed(2)}px, ${(cy * labelStrength).toFixed(2)}px)`;
+      if (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = 0;
+      }
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
+    return () => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors will-change-transform"
+    >
+      <span ref={inner} className="inline-block will-change-transform">{children}</span>
+    </a>
+  );
+}
+
 /* ───────────── primitives ───────────── */
 
 function SplitReveal({
@@ -272,7 +333,7 @@ function Services() {
           <span>scroll →</span>
         </div>
 
-        <motion.div style={{ x: xS }} className="flex h-full w-[400%] items-center pt-24">
+        <motion.div style={{ x: xS }} className="services-track group/track flex h-full w-[400%] items-center pt-24">
           <div className="w-1/4 h-full shrink-0 flex flex-col justify-center px-8 md:px-16">
             <h2
               className="font-black leading-[0.85]"
@@ -308,7 +369,7 @@ function ServiceCard({
   const tx = useTransform(progress, [start, start + 0.1], [120, 0]);
 
   return (
-    <div className="w-1/4 h-full shrink-0 flex items-center px-6 md:px-10">
+    <div className="service-card group/card w-1/4 h-full shrink-0 flex items-center px-6 md:px-10 transition-[opacity,transform] duration-500 ease-out group-hover/track:opacity-40 group-hover/track:scale-[0.98] hover:!opacity-100 hover:!scale-100">
       <motion.article
         className="relative w-full h-[70vh] flex flex-col md:flex-row overflow-hidden"
         style={{
@@ -515,20 +576,8 @@ function Contact() {
         </div>
 
         <div className="mt-16 flex flex-col md:flex-row gap-4">
-          <a
-            href="mailto:info@ksegroup.eu"
-            className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors"
-          >
-            Projekt starten →
-          </a>
-          <a
-            href="https://instagram.com/ksegroup"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors"
-          >
-            Auf Instagram →
-          </a>
+          <MagneticButton href="mailto:info@ksegroup.eu">Projekt starten →</MagneticButton>
+          <MagneticButton href="https://instagram.com/ksegroup" external>Auf Instagram →</MagneticButton>
         </div>
       </div>
     </section>
