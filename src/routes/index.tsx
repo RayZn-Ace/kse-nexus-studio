@@ -259,7 +259,7 @@ function Hero({ progress }: { progress: MotionValue<number> }) {
       <motion.div style={{ y: titleY, opacity: titleOpacity }} className="text-center px-4">
         <h1
           className="font-black leading-[0.9]"
-          style={{ fontSize: "clamp(2rem, 6vw, 5rem)", letterSpacing: "-0.04em" }}
+          style={{ fontSize: "clamp(3rem, 10vw, 9rem)", letterSpacing: "-0.04em" }}
         >
           <SplitReveal text="Fang niemals" delay={0.2} />
           <br />
@@ -354,7 +354,7 @@ function ManifestLine({
       className="absolute font-black text-center px-4"
       style={{
         opacity, y, filter,
-        fontSize: "clamp(1.75rem, 7vw, 7rem)",
+        fontSize: "clamp(2rem, 8vw, 8.5rem)",
         letterSpacing: "-0.04em",
         lineHeight: 1.05,
         color: "#f0ede8",
@@ -733,7 +733,7 @@ function Contact() {
       <div className="max-w-6xl mx-auto">
         <h2
           className="font-black leading-[0.85] mb-12 md:mb-16"
-          style={{ fontSize: "clamp(3rem, 11vw, 11rem)", letterSpacing: "-0.05em" }}
+          style={{ fontSize: "clamp(3.5rem, 13vw, 13rem)", letterSpacing: "-0.05em" }}
         >
           <SplitReveal text="Lass uns" />
           <br />
@@ -747,7 +747,7 @@ function Contact() {
         <a href="mailto:info@ksegroup.eu" className="block group">
           <span
             className="font-black block leading-[0.9] transition-colors group-hover:[color:var(--accent)]"
-            style={{ fontSize: "clamp(1.5rem, 8vw, 8rem)", letterSpacing: "-0.05em", wordBreak: "break-word" }}
+            style={{ fontSize: "clamp(1.75rem, 9.5vw, 9.5rem)", letterSpacing: "-0.05em", wordBreak: "break-word" }}
           >
             info@ksegroup.eu
           </span>
