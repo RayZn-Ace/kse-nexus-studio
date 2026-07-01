@@ -515,20 +515,8 @@ function Contact() {
         </div>
 
         <div className="mt-16 flex flex-col md:flex-row gap-4">
-          <a
-            href="mailto:info@ksegroup.eu"
-            className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors"
-          >
-            Projekt starten →
-          </a>
-          <a
-            href="https://instagram.com/ksegroup"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-8 py-5 text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] hover:border-[color:var(--accent)] transition-colors"
-          >
-            Auf Instagram →
-          </a>
+          <MagneticButton href="mailto:info@ksegroup.eu">Projekt starten →</MagneticButton>
+          <MagneticButton href="https://instagram.com/ksegroup" external>Auf Instagram →</MagneticButton>
         </div>
       </div>
     </section>
