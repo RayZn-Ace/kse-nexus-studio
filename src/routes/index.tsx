@@ -442,9 +442,16 @@ function About() {
                   style={{ fontSize: "clamp(4rem, 12vw, 11rem)", letterSpacing: "-0.06em", lineHeight: 0.85 }}
                 >
                   {"static" in s && s.static ? (
-                    <span>{s.pad ? String(s.value).padStart(s.pad, "0") : String(s.value)}{("suffix" in s && s.suffix) || ""}</span>
+                    <span>
+                      {"pad" in s && s.pad ? String(s.value).padStart(s.pad, "0") : String(s.value)}
+                      {"suffix" in s && s.suffix ? s.suffix : ""}
+                    </span>
                   ) : (
-                    <CountUp to={s.value} pad={"pad" in s ? s.pad ?? 0 : 0} suffix={"suffix" in s ? s.suffix ?? "" : ""} />
+                    <CountUp
+                      to={s.value}
+                      pad={"pad" in s && s.pad ? s.pad : 0}
+                      suffix={"suffix" in s && s.suffix ? s.suffix : ""}
+                    />
                   )}
                 </div>
               )}
