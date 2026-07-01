@@ -371,26 +371,33 @@ function ServiceCard({
 
 /* ───────────── ABOUT (sec 4) ───────────── */
 
-const STATS = [
+type Stat =
+  | { kind: "count"; value: number; suffix?: string; pad?: number; label: string; body: string }
+  | { kind: "static"; value: number; pad?: number; suffix?: string; label: string; body: string }
+  | { kind: "industries"; industries: string; label: string; body: string };
+
+const STATS: Stat[] = [
   {
+    kind: "count",
     value: new Date().getFullYear() - 2021,
     suffix: "+",
     label: "Jahre im Business",
     body: "Von TV-Studios in Köln über Festival-Bühnen bis ins eigene Studio in Hannover.",
   },
   {
+    kind: "industries",
     industries: "Nightlife · Gastronomie · Handwerk · Musik",
     label: "Branchen, in denen wir liefern",
     body: "Für Restaurants, Handwerk, Influencer und Musik-Acts — von 0 auf signifikant.",
   },
   {
+    kind: "static",
     value: 0,
     pad: 2,
     label: "Fokus. Kein Konzern.",
     body: "Ein Team, das dich beim Vornamen kennt. Du schreibst Basti — Basti antwortet.",
-    static: true,
   },
-] as const;
+];
 
 function About() {
   return (
@@ -429,7 +436,7 @@ function About() {
             style={{ background: "rgba(8,8,16,0.78)", backdropFilter: "blur(8px)" }}
           >
             <div>
-              {"industries" in s ? (
+              {s.kind === "industries" ? (
                 <div
                   className="font-black"
                   style={{ fontSize: "clamp(1.75rem, 4.5vw, 4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
@@ -441,17 +448,13 @@ function About() {
                   className="font-black"
                   style={{ fontSize: "clamp(4rem, 12vw, 11rem)", letterSpacing: "-0.06em", lineHeight: 0.85 }}
                 >
-                  {"static" in s && s.static ? (
+                  {s.kind === "static" ? (
                     <span>
-                      {"pad" in s && s.pad ? String(s.value).padStart(s.pad, "0") : String(s.value)}
-                      {"suffix" in s && s.suffix ? s.suffix : ""}
+                      {s.pad ? String(s.value).padStart(s.pad, "0") : String(s.value)}
+                      {s.suffix ?? ""}
                     </span>
                   ) : (
-                    <CountUp
-                      to={s.value}
-                      pad={"pad" in s && s.pad ? s.pad : 0}
-                      suffix={"suffix" in s && s.suffix ? s.suffix : ""}
-                    />
+                    <CountUp to={s.value} pad={s.pad ?? 0} suffix={s.suffix ?? ""} />
                   )}
                 </div>
               )}
