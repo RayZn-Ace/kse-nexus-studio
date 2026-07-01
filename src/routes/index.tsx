@@ -9,6 +9,8 @@ import {
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CinemaStage from "@/components/CinemaStage";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export const Route = createFileRoute("/")({ component: Index });
 
