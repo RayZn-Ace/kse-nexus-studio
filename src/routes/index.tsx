@@ -20,7 +20,7 @@ const EASE = [0.77, 0, 0.175, 1] as const;
 /* ───────────── magnetic button ───────────── */
 
 function MagneticButton({
-  href, children, external, className, radius = 40, style,
+  href, children, external, className, radius = 55, style,
 }: {
   href: string;
   children: React.ReactNode;
@@ -67,8 +67,8 @@ function MagneticButton({
     };
     const loop = () => {
       // damped spring: soft return, no linear pop-back
-      cx += (tx - cx) * 0.14;
-      cy += (ty - cy) * 0.14;
+      cx += (tx - cx) * 0.09;
+      cy += (ty - cy) * 0.09;
       el.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
       label.style.transform = `translate(${(cx * labelStrength).toFixed(2)}px, ${(cy * labelStrength).toFixed(2)}px)`;
       if (
@@ -144,8 +144,8 @@ function SectionFade({
   // handing off to the next section.
   const opacity = useTransform(
     scrollYProgress,
-    [0, 0.85, 1],
-    reduced ? [1, 1, 1] : [1, 1, 0.15]
+    [0, 0.9, 1],
+    reduced ? [1, 1, 1] : [1, 1, 0.05]
   );
   return (
     <motion.div ref={ref} id={id} className={className} style={{ ...style, opacity }}>
