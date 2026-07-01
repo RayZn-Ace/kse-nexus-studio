@@ -321,87 +321,224 @@ const SERVICES = [
   },
 ];
 
+/* Curved path through the section. viewBox: 100 x 1000, path goes top→bottom
+   in a smooth sinusoidal S-curve. Tile anchor points are pre-computed
+   percentages down the section so tiles sit alternating left/right of path. */
+const PATH_D =
+  "M 50 0 C 90 120, 10 240, 50 360 C 90 480, 10 600, 50 720 C 90 840, 10 940, 50 1000";
+
+const TILE_ANCHORS = [
+  { top: 12, side: "left" as const },
+  { top: 36, side: "right" as const },
+  { top: 60, side: "left" as const },
+  { top: 84, side: "right" as const },
+];
+
 function Services() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
-  const xS = useSpring(x, { stiffness: 90, damping: 22, mass: 0.5 });
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const cardsRef = useRef<Array<HTMLElement | null>>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section = sectionRef.current;
+    const path = pathRef.current;
+    if (!section || !path) return;
+
+    const len = path.getTotalLength();
+    gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+
+    const trig = ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.8,
+      onUpdate: (self) => {
+        gsap.set(path, { strokeDashoffset: len * (1 - self.progress) });
+      },
+    });
+
+    const cardTweens = cardsRef.current.map((el, i) => {
+      if (!el) return null;
+      const side = TILE_ANCHORS[i].side;
+      gsap.set(el, {
+        opacity: 0,
+        scale: 0.85,
+        x: side === "left" ? 120 : -120,
+      });
+      return gsap.to(el, {
+        opacity: 1,
+        scale: 1,
+        x: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 85%",
+          end: "top 45%",
+          scrub: 0.8,
+        },
+      });
+    });
+
+    return () => {
+      trig.kill();
+      cardTweens.forEach((t) => t?.scrollTrigger?.kill());
+      cardTweens.forEach((t) => t?.kill());
+    };
+  }, []);
 
   return (
-    <section id="services" ref={ref} className="relative z-[1]" style={{ height: "400vh" }}>
-      <div className="sticky top-0 h-screen overflow-hidden">
-        <div className="absolute top-8 left-6 right-6 z-10 flex justify-between text-[10px] uppercase tracking-[0.4em] text-foreground/50">
+    <section
+      id="services"
+      ref={sectionRef}
+      className="relative z-[1] overflow-hidden"
+      style={{ minHeight: "360vh" }}
+    >
+      <div className="sticky top-0 pt-24 pb-8 px-6 md:px-10 z-10 pointer-events-none">
+        <div className="flex justify-between text-[10px] uppercase tracking-[0.4em] text-foreground/50">
           <span>// Leistungen · 04 Disziplinen</span>
-          <span>scroll →</span>
+          <span>scroll ↓</span>
+        </div>
+      </div>
+
+      <div className="relative max-w-6xl mx-auto px-6 md:px-10 -mt-16">
+        <div className="mb-24 md:mb-40">
+          <h2
+            className="font-black leading-[0.85]"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)", letterSpacing: "-0.05em" }}
+          >
+            <SplitReveal text="Was wir" />
+            <br />
+            <SplitReveal text="bauen." delay={0.15} />
+          </h2>
+          <p className="mt-6 max-w-sm text-sm text-foreground/60 uppercase tracking-[0.25em]">
+            Vier Disziplinen. Ein Team. Null Ausreden.
+          </p>
         </div>
 
-        <motion.div style={{ x: xS }} className="services-track group/track flex h-full w-[400%] items-center pt-24">
-          <div className="w-1/4 h-full shrink-0 flex flex-col justify-center px-8 md:px-16">
-            <h2
-              className="font-black leading-[0.85]"
-              style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)", letterSpacing: "-0.05em" }}
-            >
-              <SplitReveal text="Was wir" />
-              <br />
-              <SplitReveal text="bauen." delay={0.15} />
-            </h2>
-            <p className="mt-6 max-w-sm text-sm text-foreground/60 uppercase tracking-[0.25em]">
-              Vier Disziplinen. Ein Team. Null Ausreden.
-            </p>
+        {/* Curved path — spans the whole tile grid area */}
+        <div className="relative">
+          <svg
+            aria-hidden
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 1000"
+            preserveAspectRatio="none"
+          >
+            <path
+              ref={pathRef}
+              d={PATH_D}
+              fill="none"
+              stroke="#e8ff00"
+              strokeWidth="0.4"
+              strokeLinecap="round"
+              style={{ opacity: 0.2 }}
+            />
+          </svg>
+
+          {/* Tile grid — 4 tiles stacked, each aligned left or right */}
+          <div className="relative" style={{ minHeight: "260vh" }}>
+            {SERVICES.map((s, i) => {
+              const anchor = TILE_ANCHORS[i];
+              return (
+                <article
+                  key={s.n}
+                  ref={(el) => { cardsRef.current[i] = el; }}
+                  className={`absolute w-[85%] md:w-[46%] ${
+                    anchor.side === "left" ? "left-0" : "right-0"
+                  }`}
+                  style={{ top: `${anchor.top}%` }}
+                >
+                  <ServiceTile s={s} />
+                </article>
+              );
+            })}
           </div>
-
-          {SERVICES.map((s, i) => (
-            <ServiceCard key={s.n} s={s} i={i} progress={scrollYProgress} />
-          ))}
-        </motion.div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[40vw] max-w-md h-px bg-foreground/15 overflow-hidden">
-          <motion.div style={{ scaleX: scrollYProgress, background: "#e8ff00", transformOrigin: "left" }} className="h-full" />
         </div>
       </div>
     </section>
   );
 }
 
-function ServiceCard({
-  s, i, progress,
-}: { s: (typeof SERVICES)[number]; i: number; progress: MotionValue<number> }) {
-  const start = 0.05 + i * 0.18;
-  const opacity = useTransform(progress, [start, start + 0.06], [0, 1]);
-  const tx = useTransform(progress, [start, start + 0.1], [120, 0]);
+function ServiceTile({ s }: { s: (typeof SERVICES)[number] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      canvas.width = r.width * dpr;
+      canvas.height = r.height * dpr;
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    const N = 5;
+    const blobs = Array.from({ length: N }, (_, k) => ({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.25 + Math.random() * 0.35,
+      phase: k * 1.7,
+      speed: 0.00008 + Math.random() * 0.00012,
+    }));
+
+    let raf = 0;
+    const draw = (t: number) => {
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      for (const b of blobs) {
+        const cx = (b.x + Math.sin(t * b.speed + b.phase) * 0.15) * w;
+        const cy = (b.y + Math.cos(t * b.speed * 0.8 + b.phase) * 0.15) * h;
+        const rad = b.r * Math.min(w, h);
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+        g.addColorStop(0, "rgba(232,255,0,0.14)");
+        g.addColorStop(1, "rgba(232,255,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, []);
 
   return (
-    <div className="service-card group/card w-1/4 h-full shrink-0 flex items-center px-6 md:px-10 transition-[opacity,transform] duration-500 ease-out group-hover/track:opacity-40 group-hover/track:scale-[0.98] hover:!opacity-100 hover:!scale-100">
-      <motion.article
-        className="relative w-full h-[70vh] flex flex-col justify-between p-10 md:p-14 bg-transparent transition-[transform,filter] duration-500 ease-out hover:scale-[1.02] hover:brightness-125"
-        style={{ opacity, x: tx }}
-      >
+    <div className="relative border border-foreground/10 bg-background/40 p-8 md:p-12 overflow-hidden transition-[transform,filter] duration-500 ease-out hover:scale-[1.02] hover:brightness-125">
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+      <div className="relative">
         <span className="text-[11px] uppercase tracking-[0.4em] text-foreground/45">
           / {s.n}
         </span>
-
-        <div>
-          <h3
-            className="font-black mb-6"
-            style={{ fontSize: "clamp(2rem, 4.5vw, 4rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
-          >
-            {s.title.toUpperCase()}
-          </h3>
-          <p className="text-foreground/70 text-sm md:text-base leading-relaxed max-w-sm">
-            {s.body}
-          </p>
-          <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-foreground/40">
-            {s.tags.join(" · ")}
-          </div>
-          <a
-            href="#contact"
-            className="mt-8 inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current"
-            style={{ color: "#e8ff00" }}
-          >
-            Projekt anfragen →
-          </a>
+        <h3
+          className="font-black mt-6 mb-6"
+          style={{ fontSize: "clamp(1.75rem, 3.5vw, 3rem)", letterSpacing: "-0.04em", lineHeight: 0.95 }}
+        >
+          {s.title.toUpperCase()}
+        </h3>
+        <p className="text-foreground/70 text-sm md:text-base leading-relaxed max-w-sm">
+          {s.body}
+        </p>
+        <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-foreground/40">
+          {s.tags.join(" · ")}
         </div>
-      </motion.article>
+        <a
+          href="#contact"
+          className="mt-8 inline-block text-[11px] tracking-[0.35em] uppercase border-b border-transparent hover:border-current"
+          style={{ color: "#e8ff00" }}
+        >
+          Projekt anfragen →
+        </a>
+      </div>
     </div>
   );
 }
