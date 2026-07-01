@@ -76,8 +76,8 @@ function Field({ progress }: { progress: MotionValue<number> }) {
     if (wrap.current) {
       // ~20px max cursor offset + subtle scroll-driven parallax depth
       wrap.current.position.x = current.current.x * 0.2;
-      wrap.current.position.y = current.current.y * 0.2 + p * -0.6;
-      wrap.current.rotation.z = p * 0.08;
+      wrap.current.position.y = current.current.y * 0.2 + p * -0.35;
+      wrap.current.rotation.z = p * 0.04;
     }
     // very slow drift
     if (grey.current) {
