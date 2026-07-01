@@ -9,7 +9,7 @@ import type { MotionValue } from "framer-motion";
  * (~7%) #E8FF00 accents. Reacts subtly to the cursor (max ~15px, heavily damped).
  * No orbs, rings, jellies, or postprocessing — pure breathing space.
  */
-export default function CinemaStage({ progress: _progress }: { progress: MotionValue<number> }) {
+export default function CinemaStage({ progress }: { progress: MotionValue<number> }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -33,14 +33,14 @@ export default function CinemaStage({ progress: _progress }: { progress: MotionV
           camera={{ position: [0, 0, 6], fov: 45 }}
           style={{ position: "absolute", inset: 0 }}
         >
-          <Field />
+          <Field progress={progress} />
         </Canvas>
       )}
     </div>
   );
 }
 
-function Field() {
+function Field({ progress }: { progress: MotionValue<number> }) {
   const grey = useRef<THREE.Points>(null);
   const accent = useRef<THREE.Points>(null);
   const wrap = useRef<THREE.Group>(null);
@@ -72,14 +72,22 @@ function Field() {
     current.current.x += (target.current.x - current.current.x) * 0.03;
     current.current.y += (target.current.y - current.current.y) * 0.03;
 
+    const p = progress.get();
     if (wrap.current) {
-      // ~20px max offset at typical viewport
+      // ~20px max cursor offset + subtle scroll-driven parallax depth
       wrap.current.position.x = current.current.x * 0.2;
-      wrap.current.position.y = current.current.y * 0.2;
+      wrap.current.position.y = current.current.y * 0.2 + p * -0.6;
+      wrap.current.rotation.z = p * 0.08;
     }
     // very slow drift
-    if (grey.current) grey.current.rotation.y += dt * 0.005;
-    if (accent.current) accent.current.rotation.y += dt * 0.004;
+    if (grey.current) {
+      grey.current.rotation.y += dt * 0.005;
+      grey.current.rotation.x = p * 0.15;
+    }
+    if (accent.current) {
+      accent.current.rotation.y += dt * 0.004;
+      accent.current.rotation.x = p * -0.1;
+    }
   });
 
   return (
