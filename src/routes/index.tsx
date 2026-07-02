@@ -98,7 +98,7 @@ function Index() {
 
       <main className="relative z-10">
         <Hero />
-        <section id="work">
+        <section id="work" className="relative z-10 -mt-[14vh]">
           <TrailedSections />
         </section>
         <section id="contact">

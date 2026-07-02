@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import * as THREE from "three";
 import type { MotionValue } from "framer-motion";
 
@@ -11,7 +12,17 @@ import type { MotionValue } from "framer-motion";
  */
 export function WebGLBackground({ progress }: { progress: MotionValue<number> }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window === "undefined") return;
+    const check = () =>
+      window.matchMedia("(hover: none)").matches || window.innerWidth < 768;
+    setIsMobile(check());
+    const onResize = () => setIsMobile(check());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
     <div
@@ -33,7 +44,12 @@ export function WebGLBackground({ progress }: { progress: MotionValue<number> })
           camera={{ position: [0, 0, 6], fov: 45 }}
           style={{ position: "absolute", inset: 0 }}
         >
-          <Field progress={progress} />
+          <Field progress={progress} count={isMobile ? 200 : 340} />
+          {!isMobile && (
+            <EffectComposer>
+              <Bloom mipmapBlur intensity={0.6} luminanceThreshold={0.2} />
+            </EffectComposer>
+          )}
         </Canvas>
       )}
     </div>
@@ -47,7 +63,7 @@ const NEON = {
   grey: new THREE.Color("#55555c"),
 };
 
-function Field({ progress }: { progress: MotionValue<number> }) {
+function Field({ progress, count }: { progress: MotionValue<number>; count: number }) {
   const points = useRef<THREE.Points>(null);
   const lines = useRef<THREE.LineSegments>(null);
   const wrap = useRef<THREE.Group>(null);
@@ -65,7 +81,7 @@ function Field({ progress }: { progress: MotionValue<number> }) {
     return () => window.removeEventListener("pointermove", onMove);
   }, [size]);
 
-  const COUNT = 260;
+  const COUNT = count;
   const { positions, colors } = useMemo(() => {
     const pos = new Float32Array(COUNT * 3);
     const col = new Float32Array(COUNT * 3);
@@ -85,7 +101,7 @@ function Field({ progress }: { progress: MotionValue<number> }) {
       col[i * 3 + 2] = c.b;
     }
     return { positions: pos, colors: col };
-  }, []);
+  }, [COUNT]);
 
   const linePositions = useMemo(() => {
     const maxDist = 1.6;
@@ -103,7 +119,7 @@ function Field({ progress }: { progress: MotionValue<number> }) {
       }
     }
     return new Float32Array(segs);
-  }, [positions]);
+  }, [positions, COUNT]);
 
   useFrame((_, dt) => {
     current.current.x += (target.current.x - current.current.x) * 0.03;
