@@ -3,6 +3,7 @@ import { motion, useScroll, useSpring, type MotionValue } from "framer-motion";
 import { Intro } from "@/components/Intro";
 import { WebGLBackground } from "@/components/WebGLBackground";
 import { Hero, TrailedSections, ContactCTA } from "@/components/Sections";
+import { Manifest } from "@/components/Manifest";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -101,6 +102,7 @@ function Index() {
         <section id="work" className="relative z-10 -mt-[14vh]">
           <TrailedSections />
         </section>
+        <Manifest />
         <section id="contact">
           <ContactCTA />
         </section>
