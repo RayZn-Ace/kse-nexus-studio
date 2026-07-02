@@ -104,6 +104,8 @@ export function Hero() {
   const sy = useSpring(my, { stiffness: 50, damping: 18 });
   const tx = useTransform(sx, (v) => v * 18);
   const ty = useTransform(sy, (v) => v * 12);
+  const otx = useTransform(sx, (v) => v * -30);
+  const oty = useTransform(sy, (v) => v * -20);
 
   useEffect(() => {
     if (reduced) return;
@@ -120,12 +122,36 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-20 pt-32 pb-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 md:px-12 lg:px-20 pt-32 pb-24 overflow-hidden"
     >
       <h1 className="sr-only">KSE / GROUP — Creative Tech Studio</h1>
+      <motion.span
+        aria-hidden
+        className="hidden md:block absolute font-black select-none pointer-events-none"
+        style={{
+          right: "-4%",
+          top: "8%",
+          fontSize: "clamp(14rem, 38vw, 34rem)",
+          letterSpacing: "-0.05em",
+          lineHeight: 0.8,
+          color: "transparent",
+          WebkitTextStroke: "1px rgba(255,255,255,0.05)",
+          transform: "rotate(-90deg)",
+          transformOrigin: "center",
+          x: otx,
+          y: oty,
+        }}
+      >
+        KSE
+      </motion.span>
       <motion.div
-        className="font-black leading-[0.88] max-w-[18ch]"
-        style={{ fontSize: "clamp(3rem, 10vw, 9rem)", letterSpacing: "-0.05em", x: tx, y: ty }}
+        className="relative font-black leading-[0.88] max-w-[16ch]"
+        style={{
+          fontSize: "clamp(3.25rem, 11.5vw, 10.5rem)",
+          letterSpacing: "-0.05em",
+          x: tx,
+          y: ty,
+        }}
       >
         <MaskedLines
           onMount
@@ -138,10 +164,11 @@ export function Hero() {
       </motion.div>
       <p
         data-reveal
-        className="mt-10 max-w-xl text-white/60 text-base md:text-lg"
+        className="relative mt-10 max-w-xl text-white/60 text-base md:text-lg"
         style={{ letterSpacing: "0.01em" }}
       >
-        Social · Web · Film · Branding — aus Hannover.
+        Social · Web · Film · Branding — aus Hannover.{" "}
+        <span className="text-white/40">Fange niemals an aufzuhören.</span>
       </p>
       <div
         data-reveal
