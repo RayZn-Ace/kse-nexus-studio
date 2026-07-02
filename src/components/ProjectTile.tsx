@@ -1,5 +1,12 @@
 import { useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
 export interface ProjectTileData {
   index: string;
@@ -31,7 +38,16 @@ export function ProjectTile({
   span?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const accent = ACCENT_HEX[data.accent];
+  const reduced = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: wrapRef,
+    offset: ["start end", "end start"],
+  });
+  const drift = reduced ? 0 : 22 + offset / 4;
+  const parY = useTransform(scrollYProgress, [0, 1], [drift, -drift]);
 
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
@@ -67,10 +83,11 @@ export function ProjectTile({
 
   return (
     <motion.div
+      ref={wrapRef}
       className={`${span} relative`}
-      style={{ marginTop: offset }}
-      initial={{ opacity: 0, y: 60, rotate: -2, filter: "blur(14px)" }}
-      whileInView={{ opacity: 1, y: 0, rotate: 0, filter: "blur(0px)" }}
+      style={{ marginTop: offset, y: parY }}
+      initial={{ opacity: 0, scale: 0.94, rotate: -2, filter: "blur(14px)" }}
+      whileInView={{ opacity: 1, scale: 1, rotate: 0, filter: "blur(0px)" }}
       viewport={{ once: true, margin: "-10% 0px -10% 0px" }}
       transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
     >
