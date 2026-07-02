@@ -41,10 +41,9 @@ function TileVisual({ accent }: { accent: ProjectTileData["accent"] }) {
   const c1 = ACCENT_HEX[accent];
   const c2 = ACCENT_HEX[SECONDARY_ACCENT[accent]];
   const blobBase = {
-    width: "70%",
-    height: "70%",
+    width: "90%",
+    height: "90%",
     borderRadius: "50%",
-    filter: "blur(60px)",
     position: "absolute" as const,
   };
   return (
@@ -54,7 +53,13 @@ function TileVisual({ accent }: { accent: ProjectTileData["accent"] }) {
       style={{ mixBlendMode: "screen" }}
     >
       <motion.div
-        style={{ ...blobBase, top: "-10%", left: "-20%", background: c1, opacity: 0.5 }}
+        style={{
+          ...blobBase,
+          top: "-10%",
+          left: "-20%",
+          background: `radial-gradient(circle, ${c1} 0%, transparent 65%)`,
+          opacity: 0.6,
+        }}
         animate={
           reduced
             ? undefined
@@ -66,7 +71,13 @@ function TileVisual({ accent }: { accent: ProjectTileData["accent"] }) {
         transition={{ duration: 14, ease: "easeInOut", repeat: Infinity }}
       />
       <motion.div
-        style={{ ...blobBase, bottom: "-15%", right: "-15%", background: c2, opacity: 0.35 }}
+        style={{
+          ...blobBase,
+          bottom: "-15%",
+          right: "-15%",
+          background: `radial-gradient(circle, ${c2} 0%, transparent 65%)`,
+          opacity: 0.45,
+        }}
         animate={
           reduced
             ? undefined

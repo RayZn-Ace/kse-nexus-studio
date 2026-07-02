@@ -129,15 +129,14 @@ export function Hero() {
         aria-hidden
         className="hidden md:block absolute font-black select-none pointer-events-none"
         style={{
-          right: "-4%",
-          top: "8%",
-          fontSize: "clamp(14rem, 38vw, 34rem)",
+          right: "2%",
+          top: "16%",
+          fontSize: "clamp(11rem, 26vw, 24rem)",
           letterSpacing: "-0.05em",
           lineHeight: 0.8,
           color: "transparent",
-          WebkitTextStroke: "1px rgba(255,255,255,0.05)",
-          transform: "rotate(-90deg)",
-          transformOrigin: "center",
+          WebkitTextStroke: "1px rgba(255,255,255,0.07)",
+          rotate: -90,
           x: otx,
           y: oty,
         }}

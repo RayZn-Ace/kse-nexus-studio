@@ -23,8 +23,8 @@ export function Manifest() {
     offset: ["start start", "end end"],
   });
 
-  const blockScale = useTransform(scrollYProgress, [0.7, 1], [1, 1.08]);
-  const blockOpacity = useTransform(scrollYProgress, [0.7, 1], [1, 0]);
+  const blockScale = useTransform(scrollYProgress, [0.65, 1], [1, 1.08]);
+  const blockOpacity = useTransform(scrollYProgress, [0.65, 1], [1, 0]);
 
   if (reduced) {
     return (
@@ -50,7 +50,7 @@ export function Manifest() {
   }
 
   return (
-    <section ref={wrapperRef} className="relative" style={{ height: "300vh" }}>
+    <section ref={wrapperRef} className="relative" style={{ height: "220vh" }}>
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-6 md:px-12 lg:px-20">
         <motion.div
           className="text-center"
@@ -84,8 +84,8 @@ function Word({
   total: number;
   progress: ReturnType<typeof useScroll>["scrollYProgress"];
 }) {
-  const start = (index / total) * 0.7;
-  const end = ((index + 1) / total) * 0.7;
+  const start = (index / total) * 0.65;
+  const end = ((index + 1) / total) * 0.65;
   const opacity = useTransform(progress, [start, end], [0.15, 1]);
   return (
     <>
