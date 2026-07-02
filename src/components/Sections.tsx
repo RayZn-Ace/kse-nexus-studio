@@ -1,5 +1,11 @@
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollTrail } from "@/components/ScrollTrail";
@@ -32,11 +38,85 @@ function useRevealOnScroll<T extends HTMLElement>(ref: React.RefObject<T | null>
   }, [ref]);
 }
 
+/**
+ * Renders one or more headline "lines". Each line is a mask (overflow-hidden)
+ * with an inner span that slides up from y:110% → y:0%. Use onMount for hero
+ * (animates immediately), otherwise triggers whileInView.
+ */
+function MaskedLines({
+  lines,
+  delay = 0,
+  onMount = false,
+}: {
+  lines: { text: string; color?: string }[];
+  delay?: number;
+  onMount?: boolean;
+}) {
+  const reduced = useReducedMotion();
+  const stagger = 0.12;
+  const ease = [0.16, 1, 0.3, 1] as const;
+
+  return (
+    <>
+      {lines.map((line, i) => {
+        const t = { duration: 0.9, ease, delay: delay + i * stagger };
+        const initial = reduced ? { opacity: 0 } : { y: "110%", opacity: 1 };
+        const animate = reduced ? { opacity: 1 } : { y: "0%", opacity: 1 };
+        const commonInner = (
+          <motion.span
+            className="block"
+            style={{ color: line.color, willChange: "transform" }}
+            initial={initial}
+            {...(onMount
+              ? { animate, transition: t }
+              : {
+                  whileInView: animate,
+                  viewport: { once: true, margin: "-10% 0px" },
+                  transition: t,
+                })}
+          >
+            {line.text}
+          </motion.span>
+        );
+        return (
+          <span
+            key={i}
+            className="block overflow-hidden"
+            style={{ paddingBottom: "0.05em" }}
+          >
+            {commonInner}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 /* ───────────── Hero ───────────── */
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   useRevealOnScroll(ref);
+  const reduced = useReducedMotion();
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 50, damping: 18 });
+  const sy = useSpring(my, { stiffness: 50, damping: 18 });
+  const tx = useTransform(sx, (v) => v * 18);
+  const ty = useTransform(sy, (v) => v * 12);
+
+  useEffect(() => {
+    if (reduced) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(hover: none)").matches) return;
+    const onMove = (e: MouseEvent) => {
+      mx.set(e.clientX / window.innerWidth - 0.5);
+      my.set(e.clientY / window.innerHeight - 0.5);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [reduced, mx, my]);
+
   return (
     <section
       ref={ref}
@@ -44,14 +124,17 @@ export function Hero() {
     >
       <h1 className="sr-only">KSE / GROUP — Creative Tech Studio</h1>
       <motion.div
-        data-reveal
         className="font-black leading-[0.88] max-w-[18ch]"
-        style={{ fontSize: "clamp(3rem, 10vw, 9rem)", letterSpacing: "-0.05em" }}
+        style={{ fontSize: "clamp(3rem, 10vw, 9rem)", letterSpacing: "-0.05em", x: tx, y: ty }}
       >
-        <span className="block">Wir bauen Marken,</span>
-        <span className="block" style={{ color: "#a855f7" }}>
-          an die man sich erinnert.
-        </span>
+        <MaskedLines
+          onMount
+          delay={0.35}
+          lines={[
+            { text: "Wir bauen Marken," },
+            { text: "an die man sich erinnert.", color: "#a855f7" },
+          ]}
+        />
       </motion.div>
       <p
         data-reveal
@@ -65,7 +148,22 @@ export function Hero() {
         className="mt-20 flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] text-white/40"
       >
         <span>scroll</span>
-        <span aria-hidden className="block w-10 h-px bg-white/30" />
+        <span aria-hidden className="relative block w-12 h-px bg-white/30">
+          {!reduced && (
+            <motion.span
+              className="absolute top-1/2 left-0 -translate-y-1/2 block"
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: 9999,
+                background: "#a855f7",
+                boxShadow: "0 0 10px 2px rgba(168,85,247,0.8)",
+              }}
+              animate={{ x: [0, 43, 0], opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+            />
+          )}
+        </span>
       </div>
     </section>
   );
@@ -119,7 +217,7 @@ export function SelectedWork() {
             className="font-black leading-[0.9] max-w-[16ch]"
             style={{ fontSize: "clamp(2.5rem, 8vw, 7rem)", letterSpacing: "-0.04em" }}
           >
-            Was wir bauen.
+            <MaskedLines lines={[{ text: "Was wir bauen." }]} />
           </h2>
         </div>
         <div className="grid grid-cols-12 gap-6 md:gap-8">
@@ -141,7 +239,7 @@ export function About() {
   return (
     <section ref={ref} className="relative px-6 md:px-12 lg:px-20 py-32 md:py-48">
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 md:gap-12">
-        <div data-reveal className="col-span-12 md:col-span-7">
+        <div className="col-span-12 md:col-span-7">
           <span className="block text-[10px] uppercase tracking-[0.4em] text-white/40 mb-6">
             / 02 — About
           </span>
@@ -149,10 +247,12 @@ export function About() {
             className="font-black leading-[0.9]"
             style={{ fontSize: "clamp(2rem, 7vw, 6rem)", letterSpacing: "-0.04em" }}
           >
-            <span className="block">Independent Studio.</span>
-            <span className="block" style={{ color: "#4f7dff" }}>
-              Hannover · Seit 2021.
-            </span>
+            <MaskedLines
+              lines={[
+                { text: "Independent Studio." },
+                { text: "Hannover · Seit 2021.", color: "#4f7dff" },
+              ]}
+            />
           </h2>
         </div>
         <p
@@ -229,11 +329,10 @@ export function ContactCTA() {
           / 04 — Kontakt
         </span>
         <h2
-          data-reveal
           className="font-black leading-[0.9]"
           style={{ fontSize: "clamp(2.5rem, 9.5vw, 9.5rem)", letterSpacing: "-0.05em" }}
         >
-          Lass uns reden.
+          <MaskedLines lines={[{ text: "Lass uns reden." }]} />
         </h2>
         <a
           data-reveal
