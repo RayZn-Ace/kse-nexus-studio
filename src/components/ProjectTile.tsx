@@ -22,6 +22,69 @@ const ACCENT_HEX: Record<ProjectTileData["accent"], string> = {
   red: "#ff4d5e",
 };
 
+const SECONDARY_ACCENT: Record<ProjectTileData["accent"], ProjectTileData["accent"]> = {
+  blue: "violet",
+  violet: "red",
+  red: "blue",
+};
+
+const NOISE_URI =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>\")";
+
+/**
+ * Living background for a tile: two large soft blurred blobs slowly drifting
+ * in opposite directions, plus a fine noise overlay to kill the flat-gradient
+ * look. Screen-blended over the tile's near-black base.
+ */
+function TileVisual({ accent }: { accent: ProjectTileData["accent"] }) {
+  const reduced = useReducedMotion();
+  const c1 = ACCENT_HEX[accent];
+  const c2 = ACCENT_HEX[SECONDARY_ACCENT[accent]];
+  const blobBase = {
+    width: "70%",
+    height: "70%",
+    borderRadius: "50%",
+    filter: "blur(60px)",
+    position: "absolute" as const,
+  };
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 pointer-events-none opacity-35 group-hover:opacity-70 transition-opacity duration-500"
+      style={{ mixBlendMode: "screen" }}
+    >
+      <motion.div
+        style={{ ...blobBase, top: "-10%", left: "-20%", background: c1, opacity: 0.5 }}
+        animate={
+          reduced
+            ? undefined
+            : {
+                x: ["-20%", "30%", "-20%"],
+                y: ["-10%", "25%", "-10%"],
+              }
+        }
+        transition={{ duration: 14, ease: "easeInOut", repeat: Infinity }}
+      />
+      <motion.div
+        style={{ ...blobBase, bottom: "-15%", right: "-15%", background: c2, opacity: 0.35 }}
+        animate={
+          reduced
+            ? undefined
+            : {
+                x: ["25%", "-15%", "25%"],
+                y: ["20%", "-20%", "20%"],
+              }
+        }
+        transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{ backgroundImage: NOISE_URI, mixBlendMode: "overlay" }}
+      />
+    </div>
+  );
+}
+
 /**
  * A single case/project tile. Entrance: blur-to-sharp + fade + slight
  * rotation as it scrolls into view (offset by `offset` for asymmetric
@@ -98,6 +161,7 @@ export function ProjectTile({
         style={{ rotateX, rotateY, transformPerspective: 900 }}
         className="group relative aspect-[4/3] rounded-sm overflow-hidden border border-white/10 bg-[#0b0b0d] transition-colors duration-300"
       >
+        <TileVisual accent={data.accent} />
         <motion.div
           aria-hidden
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -107,11 +171,6 @@ export function ProjectTile({
           aria-hidden
           className="absolute inset-0 rounded-sm pointer-events-none transition-[box-shadow] duration-500 group-hover:shadow-[inset_0_0_0_1px_var(--tile-accent),0_0_40px_-10px_var(--tile-accent)]"
           style={{ ["--tile-accent" as string]: accent }}
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.14] mix-blend-screen"
-          style={{ background: `linear-gradient(135deg, ${accent}, transparent 60%)` }}
         />
 
         <div className="relative h-full flex flex-col justify-between p-7 md:p-9">

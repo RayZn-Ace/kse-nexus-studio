@@ -47,7 +47,7 @@ export function WebGLBackground({ progress }: { progress: MotionValue<number> })
           <Field progress={progress} count={isMobile ? 200 : 340} />
           {!isMobile && (
             <EffectComposer>
-              <Bloom mipmapBlur intensity={0.6} luminanceThreshold={0.2} />
+              <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.2} />
             </EffectComposer>
           )}
         </Canvas>
@@ -95,7 +95,7 @@ function Field({ progress, count }: { progress: MotionValue<number>; count: numb
 
       const roll = Math.random();
       const c =
-        roll < 0.06 ? NEON.blue : roll < 0.1 ? NEON.violet : roll < 0.13 ? NEON.red : NEON.grey;
+        roll < 0.12 ? NEON.blue : roll < 0.2 ? NEON.violet : roll < 0.26 ? NEON.red : NEON.grey;
       col[i * 3 + 0] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
@@ -121,15 +121,18 @@ function Field({ progress, count }: { progress: MotionValue<number>; count: numb
     return new Float32Array(segs);
   }, [positions, COUNT]);
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
     current.current.x += (target.current.x - current.current.x) * 0.03;
     current.current.y += (target.current.y - current.current.y) * 0.03;
 
     const p = progress.get();
+    state.camera.position.z = 6 - p * 1.8;
+    state.camera.lookAt(0, 0, 0);
     if (wrap.current) {
       wrap.current.position.x = current.current.x * 0.22;
       wrap.current.position.y = current.current.y * 0.22 + p * -0.4;
       wrap.current.rotation.z = p * 0.05;
+      wrap.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.05) * 0.08;
     }
     if (points.current) points.current.rotation.y += dt * 0.006;
     if (lines.current) lines.current.rotation.y += dt * 0.006;
@@ -153,7 +156,7 @@ function Field({ progress, count }: { progress: MotionValue<number>; count: numb
           />
         </bufferGeometry>
         <pointsMaterial
-          size={0.05}
+          size={0.07}
           vertexColors
           transparent
           opacity={0.85}
@@ -175,7 +178,7 @@ function Field({ progress, count }: { progress: MotionValue<number>; count: numb
         <lineBasicMaterial
           color="#3a3a44"
           transparent
-          opacity={0.22}
+          opacity={0.3}
           depthWrite={false}
           toneMapped={false}
         />
