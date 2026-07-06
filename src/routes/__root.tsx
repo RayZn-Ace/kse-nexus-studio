@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { CustomCursor } from "@/components/site/CustomCursor";
+import { CookieConsent } from "@/components/site/CookieConsent";
 
 function NotFoundComponent() {
   return (
@@ -126,6 +127,7 @@ function RootComponent() {
       <Outlet />
       <WhatsAppButton />
       <CustomCursor />
+      <CookieConsent />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>
   );
