@@ -302,7 +302,7 @@ function BentoMiddle() {
 
         {/* STATS BIG */}
         <Tile
-          className="md:col-span-3 p-6 flex flex-col justify-end"
+          className="md:col-span-3 p-6 flex flex-col justify-end min-h-[260px]"
           hover
           {...{ style: { background: "#ffeb3b" } }}
         >
@@ -317,16 +317,14 @@ function BentoMiddle() {
         </Tile>
 
         {/* TESTIMONIAL */}
-        <Tile className="md:col-span-3 p-6 flex flex-col justify-between">
+        <Tile className="md:col-span-3 p-6 flex flex-col gap-4 min-h-[260px]">
           <Label className="opacity-40">/ 03 — Stimme</Label>
-          <div>
-            <p className="text-sm leading-relaxed italic mb-4">
-              „KSE hat unsere Erwartungen nicht erfüllt — sie hat sie neu definiert."
-            </p>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#ff5722]">
-              — Name, Position (Platzhalter)
-            </span>
-          </div>
+          <p className="text-base leading-relaxed italic font-medium">
+            „KSE hat unsere Erwartungen nicht erfüllt — sie hat sie neu definiert."
+          </p>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#ff5722] mt-auto">
+            — Name, Position (Platzhalter)
+          </span>
         </Tile>
       </div>
     </section>
