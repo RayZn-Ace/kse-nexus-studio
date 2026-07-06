@@ -36,7 +36,7 @@ const SERVICES = [
 ];
 
 const TIMELINES = [
-  { id: "asap", label: "ASAP", desc: "Innerhalb 4 Wochen starten" },
+  { id: "asap", label: "ASAP", desc: "Start innerhalb 1 Woche" },
   { id: "1-3m", label: "1–3 Monate", desc: "Konkrete Planung, kein Rush" },
   { id: "later", label: "Q2 2026+", desc: "Wir sondieren nur" },
 ];
