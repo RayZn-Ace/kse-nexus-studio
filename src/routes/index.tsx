@@ -213,19 +213,19 @@ function BentoHero() {
 function Marquee() {
   const reduced = useReducedMotion();
   const items = [
-    "Social Media",
+    "Software Development",
     "★",
-    "Web & Tech",
+    "AI & Automation",
     "★",
-    "Werbefilm",
+    "Web & Apps",
+    "★",
+    "Marketing",
     "★",
     "Branding",
     "★",
-    "Performance",
+    "Film & Content",
     "★",
-    "Content",
-    "★",
-    "Strategie",
+    "Events & Ticketing",
     "★",
   ];
   const doubled = [...items, ...items];
