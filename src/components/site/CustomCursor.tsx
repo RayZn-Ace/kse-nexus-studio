@@ -56,33 +56,49 @@ export function CustomCursor() {
 
   if (!enabled) return null;
 
-  const ringSize =
-    variant === "tile" ? 64 : variant === "hover" ? 44 : 28;
-  const showArrow = variant === "tile";
+  const isTile = variant === "tile";
+  const isHover = variant === "hover";
+  const ringSize = isTile ? 40 : isHover ? 22 : 14;
 
   return (
     <>
+      {/* Trailing thin ring */}
       <div
         ref={ringRef}
         aria-hidden="true"
-        className="pointer-events-none fixed top-0 left-0 z-[80] grid place-items-center rounded-full border-2 border-[#0a0a0a] mix-blend-difference transition-[width,height,background-color] duration-200 ease-out"
+        className="pointer-events-none fixed top-0 left-0 z-[80] grid place-items-center rounded-full mix-blend-difference transition-[width,height,border-color,opacity] duration-200 ease-out"
         style={{
           width: ringSize,
           height: ringSize,
-          backgroundColor: variant === "tile" ? "#ff5722" : "transparent",
-          borderColor: variant === "tile" ? "#ff5722" : "#ffffff",
+          border: `1px solid ${isTile ? "#ff5722" : "rgba(255,255,255,0.85)"}`,
+          opacity: isHover || isTile ? 1 : 0.7,
         }}
       >
-        {showArrow && (
-          <span className="text-white font-black text-sm select-none" style={{ fontFamily: "var(--font-display)" }}>
+        {isTile && (
+          <span
+            className="select-none leading-none"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 11,
+              color: "#ff5722",
+              fontWeight: 800,
+            }}
+          >
             →
           </span>
         )}
       </div>
+      {/* Precise dot */}
       <div
         ref={dotRef}
         aria-hidden="true"
-        className="pointer-events-none fixed top-0 left-0 z-[81] h-1.5 w-1.5 rounded-full bg-white mix-blend-difference"
+        className="pointer-events-none fixed top-0 left-0 z-[81] rounded-full mix-blend-difference transition-[width,height,opacity] duration-150 ease-out"
+        style={{
+          width: isTile ? 0 : 4,
+          height: isTile ? 0 : 4,
+          backgroundColor: "#ffffff",
+          opacity: isTile ? 0 : 1,
+        }}
       />
     </>
   );
