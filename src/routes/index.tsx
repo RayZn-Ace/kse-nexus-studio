@@ -167,7 +167,7 @@ function Nav() {
             href="#kontakt"
             className="inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
           >
-            Projekt konfigurieren →
+            Kontakt →
           </a>
         </div>
       </div>
