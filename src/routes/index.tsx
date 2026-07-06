@@ -868,7 +868,7 @@ function CornerSpiderman() {
   if (reduced) return null;
   return (
     <div
-      className="hidden md:block fixed top-0 right-[3vw] z-[60] w-[90px] lg:w-[110px] pointer-events-none select-none"
+      className="hidden md:block absolute top-0 right-[3vw] z-[60] w-[90px] lg:w-[110px] pointer-events-none select-none"
       aria-hidden="true"
       style={{ transformOrigin: "top center" }}
     >
@@ -885,7 +885,7 @@ function CornerSpiderman() {
 
 function Index() {
   return (
-    <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden relative">
       <Nav />
       <CornerSpiderman />
       <main>
