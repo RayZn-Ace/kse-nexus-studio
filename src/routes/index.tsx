@@ -758,10 +758,64 @@ function ProcessSection() {
             >
               Antwort in <span className="text-[#ff5722]">24h</span>.
             </h3>
+            <p className="text-sm mt-4 text-white/60 leading-relaxed">
+              Kein Warteschleifen-Theater. Kein Agentur-Blabla. Direkt zum Punkt.
+            </p>
           </div>
-          <p className="text-sm mt-6 text-white/70">
-            Kein Warteschleifen-Theater. Kein Agentur-Blabla. Direkt zum Punkt.
-          </p>
+
+          {/* Live status */}
+          <div className="mt-8 border-2 border-white/15 p-4">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/60 font-bold">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#22c55e] animate-pulse" />
+              Live
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span
+                className="text-4xl font-black text-white"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Ø 1h 47m
+              </span>
+            </div>
+            <p className="text-[11px] text-white/50 mt-1">Antwortzeit letzte 30 Tage</p>
+          </div>
+
+          {/* Channels */}
+          <div className="mt-6 space-y-2">
+            {[
+              { label: "WhatsApp", value: "+49 157 5797 1457", href: "https://wa.me/4915757971457" },
+              { label: "E-Mail", value: "hi@ksegroup.eu", href: "mailto:hi@ksegroup.eu" },
+              { label: "Konfigurator", value: "In 60s starten", href: "/konfigurator" },
+            ].map((c) => (
+              <a
+                key={c.label}
+                href={c.href}
+                className="group flex items-center justify-between border-t border-white/10 pt-2 text-white hover:text-[#ffeb3b] transition-colors"
+              >
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">
+                  {c.label}
+                </span>
+                <span className="text-xs font-bold flex items-center gap-1">
+                  {c.value}
+                  <span className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">→</span>
+                </span>
+              </a>
+            ))}
+          </div>
+
+          {/* Guarantees */}
+          <ul className="mt-6 pt-6 border-t border-white/10 space-y-2 text-[11px] text-white/60">
+            {[
+              "Erstgespräch kostenlos & unverbindlich",
+              "Fixpreis nach Discovery — keine Überraschungen",
+              "Wöchentliches Update, direkter Draht zum Team",
+            ].map((g) => (
+              <li key={g} className="flex gap-2">
+                <span className="text-[#ff5722] font-black">+</span>
+                <span>{g}</span>
+              </li>
+            ))}
+          </ul>
         </Tile>
       </div>
     </section>
