@@ -10,6 +10,8 @@ import {
 
 import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
+import { WhatsAppButton } from "@/components/site/WhatsAppButton";
+import { CustomCursor } from "@/components/site/CustomCursor";
 
 function NotFoundComponent() {
   return (
@@ -122,6 +124,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <WhatsAppButton />
+      <CustomCursor />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>
   );
