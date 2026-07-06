@@ -220,7 +220,7 @@ function TeamNav() {
             to="/konfigurator"
             className="inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
           >
-            Projekt starten →
+            Projekt konfigurieren →
           </Link>
         </div>
       </div>
@@ -408,7 +408,7 @@ function RecruitCTA() {
             to="/konfigurator"
             className="inline-flex items-center justify-center border-2 border-white bg-transparent text-white px-5 py-3 text-xs uppercase tracking-[0.25em] font-bold hover:bg-white hover:text-[#0a0a0a] transition-colors"
           >
-            Projekt starten
+            Projekt konfigurieren
           </Link>
         </div>
       </div>
