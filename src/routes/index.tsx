@@ -251,10 +251,26 @@ function Marquee() {
 /* ─────────────────────────  Bento Middle (Services + Stats + Testimonial)  ───────────────────────── */
 
 const SERVICES = [
-  { title: "Social Media", body: "Kanäle, denen Menschen folgen wollen — nicht müssen." },
-  { title: "Web & Tech", body: "Sites, die in 3 Sekunden alles sagen: wer, was, warum." },
-  { title: "Werbefilm", body: "Bilder, die zeigen statt erklären. Cinematic, präzise." },
-  { title: "Branding", body: "Identitäten von Grund auf — visuell, sprachlich, strategisch." },
+  {
+    title: "Software Development",
+    body:
+      "Web-Apps, SaaS-Plattformen, Mobile Apps, CRM, Dashboards, Booking- & Ticketing-Systeme. React, Next.js, TypeScript, Supabase.",
+  },
+  {
+    title: "AI & Automation",
+    body:
+      "WhatsApp-CRM, Chatbots, Marketing- & Lead-Automation, interne AI-Assistenten. OpenAI, Claude, Meta- & TikTok-APIs.",
+  },
+  {
+    title: "Web & UX",
+    body:
+      "High-End Sites mit Motion, Typografie und Conversion-Fokus. Kein Template. Jede Site custom gebaut.",
+  },
+  {
+    title: "Marketing & Brand",
+    body:
+      "Content, Paid Ads (Meta, TikTok, Snap), Performance, Branding, Film & Content-Produktion — aus einer Hand.",
+  },
 ];
 
 function BentoMiddle() {
