@@ -43,7 +43,7 @@ function useRevealOnScroll<T extends HTMLElement>(ref: React.RefObject<T | null>
  * with an inner span that slides up from y:110% → y:0%. Use onMount for hero
  * (animates immediately), otherwise triggers whileInView.
  */
-function MaskedLines({
+export function MaskedLines({
   lines,
   delay = 0,
   onMount = false,
