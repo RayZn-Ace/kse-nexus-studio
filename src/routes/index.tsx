@@ -834,7 +834,7 @@ function Footer() {
 
 /* ─────────────────────────  Scroll Heroes (section-anchored)  ───────────────────────── */
 
-function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement> }) {
+function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -860,7 +860,7 @@ function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivEle
   );
 }
 
-function HeroBatmanScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement> }) {
+function HeroBatmanScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -887,7 +887,7 @@ function HeroBatmanScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElem
   );
 }
 
-function HeroFlyerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement> }) {
+function HeroFlyerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: targetRef,
