@@ -5,13 +5,13 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KSE GROUP — Software, AI & Digital Brands aus Hannover" },
+      { title: "KSE GROUP — Ihre Experten für New Media" },
       {
         name: "description",
         content:
           "KSE GROUP baut Software, AI-Automationen, High-End Websites und Marketing-Systeme. Full-Service Tech- & Kreativ-Agentur aus Hannover.",
       },
-      { property: "og:title", content: "KSE GROUP — Software, AI & Digital Brands" },
+      { property: "og:title", content: "KSE GROUP — Ihre Experten für New Media" },
       {
         property: "og:description",
         content:
@@ -130,10 +130,10 @@ function BentoHero() {
             className="mt-8 text-5xl md:text-7xl lg:text-[6.5rem] font-black leading-[0.88] tracking-tighter uppercase"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Wir bauen<br />
-            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Software, AI</span>
+            KSE GROUP<br />
+            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Ihre Experten</span>
             <br />
-            &amp; <span className="text-[#ff5722]">Digital Brands</span>
+            für <span className="text-[#ff5722]">New Media</span>
             <span className="inline-block w-3 md:w-4 h-[0.9em] align-[-0.05em] ml-2 bg-[#0a0a0a] animate-pulse" aria-hidden />
           </h1>
           <div className="mt-8 flex items-center gap-4">
