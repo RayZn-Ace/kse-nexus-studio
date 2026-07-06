@@ -298,7 +298,7 @@ function HeroCard({ hero, index }: { hero: Hero; index: number }) {
           loading="lazy"
           width={768}
           height={960}
-          className="w-full h-full object-cover aspect-[4/5] mix-blend-multiply"
+          className={`w-full h-full object-cover aspect-[4/5] ${hero.bg === "#0a0a0a" ? "" : "mix-blend-multiply"}`}
         />
         {/* Halftone overlay */}
         <div
