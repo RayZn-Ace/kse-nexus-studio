@@ -60,7 +60,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Automator",
-    realName: "Alicia Tuchinsky",
+    realName: "AGENT-07 „Nova"",
     role: "AI Engineering · Automations · Agents",
     origin: "Baut AI-Agenten, die nachts arbeiten und morgens Reports auf den Tisch legen. Nie müde. Nie beleidigt.",
     power: "Verbindet 40 Tools mit einem einzigen Prompt.",
@@ -111,7 +111,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Oracle",
-    realName: "Nadia Okonkwo",
+    realName: "AGENT-11 „Delphi"",
     role: "Analytics · Insights · Forecasting",
     origin: "Liest Dashboards wie andere Leute Romane. Weiß, was dein Kunde kauft, bevor er es selbst weiß.",
     power: "Findet in 10 GB Logs den einen Datensatz, der alles erklärt.",
