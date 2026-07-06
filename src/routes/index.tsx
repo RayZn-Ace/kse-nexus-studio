@@ -667,28 +667,54 @@ function StatsRow() {
 const STEPS = [
   {
     n: "01",
+    when: "Tag 0",
     title: "Erstgespräch",
-    body: "Unverbindlich, 30 Minuten. Wir hören zu und sagen ehrlich, ob und wie wir helfen können.",
+    body:
+      "Unverbindlich, 30 Minuten. Wir hören zu, stellen die richtigen Fragen — und sagen ehrlich, ob und wie wir helfen können.",
   },
   {
     n: "02",
-    title: "Konzept & Architektur",
+    when: "Tag 1–3",
+    title: "Konzept & Angebot",
     body:
-      "Klarer Fahrplan mit Timeline, Stack, Milestones und Festpreis — keine versteckten Kosten, keine Überraschungen.",
+      "Klarer Fahrplan mit Scope, Stack, Milestones und Festpreis. Keine versteckten Kosten, keine Überraschungen — schwarz auf weiß.",
   },
   {
     n: "03",
-    title: "Build, Ship & Scale",
+    when: "Woche 1–2",
+    title: "Design & Architektur",
     body:
-      "Wir bauen, launchen, messen und optimieren. Danach: Betrieb, Updates, Automatisierungen — langfristig.",
+      "UI, UX, Datenmodell, Automatisierungs-Flows. Du siehst nach wenigen Tagen erste klickbare Prototypen, kein monatelanges Warten.",
+  },
+  {
+    n: "04",
+    when: "Woche 2–6",
+    title: "Build & Ship",
+    body:
+      "Wir bauen in wöchentlichen Sprints. Du bekommst Zugriff, siehst live Fortschritt, gibst Feedback — wir launchen sauber & getestet.",
+  },
+  {
+    n: "05",
+    when: "Ab Launch",
+    title: "Scale & Betrieb",
+    body:
+      "Monitoring, Updates, neue Features, Automatisierungen. Wir bleiben dein Tech-Partner — langfristig, nicht nach Rechnung weg.",
   },
 ];
 
 function ProcessSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 75%", "end 60%"],
+  });
+  const smooth = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.4 });
+  const lineHeight = useTransform(smooth, [0, 1], ["0%", "100%"]);
+
   return (
     <section id="ablauf" className="px-4 md:px-8 pb-8 md:pb-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4">
-        <Tile className="md:col-span-9 p-8 md:p-12">
+        <Tile className="md:col-span-9 p-6 md:p-12">
           <Label className="opacity-40">/ 04 — Der Ablauf</Label>
           <h2
             className="mt-6 text-4xl md:text-6xl font-black leading-[0.9] tracking-tighter uppercase max-w-3xl"
@@ -696,24 +722,26 @@ function ProcessSection() {
           >
             Von Anfrage bis Ergebnis.
           </h2>
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {STEPS.map((s) => (
-              <div key={s.n} className="border-t-4 border-[#0a0a0a] pt-4">
-                <div
-                  className="text-5xl font-black text-[#ff5722] leading-none"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {s.n}
-                </div>
-                <h4
-                  className="mt-3 font-black uppercase text-lg"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {s.title}
-                </h4>
-                <p className="text-sm text-[#0a0a0a]/70 leading-relaxed mt-2">{s.body}</p>
-              </div>
-            ))}
+          <p className="mt-4 text-sm md:text-base text-[#0a0a0a]/70 max-w-2xl">
+            5 Schritte. Kein Agentur-Ping-Pong, keine 6-Monats-Konzeptphasen. Du weißt jederzeit, wo dein Projekt steht.
+          </p>
+
+          <div ref={sectionRef} className="relative mt-10 md:mt-14 pl-10 md:pl-14">
+            {/* Static rail */}
+            <div className="absolute left-3 md:left-5 top-2 bottom-2 w-[3px] bg-[#0a0a0a]/10" aria-hidden />
+            {/* Progress fill */}
+            <motion.div
+              aria-hidden
+              className="absolute left-3 md:left-5 top-2 w-[3px] bg-[#ff5722] origin-top"
+              style={{ height: lineHeight }}
+            />
+
+            <ol className="space-y-10 md:space-y-14">
+              {STEPS.map((s, i) => {
+                const point = i / (STEPS.length - 1);
+                return <TimelineStep key={s.n} step={s} progress={smooth} point={point} />;
+              })}
+            </ol>
           </div>
         </Tile>
 
@@ -737,6 +765,56 @@ function ProcessSection() {
         </Tile>
       </div>
     </section>
+  );
+}
+
+function TimelineStep({
+  step,
+  progress,
+  point,
+}: {
+  step: { n: string; when: string; title: string; body: string };
+  progress: ReturnType<typeof useSpring>;
+  point: number;
+}) {
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    const unsub = progress.on("change", (v) => setActive(v >= point - 0.02));
+    return () => unsub();
+  }, [progress, point]);
+
+  return (
+    <li className="relative">
+      {/* Marker */}
+      <div
+        className={`absolute -left-10 md:-left-14 top-1 grid place-items-center h-7 w-7 md:h-9 md:w-9 border-2 border-[#0a0a0a] transition-colors duration-300 ${
+          active ? "bg-[#ff5722] text-white" : "bg-white text-[#0a0a0a]"
+        }`}
+        style={{ fontFamily: "var(--font-display)" }}
+        aria-hidden
+      >
+        <span className="text-[11px] md:text-xs font-black">{step.n}</span>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-baseline md:gap-4">
+        <span
+          className={`inline-block border-2 border-[#0a0a0a] px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+            active ? "bg-[#ffeb3b] text-[#0a0a0a]" : "bg-white text-[#0a0a0a]/60"
+          }`}
+        >
+          {step.when}
+        </span>
+        <h4
+          className="mt-2 md:mt-0 font-black uppercase text-xl md:text-2xl tracking-tight"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {step.title}
+        </h4>
+      </div>
+      <p className="mt-3 text-sm md:text-base text-[#0a0a0a]/70 leading-relaxed max-w-2xl">
+        {step.body}
+      </p>
+    </li>
   );
 }
 
