@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useSpring, type MotionValue } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Intro } from "@/components/Intro";
 import { WebGLBackground } from "@/components/WebGLBackground";
 import { Hero, TrailedSections, ContactCTA } from "@/components/Sections";
@@ -44,8 +45,20 @@ function ScrollProgress({ progress }: { progress: MotionValue<number> }) {
 }
 
 function Header() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <header className="fixed top-0 inset-x-0 z-[120] px-6 md:px-12 lg:px-20 py-6">
+    <header
+      className={`fixed top-0 inset-x-0 z-[120] px-6 md:px-12 lg:px-20 py-6 transition-all duration-300 ${
+        scrolled ? "backdrop-blur-md border-b border-white/5" : ""
+      }`}
+      style={{ background: scrolled ? "rgba(5,5,6,0.55)" : "transparent" }}
+    >
       <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.35em]">
         <a href="#top" className="font-black tracking-[0.12em]" style={{ letterSpacing: "0.12em" }}>
           KSE / GROUP
@@ -76,11 +89,24 @@ function Header() {
 }
 
 function Footer() {
+  const [time, setTime] = useState<string | null>(null);
+  useEffect(() => {
+    const fmt = () =>
+      new Intl.DateTimeFormat("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Europe/Berlin",
+      }).format(new Date());
+    setTime(fmt());
+    const id = setInterval(() => setTime(fmt()), 30000);
+    return () => clearInterval(id);
+  }, []);
   return (
     <footer className="relative px-6 md:px-12 lg:px-20 py-14 border-t border-white/10 text-[10px] uppercase tracking-[0.35em] text-white/40 flex flex-wrap gap-x-10 gap-y-3 justify-between">
       <span>© 2026 KSE Group</span>
       <span>Creative Tech Studio</span>
       <span>Built in Hannover · DE</span>
+      <span>{time ? `Hannover · ${time} Uhr` : "\u00A0"}</span>
     </footer>
   );
 }

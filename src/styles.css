@@ -55,7 +55,7 @@
     letter-spacing: -0.04em;
     text-transform: uppercase;
   }
-  ::selection { background: var(--accent); color: var(--accent-foreground); }
+  ::selection { background: #a855f7; color: #050506; }
 }
 
 @layer utilities {

@@ -10,6 +10,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollTrail } from "@/components/ScrollTrail";
 import { ProjectTile, type ProjectTileData } from "@/components/ProjectTile";
+import { Proof } from "@/components/Proof";
+import { Process } from "@/components/Process";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -43,7 +45,7 @@ function useRevealOnScroll<T extends HTMLElement>(ref: React.RefObject<T | null>
  * with an inner span that slides up from y:110% → y:0%. Use onMount for hero
  * (animates immediately), otherwise triggers whileInView.
  */
-function MaskedLines({
+export function MaskedLines({
   lines,
   delay = 0,
   onMount = false,
@@ -317,7 +319,7 @@ export function Capabilities() {
           data-reveal
           className="block text-[10px] uppercase tracking-[0.4em] text-white/40 mb-10"
         >
-          / 03 — Capabilities
+          / 04 — Capabilities
         </span>
         <ul className="flex flex-wrap gap-x-8 gap-y-4 md:gap-x-14 md:gap-y-6">
           {CAPS.map((c, i) => (
@@ -352,8 +354,19 @@ export function ContactCTA() {
           data-reveal
           className="block text-[10px] uppercase tracking-[0.4em] text-white/40 mb-8"
         >
-          / 04 — Kontakt
+          / 06 — Kontakt
         </span>
+        <div data-reveal className="mb-8 inline-flex items-center gap-3 border border-white/15 rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-white/60">
+          <span className="relative inline-block" style={{ width: 6, height: 6 }}>
+            <motion.span
+              className="absolute inset-0 rounded-full"
+              style={{ background: "#4ade80" }}
+              animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </span>
+          Nimmt neue Projekte an
+        </div>
         <h2
           className="font-black leading-[0.9]"
           style={{ fontSize: "clamp(2.5rem, 9.5vw, 9.5rem)", letterSpacing: "-0.05em" }}
@@ -375,7 +388,16 @@ export function ContactCTA() {
         <div data-reveal className="mt-14 flex flex-wrap gap-4">
           <a
             href="mailto:info@ksegroup.eu"
-            className="inline-flex items-center justify-center gap-3 border border-white/25 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.35em] font-medium hover:border-white/60 transition-colors"
+            className="inline-flex items-center justify-center gap-3 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.35em] font-black transition-colors"
+            style={{ background: "#f0ede8", color: "#050506" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#a855f7";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#f0ede8";
+              e.currentTarget.style.color = "#050506";
+            }}
           >
             Projekt starten →
           </a>
@@ -388,6 +410,9 @@ export function ContactCTA() {
             Auf Instagram →
           </a>
         </div>
+        <p data-reveal className="mt-6 text-[11px] text-white/40">
+          Antwort innerhalb von 24 Stunden · Erstgespräch kostenlos & unverbindlich
+        </p>
       </div>
     </section>
   );
@@ -404,7 +429,9 @@ export function TrailedSections() {
       <ScrollTrail targetRef={trailWrap} />
       <SelectedWork />
       <About />
+      <Proof />
       <Capabilities />
+      <Process />
     </div>
   );
 }
