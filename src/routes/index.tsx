@@ -127,14 +127,19 @@ function BentoHero() {
             <Label className="text-[#0a0a0a]/60">Est. 2021</Label>
           </div>
           <h1
-            className="mt-8 text-5xl md:text-7xl lg:text-[6.5rem] font-black leading-[0.88] tracking-tighter uppercase"
+            className="mt-8 text-5xl md:text-7xl lg:text-[6.5rem] font-black leading-[1.02] tracking-tighter uppercase"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            KSE GROUP<br />
-            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Ihre Experten</span>
-            <br />
-            für <span className="text-[#ff5722]">New Media</span>
-            <span className="inline-block w-3 md:w-4 h-[0.9em] align-[-0.05em] ml-2 bg-[#0a0a0a] animate-pulse" aria-hidden />
+            <span className="block">KSE GROUP</span>
+            <span className="block mt-3 md:mt-4">
+              <span className="bg-[#ffeb3b] px-3 py-1 box-decoration-clone leading-[1.15]">
+                Ihre Experten
+              </span>
+            </span>
+            <span className="block mt-3 md:mt-4">
+              für <span className="text-[#ff5722]">New Media</span>
+              <span className="inline-block w-3 md:w-4 h-[0.8em] align-[-0.05em] ml-2 bg-[#0a0a0a] animate-pulse" aria-hidden />
+            </span>
           </h1>
           <div className="mt-8 flex items-center gap-4">
             <div className="h-4 w-4 bg-[#ff5722] shrink-0" />
