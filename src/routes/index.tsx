@@ -868,7 +868,7 @@ function CornerSpiderman() {
   if (reduced) return null;
   return (
     <div
-      className="hidden md:block absolute top-0 right-[3vw] z-[60] w-[90px] lg:w-[110px] pointer-events-none select-none"
+      className="hidden md:block absolute right-[3vw] z-[60] w-[90px] lg:w-[110px] pointer-events-none select-none top-[64px] lg:top-[76px]"
       aria-hidden="true"
       style={{ transformOrigin: "top center" }}
     >
