@@ -14,6 +14,8 @@ import softwareVideo from "@/assets/service-software.mp4.asset.json";
 import aiVideo from "@/assets/service-ai.mp4.asset.json";
 import webVideo from "@/assets/service-web.mp4.asset.json";
 import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
+import { TrustBar } from "@/components/site/TrustBar";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -148,12 +150,20 @@ function Nav() {
             KSE GROUP
           </span>
         </a>
-        <a
-          href="#kontakt"
-          className="shrink-0 inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
-        >
-          Projekt starten →
-        </a>
+        <div className="shrink-0 flex items-center gap-2">
+          <Link
+            to="/konfigurator"
+            className="hidden sm:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#ffeb3b] text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
+          >
+            Konfigurator
+          </Link>
+          <a
+            href="#kontakt"
+            className="inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
+          >
+            Projekt starten →
+          </a>
+        </div>
       </div>
     </header>
   );
@@ -886,6 +896,7 @@ function CornerSpiderman() {
 function Index() {
   return (
     <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden relative">
+      <TrustBar />
       <Nav />
       <CornerSpiderman />
       <main>
