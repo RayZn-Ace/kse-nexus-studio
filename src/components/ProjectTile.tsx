@@ -208,6 +208,12 @@ export function ProjectTile({
                 </span>
               ))}
             </div>
+            <div
+              className="mt-5 text-[11px] uppercase tracking-[0.3em] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
+              style={{ color: accent }}
+            >
+              Mehr erfahren →
+            </div>
           </div>
         </div>
       </motion.div>
