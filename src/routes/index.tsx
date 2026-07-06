@@ -130,16 +130,16 @@ function BentoHero() {
             className="mt-8 text-5xl md:text-7xl lg:text-[6.5rem] font-black leading-[0.88] tracking-tighter uppercase"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            KSE GROUP —<br />
-            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Ihre Experten</span>
+            Wir bauen<br />
+            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Software, AI</span>
             <br />
-            für <span className="text-[#ff5722]">New Media</span>
+            &amp; <span className="text-[#ff5722]">Digital Brands</span>
             <span className="inline-block w-3 md:w-4 h-[0.9em] align-[-0.05em] ml-2 bg-[#0a0a0a] animate-pulse" aria-hidden />
           </h1>
           <div className="mt-8 flex items-center gap-4">
             <div className="h-4 w-4 bg-[#ff5722] shrink-0" />
             <p className="text-base md:text-xl font-medium tracking-tight max-w-xl">
-              Social · Web · Werbefilm · Branding. Full-Service Agency, kompromisslos umgesetzt.
+              Wenn es automatisiert, optimiert oder digitalisiert werden kann — wir bauen es.
             </p>
           </div>
         </motion.div>
