@@ -530,7 +530,7 @@ function Footer() {
     <footer className="border-t-4 border-[#0a0a0a] bg-[#0a0a0a] text-white">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-[11px] uppercase tracking-[0.2em] font-bold">
         <span>© 2026 KSE Group</span>
-        <span>Ihre Experten für New Media</span>
+        <span>Software · AI · Digital Brands</span>
         <span>Hannover · Deutschland</span>
         <span className="text-[#ffeb3b]">{time ? `${time} Uhr` : "\u00A0"}</span>
       </div>
