@@ -77,7 +77,7 @@ function Tile({
     translateZ.set(0);
   };
 
-  const MotionComp = (motion as Record<string, React.ElementType>)[As];
+  const MotionComp = (motion as unknown as Record<string, React.ElementType>)[As];
 
   return (
     <MotionComp
