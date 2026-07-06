@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
+import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -30,6 +31,11 @@ const LeistungenRoute = LeistungenRouteImport.update({
 const KonfiguratorRoute = KonfiguratorRouteImport.update({
   id: '/konfigurator',
   path: '/konfigurator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpressumRoute = ImpressumRouteImport.update({
+  id: '/impressum',
+  path: '/impressum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -173,6 +185,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
   LeistungenRoute: typeof LeistungenRoute
   ShareTokenRoute: typeof ShareTokenRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/konfigurator'
       fullPath: '/konfigurator'
       preLoaderRoute: typeof KonfiguratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impressum': {
+      id: '/impressum'
+      path: '/impressum'
+      fullPath: '/impressum'
+      preLoaderRoute: typeof ImpressumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
   LeistungenRoute: LeistungenRoute,
   ShareTokenRoute: ShareTokenRoute,
@@ -298,13 +319,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
