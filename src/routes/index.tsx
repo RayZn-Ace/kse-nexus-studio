@@ -14,9 +14,6 @@ import softwareVideo from "@/assets/service-software.mp4.asset.json";
 import aiVideo from "@/assets/service-ai.mp4.asset.json";
 import webVideo from "@/assets/service-web.mp4.asset.json";
 import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
-import heroSwinger from "@/assets/hero-swinger.png";
-import heroGlider from "@/assets/hero-glider.png";
-import heroFlyer from "@/assets/hero-flyer.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -832,7 +829,102 @@ function Footer() {
 
 /* ─────────────────────────  Page  ───────────────────────── */
 
-/* ─────────────────────────  Scroll Heroes (section-anchored)  ───────────────────────── */
+/* ─────────────────────────  Scroll Heroes (animated, section-anchored)  ───────────────────────── */
+
+function ComicWebSlinger() {
+  return (
+    <svg className="comic-hero comic-web-slinger" viewBox="0 0 120 220" aria-hidden="true">
+      <line className="web-line" x1="60" y1="0" x2="60" y2="92" />
+      <g className="web-slinger-body">
+        <path className="hero-ink" d="M39 98c5-18 35-18 42 0l8 35c4 20-14 38-30 38s-33-18-28-38z" />
+        <path className="hero-red" d="M43 100c6-12 28-13 34 0l6 29c3 14-10 27-24 27s-27-13-24-27z" />
+        <path className="hero-blue" d="M38 134c9 11 35 11 44 0 3 15-9 27-23 27s-25-12-21-27z" />
+        <ellipse className="hero-ink" cx="60" cy="82" rx="24" ry="23" />
+        <path className="hero-red" d="M39 83c0-14 9-24 21-24s21 10 21 24c0 12-9 22-21 22s-21-10-21-22z" />
+        <path className="hero-eye" d="M47 78l11 4-10 6c-5-2-5-7-1-10zM73 78l-11 4 10 6c5-2 5-7 1-10z" />
+        <g className="web-arm-left">
+          <path className="hero-ink" d="M42 105c-19 4-28 19-30 36" />
+          <path className="hero-red stroke-red" d="M42 105c-17 5-25 19-27 34" />
+        </g>
+        <g className="web-arm-right">
+          <path className="hero-ink" d="M78 105c15-13 23-30 25-52" />
+          <path className="hero-red stroke-red" d="M78 105c14-12 21-29 23-50" />
+        </g>
+        <g className="web-leg-left">
+          <path className="hero-ink" d="M49 156c-13 17-22 26-35 32" />
+          <path className="hero-blue stroke-blue" d="M50 155c-12 15-21 24-33 30" />
+        </g>
+        <g className="web-leg-right">
+          <path className="hero-ink" d="M70 155c12 14 23 22 39 24" />
+          <path className="hero-blue stroke-blue" d="M70 155c12 13 22 20 36 22" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function ComicVigilante() {
+  return (
+    <svg className="comic-hero comic-vigilante" viewBox="0 0 180 160" aria-hidden="true">
+      <g className="vigilante-runner">
+        <path className="cape" d="M80 54c-20 7-44 22-64 57 33-10 63-7 97 17 2-32-7-57-33-74z" />
+        <ellipse className="hero-ink" cx="83" cy="43" rx="21" ry="23" />
+        <path className="cowl" d="M64 43c1-15 8-26 19-26l8-13 7 15c8 5 12 14 11 25-2 14-11 24-24 24s-21-10-21-25z" />
+        <path className="hero-eye" d="M73 41h11l-10 5c-4-1-5-4-1-5zM93 41h11l-10 5c-4-1-5-4-1-5z" />
+        <path className="suit" d="M66 65c9-12 34-12 44 0l10 36c3 14-13 26-32 26s-35-12-32-26z" />
+        <path className="belt" d="M61 93h58l2 10H59z" />
+        <g className="bat-arm-left">
+          <path className="hero-ink" d="M68 73c-17 1-28 8-39 20" />
+          <path className="suit stroke-suit" d="M68 73c-15 2-26 9-36 20" />
+        </g>
+        <g className="bat-arm-right">
+          <path className="hero-ink" d="M110 73c16 7 26 17 33 32" />
+          <path className="suit stroke-suit" d="M110 73c14 7 24 17 30 31" />
+        </g>
+        <g className="bat-leg-left">
+          <path className="hero-ink" d="M76 121c-10 12-20 18-36 19" />
+          <path className="boot" d="M76 120c-10 11-20 16-34 17" />
+        </g>
+        <g className="bat-leg-right">
+          <path className="hero-ink" d="M99 121c13 9 26 13 43 9" />
+          <path className="boot" d="M99 120c12 8 25 11 40 8" />
+        </g>
+      </g>
+      <path className="tile-edge-dust" d="M9 146h44M129 144h24M61 150h23" />
+    </svg>
+  );
+}
+
+function ComicFlyer() {
+  return (
+    <svg className="comic-hero comic-flyer" viewBox="0 0 190 120" aria-hidden="true">
+      <g className="flyer-hero-body">
+        <path className="flyer-trail" d="M7 78c35-23 67-30 101-20" />
+        <ellipse className="hero-ink" cx="129" cy="45" rx="19" ry="18" />
+        <path className="flyer-head" d="M111 45c0-11 8-19 18-19s18 8 18 19-8 19-18 19-18-8-18-19z" />
+        <path className="hero-eye" d="M120 42l9 2-8 5c-4-1-4-5-1-7zM139 42l-8 2 8 5c4-1 4-5 0-7z" />
+        <path className="hero-ink" d="M75 58c19-17 47-15 62 2 10 11 4 28-13 31-24 3-48-9-62-22z" />
+        <path className="flyer-suit" d="M76 59c18-13 42-12 56 4 7 9 2 20-11 22-20 2-41-8-53-18z" />
+        <g className="flyer-arm-left">
+          <path className="hero-ink" d="M95 60c-22-9-45-6-70 10" />
+          <path className="flyer-glove" d="M95 60c-20-7-43-4-67 10" />
+        </g>
+        <g className="flyer-arm-right">
+          <path className="hero-ink" d="M135 63c16-7 28-16 38-31" />
+          <path className="flyer-glove" d="M135 63c15-7 27-16 36-30" />
+        </g>
+        <g className="flyer-leg-left">
+          <path className="hero-ink" d="M72 75c-15 10-29 16-47 17" />
+          <path className="flyer-boot" d="M72 75c-14 9-28 14-44 15" />
+        </g>
+        <g className="flyer-leg-right">
+          <path className="hero-ink" d="M88 83c-13 15-26 23-44 27" />
+          <path className="flyer-boot" d="M88 83c-12 13-25 21-42 25" />
+        </g>
+      </g>
+    </svg>
+  );
+}
 
 function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
   const reduced = useReducedMotion();
@@ -840,23 +932,20 @@ function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivEle
     target: targetRef,
     offset: ["start end", "end start"],
   });
-  // Rope descends from top-right corner of the hero tile.
-  // 0.0 → above, 0.25 → hanging in front of tile, 0.55 → still hanging,
-  // 0.85 → swings left & out, 1.0 → gone.
-  const y = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85], ["-30%", "35%", "55%", "40%"]);
-  const x = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85, 1], [0, 0, -20, -140, -220]);
-  const rot = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85, 1], [-4, 0, 6, -18, -30]);
-  const opacity = useTransform(scrollYProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
+  const y = useTransform(scrollYProgress, [0, 0.2, 0.58, 0.92], ["-20%", "18%", "38%", "28%"]);
+  const x = useTransform(scrollYProgress, [0, 0.3, 0.62, 0.92, 1], [20, 0, -18, -170, -240]);
+  const rot = useTransform(scrollYProgress, [0, 0.22, 0.58, 0.92, 1], [-5, 2, -4, -26, -34]);
+  const opacity = useTransform(scrollYProgress, [0, 0.06, 0.94, 1], [0, 1, 1, 0]);
   if (reduced) return null;
   return (
-    <motion.img
-      src={heroSwinger}
-      alt=""
-      aria-hidden
-      loading="lazy"
-      className="hidden md:block absolute right-[6%] top-0 w-[110px] lg:w-[140px] h-auto pointer-events-none select-none z-30"
-      style={{ y, x, rotate: rot, opacity, transformOrigin: "top center" }}
-    />
+    <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none z-30">
+      <motion.div
+        className="absolute right-[9%] top-0 w-[100px] lg:w-[126px] select-none"
+        style={{ y, x, rotate: rot, opacity, transformOrigin: "top center" }}
+      >
+        <ComicWebSlinger />
+      </motion.div>
+    </div>
   );
 }
 
@@ -866,24 +955,21 @@ function HeroBatmanScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElem
     target: targetRef,
     offset: ["start end", "end start"],
   });
-  // Walks along the top edge of the services tile then jumps off the right.
-  // 0.0→0.15 fade in from left. 0.15→0.55 walk right along top edge.
-  // 0.55→0.85 jump/glide down and to the right. 0.85→1 fade out.
-  const x = useTransform(scrollYProgress, [0, 0.15, 0.55, 0.85, 1], ["-10%", "0%", "55%", "90%", "110%"]);
-  const y = useTransform(scrollYProgress, [0, 0.15, 0.55, 0.7, 0.85, 1], ["8%", "6%", "6%", "18%", "60%", "80%"]);
-  const rot = useTransform(scrollYProgress, [0, 0.55, 0.7, 0.85, 1], [-2, -2, 8, 22, 30]);
+  const x = useTransform(scrollYProgress, [0, 0.18, 0.58, 0.82, 1], ["-8%", "8%", "58%", "82%", "102%"]);
+  const y = useTransform(scrollYProgress, [0, 0.18, 0.58, 0.72, 0.86, 1], ["5%", "4%", "4%", "20%", "50%", "66%"]);
+  const rot = useTransform(scrollYProgress, [0, 0.58, 0.74, 0.9, 1], [-2, -1, 10, 22, 26]);
   const opacity = useTransform(scrollYProgress, [0, 0.12, 0.9, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.55, 1], [0.9, 0.9, 1]);
+  const scale = useTransform(scrollYProgress, [0, 0.58, 1], [0.82, 0.86, 0.96]);
   if (reduced) return null;
   return (
-    <motion.img
-      src={heroGlider}
-      alt=""
-      aria-hidden
-      loading="lazy"
-      className="hidden md:block absolute left-0 top-0 w-[130px] lg:w-[170px] h-auto pointer-events-none select-none z-30"
-      style={{ x, y, rotate: rot, opacity, scale, transformOrigin: "center" }}
-    />
+    <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none z-30">
+      <motion.div
+        className="absolute left-0 top-0 w-[136px] lg:w-[176px] select-none"
+        style={{ x, y, rotate: rot, opacity, scale, transformOrigin: "center" }}
+      >
+        <ComicVigilante />
+      </motion.div>
+    </div>
   );
 }
 
@@ -893,21 +979,20 @@ function HeroFlyerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivEleme
     target: targetRef,
     offset: ["start end", "end start"],
   });
-  // Flies in from bottom-left, arcs across the tiles, exits top-right.
-  const x = useTransform(scrollYProgress, [0, 0.5, 1], ["-15%", "40%", "105%"]);
-  const y = useTransform(scrollYProgress, [0, 0.5, 1], ["90%", "30%", "-10%"]);
-  const rot = useTransform(scrollYProgress, [0, 0.5, 1], [-8, -14, -22]);
+  const x = useTransform(scrollYProgress, [0, 0.45, 1], ["-10%", "38%", "92%"]);
+  const y = useTransform(scrollYProgress, [0, 0.45, 1], ["72%", "34%", "-2%"]);
+  const rot = useTransform(scrollYProgress, [0, 0.45, 1], [-6, -13, -19]);
   const opacity = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
   if (reduced) return null;
   return (
-    <motion.img
-      src={heroFlyer}
-      alt=""
-      aria-hidden
-      loading="lazy"
-      className="hidden md:block absolute left-0 top-0 w-[140px] lg:w-[180px] h-auto pointer-events-none select-none z-30"
-      style={{ x, y, rotate: rot, opacity, transformOrigin: "center" }}
-    />
+    <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none z-30">
+      <motion.div
+        className="absolute left-0 top-0 w-[150px] lg:w-[190px] select-none"
+        style={{ x, y, rotate: rot, opacity, transformOrigin: "center" }}
+      >
+        <ComicFlyer />
+      </motion.div>
+    </div>
   );
 }
 
