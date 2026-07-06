@@ -373,13 +373,15 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Konzept & Fahrplan",
-    body: "Klarer Plan mit Timeline und Festpreis — keine versteckten Kosten, keine Überraschungen.",
+    title: "Konzept & Architektur",
+    body:
+      "Klarer Fahrplan mit Timeline, Stack, Milestones und Festpreis — keine versteckten Kosten, keine Überraschungen.",
   },
   {
     n: "03",
-    title: "Umsetzung & Betreuung",
-    body: "Wir liefern, messen und optimieren. Du wirst nie im Unklaren gelassen.",
+    title: "Build, Ship & Scale",
+    body:
+      "Wir bauen, launchen, messen und optimieren. Danach: Betrieb, Updates, Automatisierungen — langfristig.",
   },
 ];
 
