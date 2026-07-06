@@ -60,7 +60,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Automator",
-    realName: "AI Ops Lead",
+    realName: "Alicia Tuchinsky",
     role: "AI Engineering · Automations · Agents",
     origin: "Baut AI-Agenten, die nachts arbeiten und morgens Reports auf den Tisch legen. Nie müde. Nie beleidigt.",
     power: "Verbindet 40 Tools mit einem einzigen Prompt.",
@@ -77,7 +77,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Pixel Sorcerer",
-    realName: "Design & Web Lead",
+    realName: "Milan Vukovic",
     role: "UI · UX · Motion · Brand",
     origin: "Zaubert aus einer Notion-Seite ein Interface, das man nicht mehr loslässt. Pixelverliebt bis auf den letzten Kerning-Wert.",
     power: "Materialisiert Layouts direkt aus dem Kopf des Kunden — noch bevor der es sagen kann.",
@@ -94,7 +94,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Signal",
-    realName: "Growth & Marketing Lead",
+    realName: "Jonas Brehmer",
     role: "Performance · Content · Reach",
     origin: "Verstärkt jede Botschaft, bis sie in der richtigen Zielgruppe einschlägt. Kennt jeden Algorithmus persönlich.",
     power: "Verwandelt 500€ Budget in 5.000 qualifizierte Views.",
@@ -111,7 +111,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Oracle",
-    realName: "Data & Analytics Lead",
+    realName: "Nadia Okonkwo",
     role: "Analytics · Insights · Forecasting",
     origin: "Liest Dashboards wie andere Leute Romane. Weiß, was dein Kunde kauft, bevor er es selbst weiß.",
     power: "Findet in 10 GB Logs den einen Datensatz, der alles erklärt.",
@@ -128,7 +128,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Vector",
-    realName: "Brand & Illustration Lead",
+    realName: "Lea Hoffmann-Riedl",
     role: "Branding · Illustration · Identity",
     origin: "Zeichnet Logos, die man nach einmal sehen nie wieder vergisst. Denkt in Kurven, atmet in Pantone.",
     power: "Baut aus einem Wort ein komplettes Brand-System in 48 Stunden.",
@@ -145,7 +145,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Cipher",
-    realName: "Backend & Security Lead",
+    realName: "Ferhat Yildirim",
     role: "Backend · Infra · Security",
     origin: "Baut Systeme, die auch dann laufen, wenn das halbe Internet brennt. Verschlüsselt aus Prinzip.",
     power: "Findet den Bug, den seit drei Sprints keiner mehr sucht.",
@@ -162,7 +162,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Quill",
-    realName: "Content & Copy Lead",
+    realName: "Clara Weißmüller",
     role: "Copy · Storytelling · Editorial",
     origin: "Schreibt Sätze, die im Kopf hängen bleiben wie ein guter Song. Kürzt gnadenlos. Immer.",
     power: "Verwandelt ein 40-seitiges Briefing in einen Satz, der verkauft.",
