@@ -1010,7 +1010,7 @@ function CornerSpiderman() {
   if (reduced) return null;
   return (
     <div
-      className="absolute right-[4vw] md:right-[3vw] z-[60] w-[58px] md:w-[90px] lg:w-[110px] pointer-events-none select-none top-[52px] md:top-[64px] lg:top-[76px]"
+      className="absolute right-[4vw] md:right-[3vw] z-[60] w-[58px] md:w-[90px] lg:w-[110px] pointer-events-none select-none top-[110px] md:top-[140px] lg:top-[160px]"
       aria-hidden="true"
       style={{ transformOrigin: "top center" }}
     >
