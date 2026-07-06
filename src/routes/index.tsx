@@ -585,7 +585,7 @@ function BentoMiddle() {
 /* ─────────────────────────  Stats Row  ───────────────────────── */
 
 const STATS = [
-  { value: 50, suffix: "+", label: "Projekte ausgeliefert", bg: "#ffffff", fg: "#0a0a0a" },
+  { value: 49, suffix: "+", label: "Projekte ausgeliefert", bg: "#ffffff", fg: "#0a0a0a" },
   { value: 30, suffix: "+", label: "Automatisierte Prozesse", bg: "#ff5722", fg: "#ffffff" },
   { value: 12, suffix: " Mio.+", label: "Erzielte Reichweite", bg: "#0a0a0a", fg: "#ffeb3b" },
   { value: 100, suffix: "%", label: "Inhabergeführt", bg: "#ffeb3b", fg: "#0a0a0a" },
