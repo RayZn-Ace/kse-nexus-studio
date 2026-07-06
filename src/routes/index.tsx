@@ -5,17 +5,17 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KSE GROUP — Ihre Experten für New Media" },
+      { title: "KSE GROUP — Software, AI & Digital Brands aus Hannover" },
       {
         name: "description",
         content:
-          "KSE GROUP aus Hannover: Ihre Experten für New Media. Social Media, Web, Werbefilm & Branding — kompromisslos umgesetzt.",
+          "KSE GROUP baut Software, AI-Automationen, High-End Websites und Marketing-Systeme. Full-Service Tech- & Kreativ-Agentur aus Hannover.",
       },
-      { property: "og:title", content: "KSE GROUP — Ihre Experten für New Media" },
+      { property: "og:title", content: "KSE GROUP — Software, AI & Digital Brands" },
       {
         property: "og:description",
         content:
-          "Ihre Experten für New Media. Social Media, Web, Werbefilm, Branding — aus Hannover.",
+          "Wenn es automatisiert, optimiert oder digitalisiert werden kann — wir bauen es. Software, AI, Web, Marketing, Branding.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
