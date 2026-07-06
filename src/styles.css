@@ -96,4 +96,165 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+
+  .comic-hero {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(4px 4px 0 rgba(10, 10, 10, 0.95));
+  }
+  .comic-hero * {
+    vector-effect: non-scaling-stroke;
+  }
+  .hero-ink,
+  .web-line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .web-line {
+    stroke-width: 4;
+    stroke-dasharray: 10 7;
+    animation: web-crawl 760ms linear infinite;
+  }
+  .hero-red,
+  .hero-blue,
+  .suit,
+  .cowl,
+  .cape,
+  .belt,
+  .boot,
+  .flyer-head,
+  .flyer-suit,
+  .flyer-glove,
+  .flyer-boot {
+    stroke: var(--ink);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hero-red { fill: #f12d2d; }
+  .hero-blue { fill: #2454d6; }
+  .stroke-red,
+  .stroke-blue,
+  .stroke-suit {
+    fill: none;
+    stroke-width: 8;
+  }
+  .stroke-red { stroke: #f12d2d; }
+  .stroke-blue { stroke: #2454d6; }
+  .stroke-suit { stroke: #292929; }
+  .hero-eye { fill: #ffffff; stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; }
+  .web-slinger-body { transform-origin: 60px 0; animation: web-hang 2.4s ease-in-out infinite; }
+  .web-arm-left { transform-origin: 42px 105px; animation: limb-swing-left 520ms ease-in-out infinite alternate; }
+  .web-arm-right { transform-origin: 78px 105px; animation: limb-swing-right 640ms ease-in-out infinite alternate; }
+  .web-leg-left { transform-origin: 49px 156px; animation: limb-kick-left 620ms ease-in-out infinite alternate; }
+  .web-leg-right { transform-origin: 70px 155px; animation: limb-kick-right 540ms ease-in-out infinite alternate; }
+
+  .cape { fill: #1d1d1f; animation: cape-flutter 560ms ease-in-out infinite alternate; transform-origin: 78px 58px; }
+  .cowl { fill: #171717; }
+  .suit { fill: #30333a; }
+  .belt { fill: #ffeb3b; }
+  .boot { fill: none; stroke: #151515; stroke-width: 9; stroke-linecap: round; }
+  .vigilante-runner { transform-origin: 86px 120px; animation: runner-bob 420ms ease-in-out infinite alternate; }
+  .bat-arm-left { transform-origin: 68px 73px; animation: run-arm-a 420ms ease-in-out infinite alternate; }
+  .bat-arm-right { transform-origin: 110px 73px; animation: run-arm-b 420ms ease-in-out infinite alternate; }
+  .bat-leg-left { transform-origin: 76px 121px; animation: run-leg-a 420ms ease-in-out infinite alternate; }
+  .bat-leg-right { transform-origin: 99px 121px; animation: run-leg-b 420ms ease-in-out infinite alternate; }
+  .tile-edge-dust { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: square; stroke-dasharray: 12 13; animation: dust-skid 520ms linear infinite; opacity: 0.55; }
+
+  .flyer-head { fill: #ffcc38; }
+  .flyer-suit { fill: #ff5722; }
+  .flyer-glove { fill: none; stroke: #ffcc38; stroke-width: 8; stroke-linecap: round; }
+  .flyer-boot { fill: none; stroke: #d71920; stroke-width: 8; stroke-linecap: round; }
+  .flyer-trail { fill: none; stroke: #ffeb3b; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 18 14; animation: trail-pulse 720ms linear infinite; opacity: 0.9; }
+  .flyer-hero-body { transform-origin: 100px 65px; animation: fly-wiggle 820ms ease-in-out infinite alternate; }
+  .flyer-arm-left { transform-origin: 95px 60px; animation: fly-arm-a 620ms ease-in-out infinite alternate; }
+  .flyer-arm-right { transform-origin: 135px 63px; animation: fly-arm-b 620ms ease-in-out infinite alternate; }
+  .flyer-leg-left { transform-origin: 72px 75px; animation: fly-leg-a 700ms ease-in-out infinite alternate; }
+  .flyer-leg-right { transform-origin: 88px 83px; animation: fly-leg-b 700ms ease-in-out infinite alternate; }
+
+  @keyframes web-crawl {
+    to { stroke-dashoffset: -17; }
+  }
+  @keyframes web-hang {
+    0%, 100% { transform: rotate(-5deg) translateY(0); }
+    50% { transform: rotate(6deg) translateY(5px); }
+  }
+  @keyframes limb-swing-left {
+    from { transform: rotate(-14deg); }
+    to { transform: rotate(18deg); }
+  }
+  @keyframes limb-swing-right {
+    from { transform: rotate(8deg); }
+    to { transform: rotate(-10deg); }
+  }
+  @keyframes limb-kick-left {
+    from { transform: rotate(12deg); }
+    to { transform: rotate(-20deg); }
+  }
+  @keyframes limb-kick-right {
+    from { transform: rotate(-16deg); }
+    to { transform: rotate(18deg); }
+  }
+  @keyframes runner-bob {
+    from { transform: translateY(0) rotate(-1deg); }
+    to { transform: translateY(-7px) rotate(2deg); }
+  }
+  @keyframes cape-flutter {
+    from { transform: skewX(-7deg) translateX(0); }
+    to { transform: skewX(8deg) translateX(-6px); }
+  }
+  @keyframes run-arm-a {
+    from { transform: rotate(18deg); }
+    to { transform: rotate(-24deg); }
+  }
+  @keyframes run-arm-b {
+    from { transform: rotate(-24deg); }
+    to { transform: rotate(20deg); }
+  }
+  @keyframes run-leg-a {
+    from { transform: rotate(-22deg); }
+    to { transform: rotate(24deg); }
+  }
+  @keyframes run-leg-b {
+    from { transform: rotate(26deg); }
+    to { transform: rotate(-20deg); }
+  }
+  @keyframes dust-skid {
+    to { stroke-dashoffset: -25; }
+  }
+  @keyframes trail-pulse {
+    to { stroke-dashoffset: -32; }
+  }
+  @keyframes fly-wiggle {
+    from { transform: translateY(0) rotate(-2deg); }
+    to { transform: translateY(-5px) rotate(3deg); }
+  }
+  @keyframes fly-arm-a {
+    from { transform: rotate(4deg); }
+    to { transform: rotate(-10deg); }
+  }
+  @keyframes fly-arm-b {
+    from { transform: rotate(-4deg); }
+    to { transform: rotate(9deg); }
+  }
+  @keyframes fly-leg-a {
+    from { transform: rotate(8deg); }
+    to { transform: rotate(-12deg); }
+  }
+  @keyframes fly-leg-b {
+    from { transform: rotate(-8deg); }
+    to { transform: rotate(12deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .comic-hero,
+    .comic-hero * {
+      animation: none !important;
+    }
+  }
 }
