@@ -258,3 +258,18 @@
     }
   }
 }
+
+/* Custom cursor: hide native pointer on desktop when active */
+@media (pointer: fine) {
+  html.kse-has-cursor,
+  html.kse-has-cursor body,
+  html.kse-has-cursor a,
+  html.kse-has-cursor button,
+  html.kse-has-cursor [role="button"],
+  html.kse-has-cursor input,
+  html.kse-has-cursor textarea,
+  html.kse-has-cursor label,
+  html.kse-has-cursor .brutal-tile {
+    cursor: none !important;
+  }
+}
