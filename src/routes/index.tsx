@@ -159,16 +159,10 @@ function Nav() {
           </Link>
           <Link
             to="/konfigurator"
-            className="hidden sm:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#ffeb3b] text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
-          >
-            Konfigurator
-          </Link>
-          <a
-            href="#kontakt"
             className="inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
           >
-            Kontakt →
-          </a>
+            Projekt konfigurieren →
+          </Link>
         </div>
       </div>
     </header>
