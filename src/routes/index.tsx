@@ -832,106 +832,110 @@ function Footer() {
 
 /* ─────────────────────────  Page  ───────────────────────── */
 
-/* ─────────────────────────  Scroll Heroes  ───────────────────────── */
+/* ─────────────────────────  Scroll Heroes (section-anchored)  ───────────────────────── */
 
-function ScrollHeroes() {
+function HeroSwingerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
   const reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll();
-
-  // Swinger (Spider): descends from top-right, swings across, exits bottom-right
-  const swingerY = useTransform(scrollYProgress, [0, 0.35], ["-15vh", "40vh"]);
-  const swingerX = useTransform(scrollYProgress, [0, 0.35], ["0vw", "-4vw"]);
-  const swingerRot = useTransform(scrollYProgress, [0, 0.35], [-8, 12]);
-  const swingerOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.02, 0.3, 0.4],
-    [0, 0.9, 0.9, 0],
-  );
-
-  // Glider (Bat): appears left, glides diagonally down-right during middle scroll
-  const gliderY = useTransform(scrollYProgress, [0.3, 0.65], ["10vh", "55vh"]);
-  const gliderX = useTransform(scrollYProgress, [0.3, 0.65], ["-2vw", "6vw"]);
-  const gliderRot = useTransform(scrollYProgress, [0.3, 0.65], [-5, 8]);
-  const gliderOpacity = useTransform(
-    scrollYProgress,
-    [0.28, 0.35, 0.6, 0.68],
-    [0, 0.85, 0.85, 0],
-  );
-
-  // Flyer: appears bottom-right late, flies up and out top-right
-  const flyerY = useTransform(scrollYProgress, [0.65, 1], ["60vh", "-10vh"]);
-  const flyerX = useTransform(scrollYProgress, [0.65, 1], ["0vw", "-3vw"]);
-  const flyerRot = useTransform(scrollYProgress, [0.65, 1], [-6, -18]);
-  const flyerOpacity = useTransform(
-    scrollYProgress,
-    [0.62, 0.7, 0.95, 1],
-    [0, 0.9, 0.9, 0],
-  );
-
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end start"],
+  });
+  // Rope descends from top-right corner of the hero tile.
+  // 0.0 → above, 0.25 → hanging in front of tile, 0.55 → still hanging,
+  // 0.85 → swings left & out, 1.0 → gone.
+  const y = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85], ["-30%", "35%", "55%", "40%"]);
+  const x = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85, 1], [0, 0, -20, -140, -220]);
+  const rot = useTransform(scrollYProgress, [0, 0.25, 0.55, 0.85, 1], [-4, 0, 6, -18, -30]);
+  const opacity = useTransform(scrollYProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
   if (reduced) return null;
-
   return (
-    <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
-      {/* Swinger — top right */}
-      <motion.img
-        src={heroSwinger}
-        alt=""
-        aria-hidden
-        loading="lazy"
-        className="absolute right-2 md:right-8 top-0 w-[90px] md:w-[130px] h-auto select-none"
-        style={{
-          y: swingerY,
-          x: swingerX,
-          rotate: swingerRot,
-          opacity: swingerOpacity,
-        }}
-      />
-      {/* Glider — left */}
-      <motion.img
-        src={heroGlider}
-        alt=""
-        aria-hidden
-        loading="lazy"
-        className="absolute left-2 md:left-6 top-0 w-[110px] md:w-[160px] h-auto select-none"
-        style={{
-          y: gliderY,
-          x: gliderX,
-          rotate: gliderRot,
-          opacity: gliderOpacity,
-        }}
-      />
-      {/* Flyer — right bottom */}
-      <motion.img
-        src={heroFlyer}
-        alt=""
-        aria-hidden
-        loading="lazy"
-        className="absolute right-2 md:right-10 top-0 w-[110px] md:w-[160px] h-auto select-none"
-        style={{
-          y: flyerY,
-          x: flyerX,
-          rotate: flyerRot,
-          opacity: flyerOpacity,
-        }}
-      />
-    </div>
+    <motion.img
+      src={heroSwinger}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className="hidden md:block absolute right-[6%] top-0 w-[110px] lg:w-[140px] h-auto pointer-events-none select-none z-30"
+      style={{ y, x, rotate: rot, opacity, transformOrigin: "top center" }}
+    />
+  );
+}
+
+function HeroBatmanScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end start"],
+  });
+  // Walks along the top edge of the services tile then jumps off the right.
+  // 0.0→0.15 fade in from left. 0.15→0.55 walk right along top edge.
+  // 0.55→0.85 jump/glide down and to the right. 0.85→1 fade out.
+  const x = useTransform(scrollYProgress, [0, 0.15, 0.55, 0.85, 1], ["-10%", "0%", "55%", "90%", "110%"]);
+  const y = useTransform(scrollYProgress, [0, 0.15, 0.55, 0.7, 0.85, 1], ["8%", "6%", "6%", "18%", "60%", "80%"]);
+  const rot = useTransform(scrollYProgress, [0, 0.55, 0.7, 0.85, 1], [-2, -2, 8, 22, 30]);
+  const opacity = useTransform(scrollYProgress, [0, 0.12, 0.9, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.55, 1], [0.9, 0.9, 1]);
+  if (reduced) return null;
+  return (
+    <motion.img
+      src={heroGlider}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className="hidden md:block absolute left-0 top-0 w-[130px] lg:w-[170px] h-auto pointer-events-none select-none z-30"
+      style={{ x, y, rotate: rot, opacity, scale, transformOrigin: "center" }}
+    />
+  );
+}
+
+function HeroFlyerScene({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end start"],
+  });
+  // Flies in from bottom-left, arcs across the tiles, exits top-right.
+  const x = useTransform(scrollYProgress, [0, 0.5, 1], ["-15%", "40%", "105%"]);
+  const y = useTransform(scrollYProgress, [0, 0.5, 1], ["90%", "30%", "-10%"]);
+  const rot = useTransform(scrollYProgress, [0, 0.5, 1], [-8, -14, -22]);
+  const opacity = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
+  if (reduced) return null;
+  return (
+    <motion.img
+      src={heroFlyer}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className="hidden md:block absolute left-0 top-0 w-[140px] lg:w-[180px] h-auto pointer-events-none select-none z-30"
+      style={{ x, y, rotate: rot, opacity, transformOrigin: "center" }}
+    />
   );
 }
 
 function Index() {
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const servicesSectionRef = useRef<HTMLDivElement>(null);
+  const flyerSectionRef = useRef<HTMLDivElement>(null);
   return (
     <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden">
       <Nav />
       <main>
-        <BentoHero />
+        <div ref={heroSectionRef} className="relative">
+          <BentoHero />
+          <HeroSwingerScene targetRef={heroSectionRef} />
+        </div>
         <Marquee />
-        <BentoMiddle />
-        <StatsRow />
-        <ProcessSection />
+        <div ref={servicesSectionRef} className="relative">
+          <BentoMiddle />
+          <HeroBatmanScene targetRef={servicesSectionRef} />
+        </div>
+        <div ref={flyerSectionRef} className="relative">
+          <StatsRow />
+          <ProcessSection />
+          <HeroFlyerScene targetRef={flyerSectionRef} />
+        </div>
         <ContactSection />
       </main>
       <Footer />
-      <ScrollHeroes />
     </div>
   );
 }
