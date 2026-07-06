@@ -283,7 +283,7 @@ function BentoMiddle() {
     <section id="leistungen" className="px-4 md:px-8 py-8 md:py-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-auto">
         {/* SERVICES */}
-        <Tile className="md:col-span-6 p-8 md:p-10">
+        <Tile className="md:col-span-8 md:row-span-2 p-8 md:p-10">
           <Label className="opacity-40">/ 01 — Expertise</Label>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
             {SERVICES.map((s) => (
@@ -302,7 +302,7 @@ function BentoMiddle() {
 
         {/* STATS BIG */}
         <Tile
-          className="md:col-span-3 p-6 flex flex-col justify-end min-h-[260px]"
+          className="md:col-span-4 p-6 flex flex-col justify-end min-h-[260px]"
           hover
           {...{ style: { background: "#ffeb3b" } }}
         >
@@ -317,7 +317,7 @@ function BentoMiddle() {
         </Tile>
 
         {/* TESTIMONIAL */}
-        <Tile className="md:col-span-3 p-6 flex flex-col gap-4 min-h-[260px]">
+        <Tile className="md:col-span-4 p-6 flex flex-col gap-4 min-h-[260px]">
           <Label className="opacity-40">/ 03 — Stimme</Label>
           <p className="text-base leading-relaxed italic font-medium">
             „KSE hat unsere Erwartungen nicht erfüllt — sie hat sie neu definiert."
