@@ -162,7 +162,7 @@ const TEAM: Hero[] = [
   },
   {
     codename: "The Quill",
-    realName: "Clara Weißmüller",
+    realName: "Alicia Tuchinsky",
     role: "Copy · Storytelling · Editorial",
     origin: "Schreibt Sätze, die im Kopf hängen bleiben wie ein guter Song. Kürzt gnadenlos. Immer.",
     power: "Verwandelt ein 40-seitiges Briefing in einen Satz, der verkauft.",
