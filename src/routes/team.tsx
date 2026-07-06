@@ -4,6 +4,10 @@ import architect from "@/assets/team-architect.jpg";
 import automator from "@/assets/team-automator.jpg";
 import pixel from "@/assets/team-pixel.jpg";
 import signal from "@/assets/team-signal.jpg";
+import oracle from "@/assets/team-oracle.jpg";
+import vector from "@/assets/team-vector.jpg";
+import cipher from "@/assets/team-cipher.jpg";
+import quill from "@/assets/team-quill.jpg";
 
 export const Route = createFileRoute("/team")({
   head: () => ({
@@ -102,6 +106,74 @@ const TEAM: Hero[] = [
     ],
     quote: `„Reichweite ohne Substanz ist Lärm. Wir liefern beides."`,
     img: signal,
+    bg: "#ff5722",
+    accent: "#ffeb3b",
+  },
+  {
+    codename: "The Oracle",
+    realName: "Data & Analytics Lead",
+    role: "Analytics · Insights · Forecasting",
+    origin: "Liest Dashboards wie andere Leute Romane. Weiß, was dein Kunde kauft, bevor er es selbst weiß.",
+    power: "Findet in 10 GB Logs den einen Datensatz, der alles erklärt.",
+    weakness: "Kann keine Bauchgefühl-Entscheidungen treffen. Nie.",
+    stats: [
+      { label: "Dashboards live", value: "90+" },
+      { label: "Ø Forecast-Genauigkeit", value: "94%" },
+      { label: "Excel-Formeln im Kopf", value: "zu viele" },
+    ],
+    quote: `„Ohne Daten bist du nur eine weitere Person mit einer Meinung."`,
+    img: oracle,
+    bg: "#ff5722",
+    accent: "#ffeb3b",
+  },
+  {
+    codename: "The Vector",
+    realName: "Brand & Illustration Lead",
+    role: "Branding · Illustration · Identity",
+    origin: "Zeichnet Logos, die man nach einmal sehen nie wieder vergisst. Denkt in Kurven, atmet in Pantone.",
+    power: "Baut aus einem Wort ein komplettes Brand-System in 48 Stunden.",
+    weakness: "Zuckt physisch bei falsch gekicktem Logo.",
+    stats: [
+      { label: "Brands entwickelt", value: "45+" },
+      { label: "Icons gezeichnet", value: "3.2k" },
+      { label: "Pantone-Fächer", value: "3" },
+    ],
+    quote: `„Ein Logo ist keine Dekoration. Es ist ein Versprechen."`,
+    img: vector,
+    bg: "#ffeb3b",
+    accent: "#ff5722",
+  },
+  {
+    codename: "The Cipher",
+    realName: "Backend & Security Lead",
+    role: "Backend · Infra · Security",
+    origin: "Baut Systeme, die auch dann laufen, wenn das halbe Internet brennt. Verschlüsselt aus Prinzip.",
+    power: "Findet den Bug, den seit drei Sprints keiner mehr sucht.",
+    weakness: "Erklärt Security-Konzepte mit zu vielen Analogien.",
+    stats: [
+      { label: "APIs deployed", value: "150+" },
+      { label: "Uptime", value: "99.98%" },
+      { label: "Passwörter im Kopf", value: "0 — dafür gibt's Vaults" },
+    ],
+    quote: `„Sicherheit ist kein Feature. Sie ist die Basis."`,
+    img: cipher,
+    bg: "#0a0a0a",
+    accent: "#ff5722",
+  },
+  {
+    codename: "The Quill",
+    realName: "Content & Copy Lead",
+    role: "Copy · Storytelling · Editorial",
+    origin: "Schreibt Sätze, die im Kopf hängen bleiben wie ein guter Song. Kürzt gnadenlos. Immer.",
+    power: "Verwandelt ein 40-seitiges Briefing in einen Satz, der verkauft.",
+    weakness: "Korrigiert Speisekarten. Ungefragt.",
+    stats: [
+      { label: "Landingpages betextet", value: "180+" },
+      { label: "Ø Conversion-Uplift", value: "+37%" },
+      { label: "Wörter gestrichen", value: "Millionen" },
+    ],
+    quote: `„Wenn du es in einem Satz nicht sagen kannst, hast du es nicht verstanden."`,
+    img: quill,
     bg: "#ff5722",
     accent: "#ffeb3b",
   },
