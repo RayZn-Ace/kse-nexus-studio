@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
+import { Route as ImpressumRouteImport } from './routes/impressum'
+import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -30,6 +32,16 @@ const LeistungenRoute = LeistungenRouteImport.update({
 const KonfiguratorRoute = KonfiguratorRouteImport.update({
   id: '/konfigurator',
   path: '/konfigurator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpressumRoute = ImpressumRouteImport.update({
+  id: '/impressum',
+  path: '/impressum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatenschutzRoute = DatenschutzRouteImport.update({
+  id: '/datenschutz',
+  path: '/datenschutz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,6 +99,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -100,6 +114,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -115,6 +131,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -131,6 +149,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/datenschutz'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -144,6 +164,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/datenschutz'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -158,6 +180,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/datenschutz'
+    | '/impressum'
     | '/konfigurator'
     | '/leistungen'
     | '/admin/chatbot'
@@ -173,6 +197,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DatenschutzRoute: typeof DatenschutzRoute
+  ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
   LeistungenRoute: typeof LeistungenRoute
   ShareTokenRoute: typeof ShareTokenRoute
@@ -193,6 +219,20 @@ declare module '@tanstack/react-router' {
       path: '/konfigurator'
       fullPath: '/konfigurator'
       preLoaderRoute: typeof KonfiguratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impressum': {
+      id: '/impressum'
+      path: '/impressum'
+      fullPath: '/impressum'
+      preLoaderRoute: typeof ImpressumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/datenschutz': {
+      id: '/datenschutz'
+      path: '/datenschutz'
+      fullPath: '/datenschutz'
+      preLoaderRoute: typeof DatenschutzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -290,6 +330,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  DatenschutzRoute: DatenschutzRoute,
+  ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
   LeistungenRoute: LeistungenRoute,
   ShareTokenRoute: ShareTokenRoute,

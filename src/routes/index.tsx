@@ -965,6 +965,10 @@ function Footer() {
         <span>Hannover · Deutschland</span>
         <span className="text-[#ffeb3b]">{time ? `${time} Uhr` : "\u00A0"}</span>
       </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.2em] font-bold text-white/60">
+        <Link to="/impressum" className="hover:text-[#ffeb3b] transition-colors">Impressum</Link>
+        <Link to="/datenschutz" className="hover:text-[#ffeb3b] transition-colors">Datenschutz</Link>
+      </div>
     </footer>
   );
 }
