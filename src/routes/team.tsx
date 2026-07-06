@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import architect from "@/assets/team-architect.jpg";
 import automator from "@/assets/team-automator.jpg";
 import pixel from "@/assets/team-pixel.jpg";
