@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import softwareVideo from "@/assets/service-software.mp4.asset.json";
+import aiVideo from "@/assets/service-ai.mp4.asset.json";
+import webVideo from "@/assets/service-web.mp4.asset.json";
+import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -257,28 +261,261 @@ function Marquee() {
 
 const SERVICES = [
   {
+    key: "software",
     title: "Software Development",
     body:
       "Web-Apps, SaaS-Plattformen, Mobile Apps, CRM, Dashboards, Booking- & Ticketing-Systeme. React, Next.js, TypeScript, Supabase.",
   },
   {
+    key: "ai",
     title: "AI & Automation",
     body:
       "WhatsApp-CRM, Chatbots, Marketing- & Lead-Automation, interne AI-Assistenten. OpenAI, Claude, Meta- & TikTok-APIs.",
   },
   {
+    key: "web",
     title: "Web & UX",
     body:
       "High-End Sites mit Motion, Typografie und Conversion-Fokus. Kein Template. Jede Site custom gebaut.",
   },
   {
+    key: "marketing",
     title: "Marketing & Brand",
     body:
       "Content, Paid Ads (Meta, TikTok, Snap), Performance, Branding, Film & Content-Produktion — aus einer Hand.",
   },
-];
+] as const;
+
+type ServiceKey = (typeof SERVICES)[number]["key"];
+
+const SERVICE_DETAILS: Record<
+  ServiceKey,
+  {
+    label: string;
+    title: string;
+    video: string;
+    pitch: string;
+    bullets: string[];
+    stack: string[];
+    accent: string;
+  }
+> = {
+  software: {
+    label: "/ 01 — Software Development",
+    title: "Wir bauen die Software, die dein Business skaliert.",
+    video: softwareVideo.url,
+    pitch:
+      "Keine Templates. Kein Baukasten. Custom-Software, die exakt zu deinem Prozess passt — schnell, sauber, skalierbar.",
+    bullets: [
+      "SaaS, Web-Apps & Mobile Apps",
+      "CRM, Dashboards & interne Tools",
+      "Booking- & Ticketing-Systeme",
+      "Festpreis, klare Timeline, kein Blabla",
+    ],
+    stack: ["React", "Next.js", "TypeScript", "Supabase", "TanStack"],
+    accent: "#ff5722",
+  },
+  ai: {
+    label: "/ 02 — AI & Automation",
+    title: "Automatisiere alles. Skaliere ohne mehr Personal.",
+    video: aiVideo.url,
+    pitch:
+      "Wir bauen AI-Systeme, die für dich verkaufen, antworten und arbeiten — 24/7, ohne Kaffeepause.",
+    bullets: [
+      "WhatsApp-CRM & Chatbots die verkaufen",
+      "Marketing- & Lead-Automation",
+      "Interne AI-Assistenten fürs Team",
+      "Meta, TikTok & Instagram APIs",
+    ],
+    stack: ["OpenAI", "Claude", "n8n", "Zapier", "Meta API"],
+    accent: "#ffeb3b",
+  },
+  web: {
+    label: "/ 03 — Web & UX",
+    title: "Deine Website ist dein bester Verkäufer.",
+    video: webVideo.url,
+    pitch:
+      "High-End Sites mit Motion, Typografie und Conversion-Fokus. Sites, bei denen Kunden hängenbleiben — nicht wegklicken.",
+    bullets: [
+      "Custom Design — kein Template",
+      "Motion, Typografie & Micro-Interactions",
+      "Conversion-optimiert & SEO-ready",
+      "Blitzschnell auf jedem Gerät",
+    ],
+    stack: ["React", "Framer Motion", "Tailwind", "Vite", "GSAP"],
+    accent: "#ff5722",
+  },
+  marketing: {
+    label: "/ 04 — Marketing & Brand",
+    title: "Wir machen deine Marke unübersehbar.",
+    video: marketingVideo.url,
+    pitch:
+      "Content, Ads, Branding, Film — aus einer Hand. Wir bauen Marken, die Leute lieben und Algorithmen belohnen.",
+    bullets: [
+      "Paid Ads: Meta, TikTok, Snap",
+      "Content- & Film-Produktion",
+      "Branding, Corporate Design, Logo",
+      "Performance & Growth-Strategie",
+    ],
+    stack: ["Meta Ads", "TikTok", "Adobe", "DaVinci", "Figma"],
+    accent: "#ffeb3b",
+  },
+};
+
+function ServiceModal({
+  serviceKey,
+  onClose,
+}: {
+  serviceKey: ServiceKey | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!serviceKey) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [serviceKey, onClose]);
+
+  return (
+    <AnimatePresence>
+      {serviceKey && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+        >
+          {/* Backdrop */}
+          <motion.div
+            className="absolute inset-0 bg-[#0a0a0a]/85 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+
+          {/* Modal card */}
+          <motion.div
+            className="relative w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-white border-4 border-[#0a0a0a] shadow-signal"
+            initial={{ y: 40, opacity: 0, scale: 0.97 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 40, opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const d = SERVICE_DETAILS[serviceKey];
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  {/* VIDEO */}
+                  <div className="relative bg-[#0a0a0a] aspect-video md:aspect-auto md:min-h-[500px] overflow-hidden">
+                    <video
+                      key={d.video}
+                      src={d.video}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span
+                        className="inline-block px-3 py-1.5 border-2 border-white text-white text-[10px] font-bold uppercase tracking-[0.28em]"
+                        style={{ fontFamily: "var(--font-sans)" }}
+                      >
+                        {d.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* CONTENT */}
+                  <div className="p-8 md:p-10 flex flex-col justify-between gap-8">
+                    <div>
+                      <h2
+                        className="text-3xl md:text-5xl font-black uppercase leading-[0.95] tracking-tighter"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {d.title}
+                      </h2>
+                      <p className="mt-5 text-base md:text-lg font-medium text-[#0a0a0a]/80 leading-relaxed">
+                        {d.pitch}
+                      </p>
+
+                      <ul className="mt-6 space-y-3">
+                        {d.bullets.map((b, i) => (
+                          <motion.li
+                            key={b}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.25 + i * 0.06 }}
+                            className="flex items-start gap-3 text-sm md:text-base font-medium"
+                          >
+                            <span
+                              className="mt-1.5 h-3 w-3 shrink-0 border-2 border-[#0a0a0a]"
+                              style={{ background: d.accent }}
+                            />
+                            <span>{b}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {d.stack.map((s) => (
+                          <span
+                            key={s}
+                            className="text-[10px] font-bold uppercase tracking-widest border-2 border-[#0a0a0a] px-2 py-1"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <a
+                        href="#kontakt"
+                        onClick={onClose}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0a0a0a] text-white border-2 border-[#0a0a0a] px-6 py-4 text-sm uppercase tracking-[0.2em] font-black hover:bg-[#ff5722] hover:border-[#ff5722] transition-colors"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        Jetzt anfragen →
+                      </a>
+                      <button
+                        onClick={onClose}
+                        className="inline-flex items-center justify-center gap-2 border-2 border-[#0a0a0a] px-6 py-4 text-sm uppercase tracking-[0.2em] font-black hover:bg-[#ffeb3b] transition-colors"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        Schließen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Close X */}
+            <button
+              onClick={onClose}
+              aria-label="Schließen"
+              className="absolute top-3 right-3 grid place-items-center h-10 w-10 bg-white border-2 border-[#0a0a0a] hover:bg-[#ff5722] hover:text-white transition-colors font-black"
+            >
+              ✕
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function BentoMiddle() {
+  const [openService, setOpenService] = useState<ServiceKey | null>(null);
   return (
     <section id="leistungen" className="px-4 md:px-8 py-8 md:py-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-auto">
@@ -287,15 +524,25 @@ function BentoMiddle() {
           <Label className="opacity-40">/ 01 — Expertise</Label>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
             {SERVICES.map((s) => (
-              <div key={s.title} className="group">
+              <button
+                key={s.title}
+                onClick={() => setOpenService(s.key)}
+                className="group text-left cursor-pointer"
+              >
                 <div
-                  className="text-2xl md:text-3xl font-black uppercase border-b-2 border-[#0a0a0a] pb-2 group-hover:text-[#ff5722] transition-colors"
+                  className="flex items-center justify-between text-2xl md:text-3xl font-black uppercase border-b-2 border-[#0a0a0a] pb-2 group-hover:text-[#ff5722] transition-colors"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  {s.title}
+                  <span>{s.title}</span>
+                  <span className="text-[#ff5722] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-2xl shrink-0 ml-2">
+                    ▶
+                  </span>
                 </div>
                 <p className="text-sm mt-3 text-[#0a0a0a]/70 leading-relaxed">{s.body}</p>
-              </div>
+                <span className="mt-3 inline-block text-[10px] font-bold uppercase tracking-widest text-[#ff5722] opacity-70 group-hover:opacity-100 transition-opacity">
+                  Mehr erfahren →
+                </span>
+              </button>
             ))}
           </div>
         </Tile>
@@ -327,6 +574,7 @@ function BentoMiddle() {
           </span>
         </Tile>
       </div>
+      <ServiceModal serviceKey={openService} onClose={() => setOpenService(null)} />
     </section>
   );
 }
