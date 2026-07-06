@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import architect from "@/assets/team-architect.jpg";
 import automator from "@/assets/team-automator.jpg";
 import pixel from "@/assets/team-pixel.jpg";
@@ -270,17 +271,26 @@ function Roster() {
 function HeroCard({ hero, index }: { hero: Hero; index: number }) {
   const reduced = useReducedMotion();
   const reverse = index % 2 === 1;
+  const cardRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"],
+  });
+  // Parallax: image drifts slightly opposite scroll, dossier gets a subtle counter-drift.
+  const imageY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [40, -40]);
+  const dossierY = useTransform(scrollYProgress, [0, 1], reduced ? [0, 0] : [-14, 14]);
   return (
     <motion.article
+      ref={cardRef}
       initial={reduced ? undefined : { opacity: 0, y: 40 }}
       whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
-      className="grid md:grid-cols-12 gap-4 md:gap-6"
+      className="group/card grid md:grid-cols-12 gap-4 md:gap-6"
     >
       {/* Portrait */}
-      <div
-        className={`md:col-span-5 relative border-4 border-[#0a0a0a] overflow-hidden ${reverse ? "md:order-2" : ""}`}
+      <motion.div
+        className={`md:col-span-5 relative border-4 border-[#0a0a0a] overflow-hidden transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] will-change-transform group-hover/card:-translate-y-1 group-hover/card:-translate-x-1 group-hover/card:[box-shadow:14px_14px_0_0_#0a0a0a] ${reverse ? "md:order-2" : ""}`}
         style={{
           background: hero.bg,
           boxShadow: "8px 8px 0 0 #0a0a0a",
@@ -292,28 +302,34 @@ function HeroCard({ hero, index }: { hero: Hero; index: number }) {
         <div className="absolute top-3 right-3 z-10 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-[#ffeb3b] px-2 py-1 text-[10px] uppercase tracking-[0.25em] font-bold">
           KSE·HERO
         </div>
-        <img
-          src={hero.img}
-          alt={`${hero.codename} — ${hero.realName}`}
-          loading="lazy"
-          width={768}
-          height={960}
-          className={`w-full h-full object-cover aspect-[4/5] ${hero.bg === "#0a0a0a" ? "" : "mix-blend-multiply"}`}
-        />
+        <div className="relative w-full aspect-[4/5] overflow-hidden">
+          <motion.img
+            src={hero.img}
+            alt={`${hero.codename} — ${hero.realName}`}
+            loading="lazy"
+            width={768}
+            height={960}
+            style={{ y: imageY }}
+            className={`absolute inset-0 -top-8 -bottom-8 h-[calc(100%+4rem)] w-full object-cover will-change-transform transition-transform duration-[900ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover/card:scale-[1.06] ${hero.bg === "#0a0a0a" ? "" : "mix-blend-multiply"}`}
+          />
+        </div>
         {/* Halftone overlay */}
         <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
+          className="absolute inset-0 opacity-20 pointer-events-none transition-opacity duration-500 group-hover/card:opacity-10"
           style={{
             backgroundImage: "radial-gradient(#0a0a0a 1px, transparent 1px)",
             backgroundSize: "6px 6px",
           }}
         />
-      </div>
+      </motion.div>
 
       {/* Dossier */}
-      <div className={`md:col-span-7 ${reverse ? "md:order-1" : ""}`}>
+      <motion.div
+        style={{ y: dossierY }}
+        className={`md:col-span-7 will-change-transform ${reverse ? "md:order-1" : ""}`}
+      >
         <div
-          className="border-4 border-[#0a0a0a] bg-white p-5 md:p-8 h-full flex flex-col"
+          className="border-4 border-[#0a0a0a] bg-white p-5 md:p-8 h-full flex flex-col transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover/card:translate-y-1 group-hover/card:translate-x-1 group-hover/card:[box-shadow:2px_2px_0_0_#0a0a0a]"
           style={{ boxShadow: "8px 8px 0 0 #0a0a0a" }}
         >
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-[#0a0a0a]/60">
@@ -360,7 +376,7 @@ function HeroCard({ hero, index }: { hero: Hero; index: number }) {
             {hero.quote}
           </blockquote>
         </div>
-      </div>
+      </motion.div>
     </motion.article>
   );
 }
