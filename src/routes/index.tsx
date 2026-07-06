@@ -553,14 +553,16 @@ function BentoMiddle() {
           hover
           {...{ style: { background: "#ffeb3b" } }}
         >
-          <Label className="opacity-60">/ 02 — Projekte</Label>
+          <Label className="opacity-60">/ 02 — Disziplinen</Label>
           <div
             className="text-6xl md:text-7xl font-black leading-none mt-4"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            <CountUp target={50} />+
+            <CountUp target={10} />+
           </div>
-          <div className="text-sm font-bold uppercase mt-2">Erfolgreich umgesetzt</div>
+          <div className="text-sm font-bold uppercase mt-2 leading-tight">
+            Von Code bis Kamera — alles aus einer Hand
+          </div>
         </Tile>
 
         {/* TESTIMONIAL */}
