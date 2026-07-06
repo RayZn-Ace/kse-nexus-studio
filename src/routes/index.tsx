@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import softwareVideo from "@/assets/service-software.mp4.asset.json";
 import aiVideo from "@/assets/service-ai.mp4.asset.json";
 import webVideo from "@/assets/service-web.mp4.asset.json";
@@ -44,13 +52,50 @@ function Tile({
   [k: string]: unknown;
 }) {
   const cls = `brutal-tile ${hover ? "brutal-tile-hover" : ""} ${className}`;
-  // Runtime-typed spread — TanStack Start's TS-strict build tolerates this
-  // narrowly typed passthrough on primitive HTML elements.
-  const Comp = As as unknown as React.ElementType;
+  const reduced = useReducedMotion();
+  const ref = useRef<HTMLElement | null>(null);
+
+  // Normalized cursor position over the tile (-0.5 .. 0.5)
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+
+  const springCfg = { stiffness: 200, damping: 18, mass: 0.5 };
+  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [7, -7]), springCfg);
+  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-7, 7]), springCfg);
+  const translateZ = useSpring(0, springCfg);
+
+  const handleMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (reduced || !ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    px.set((e.clientX - rect.left) / rect.width - 0.5);
+    py.set((e.clientY - rect.top) / rect.height - 0.5);
+    translateZ.set(12);
+  };
+  const handleLeave = () => {
+    px.set(0);
+    py.set(0);
+    translateZ.set(0);
+  };
+
+  const MotionComp = (motion as unknown as Record<string, React.ElementType>)[As];
+
   return (
-    <Comp className={cls} {...rest}>
+    <MotionComp
+      ref={ref}
+      className={cls}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      style={{
+        rotateX,
+        rotateY,
+        translateZ,
+        transformPerspective: 900,
+        transformStyle: "preserve-3d",
+      }}
+      {...rest}
+    >
       {children}
-    </Comp>
+    </MotionComp>
   );
 }
 
