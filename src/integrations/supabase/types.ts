@@ -52,6 +52,8 @@ export type Database = {
       }
       contact_messages: {
         Row: {
+          budget_range: string | null
+          company: string | null
           created_at: string
           email: string
           id: string
@@ -59,9 +61,14 @@ export type Database = {
           is_read: boolean
           message: string
           name: string
+          services: string[] | null
+          source: string | null
           subject: string | null
+          timeline: string | null
         }
         Insert: {
+          budget_range?: string | null
+          company?: string | null
           created_at?: string
           email: string
           id?: string
@@ -69,9 +76,14 @@ export type Database = {
           is_read?: boolean
           message: string
           name: string
+          services?: string[] | null
+          source?: string | null
           subject?: string | null
+          timeline?: string | null
         }
         Update: {
+          budget_range?: string | null
+          company?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -79,7 +91,10 @@ export type Database = {
           is_read?: boolean
           message?: string
           name?: string
+          services?: string[] | null
+          source?: string | null
           subject?: string | null
+          timeline?: string | null
         }
         Relationships: []
       }
