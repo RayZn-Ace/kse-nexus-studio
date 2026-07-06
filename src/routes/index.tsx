@@ -165,12 +165,7 @@ function BentoHero() {
     <section id="top" className="px-4 md:px-8 py-8 md:py-12">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-auto">
         {/* HERO CLAIM */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          className="md:col-span-8 md:row-span-2 brutal-tile p-8 md:p-10 flex flex-col justify-between min-h-[420px] md:min-h-[520px]"
-        >
+        <div className="md:col-span-8 md:row-span-2 brutal-tile p-8 md:p-10 flex flex-col justify-between min-h-[420px] md:min-h-[520px]">
           <div className="flex items-center justify-between">
             <Label className="text-[#0a0a0a]/60">/ Hannover · New Media</Label>
             <Label className="text-[#0a0a0a]/60">Est. 2021</Label>
@@ -196,13 +191,10 @@ function BentoHero() {
               Wenn es automatisiert, optimiert oder digitalisiert werden kann — wir bauen es.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* AVAILABILITY */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05 }}
+        <div
           className="md:col-span-4 brutal-tile brutal-tile-hover p-6 flex flex-col justify-between"
           style={{ background: "#ff5722" }}
         >
@@ -226,14 +218,11 @@ function BentoHero() {
               24h-Antwort-Versprechen. Erstgespräch kostenlos & unverbindlich.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* PRIMARY CTA */}
-        <motion.a
+        <a
           href="#kontakt"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
           className="md:col-span-4 brutal-tile brutal-tile-hover brutal-tile-press p-6 flex items-center justify-between group cursor-pointer shadow-signal"
           style={{ background: "#0a0a0a" }}
         >
@@ -256,7 +245,7 @@ function BentoHero() {
               d="M17 8l4 4m0 0l-4 4m4-4H3"
             />
           </svg>
-        </motion.a>
+        </a>
       </div>
     </section>
   );
