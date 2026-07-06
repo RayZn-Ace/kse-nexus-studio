@@ -6,6 +6,7 @@ import {
   useInView,
   useMotionValue,
   useReducedMotion,
+  useScroll,
   useSpring,
   useTransform,
 } from "framer-motion";
@@ -13,6 +14,9 @@ import softwareVideo from "@/assets/service-software.mp4.asset.json";
 import aiVideo from "@/assets/service-ai.mp4.asset.json";
 import webVideo from "@/assets/service-web.mp4.asset.json";
 import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
+import heroSwinger from "@/assets/hero-swinger.png";
+import heroGlider from "@/assets/hero-glider.png";
+import heroFlyer from "@/assets/hero-flyer.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -828,9 +832,95 @@ function Footer() {
 
 /* ─────────────────────────  Page  ───────────────────────── */
 
+/* ─────────────────────────  Scroll Heroes  ───────────────────────── */
+
+function ScrollHeroes() {
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll();
+
+  // Swinger (Spider): descends from top-right, swings across, exits bottom-right
+  const swingerY = useTransform(scrollYProgress, [0, 0.35], ["-15vh", "40vh"]);
+  const swingerX = useTransform(scrollYProgress, [0, 0.35], ["0vw", "-4vw"]);
+  const swingerRot = useTransform(scrollYProgress, [0, 0.35], [-8, 12]);
+  const swingerOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.02, 0.3, 0.4],
+    [0, 0.9, 0.9, 0],
+  );
+
+  // Glider (Bat): appears left, glides diagonally down-right during middle scroll
+  const gliderY = useTransform(scrollYProgress, [0.3, 0.65], ["10vh", "55vh"]);
+  const gliderX = useTransform(scrollYProgress, [0.3, 0.65], ["-2vw", "6vw"]);
+  const gliderRot = useTransform(scrollYProgress, [0.3, 0.65], [-5, 8]);
+  const gliderOpacity = useTransform(
+    scrollYProgress,
+    [0.28, 0.35, 0.6, 0.68],
+    [0, 0.85, 0.85, 0],
+  );
+
+  // Flyer: appears bottom-right late, flies up and out top-right
+  const flyerY = useTransform(scrollYProgress, [0.65, 1], ["60vh", "-10vh"]);
+  const flyerX = useTransform(scrollYProgress, [0.65, 1], ["0vw", "-3vw"]);
+  const flyerRot = useTransform(scrollYProgress, [0.65, 1], [-6, -18]);
+  const flyerOpacity = useTransform(
+    scrollYProgress,
+    [0.62, 0.7, 0.95, 1],
+    [0, 0.9, 0.9, 0],
+  );
+
+  if (reduced) return null;
+
+  return (
+    <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
+      {/* Swinger — top right */}
+      <motion.img
+        src={heroSwinger}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        className="absolute right-2 md:right-8 top-0 w-[90px] md:w-[130px] h-auto select-none"
+        style={{
+          y: swingerY,
+          x: swingerX,
+          rotate: swingerRot,
+          opacity: swingerOpacity,
+        }}
+      />
+      {/* Glider — left */}
+      <motion.img
+        src={heroGlider}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        className="absolute left-2 md:left-6 top-0 w-[110px] md:w-[160px] h-auto select-none"
+        style={{
+          y: gliderY,
+          x: gliderX,
+          rotate: gliderRot,
+          opacity: gliderOpacity,
+        }}
+      />
+      {/* Flyer — right bottom */}
+      <motion.img
+        src={heroFlyer}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        className="absolute right-2 md:right-10 top-0 w-[110px] md:w-[160px] h-auto select-none"
+        style={{
+          y: flyerY,
+          x: flyerX,
+          rotate: flyerRot,
+          opacity: flyerOpacity,
+        }}
+      />
+    </div>
+  );
+}
+
 function Index() {
   return (
-    <div className="min-h-screen bg-white text-[#0a0a0a]">
+    <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden">
       <Nav />
       <main>
         <BentoHero />
@@ -841,6 +931,7 @@ function Index() {
         <ContactSection />
       </main>
       <Footer />
+      <ScrollHeroes />
     </div>
   );
 }
