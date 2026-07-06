@@ -152,6 +152,12 @@ function Nav() {
         </a>
         <div className="shrink-0 flex items-center gap-2">
           <Link
+            to="/team"
+            className="hidden md:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-white text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
+          >
+            Team
+          </Link>
+          <Link
             to="/konfigurator"
             className="hidden sm:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#ffeb3b] text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
           >
@@ -968,6 +974,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.2em] font-bold text-white/60">
         <Link to="/impressum" className="hover:text-[#ffeb3b] transition-colors">Impressum</Link>
         <Link to="/datenschutz" className="hover:text-[#ffeb3b] transition-colors">Datenschutz</Link>
+        <Link to="/team" className="hover:text-[#ffeb3b] transition-colors">Team</Link>
       </div>
     </footer>
   );

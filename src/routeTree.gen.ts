@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeamRouteImport } from './routes/team'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
@@ -24,6 +25,11 @@ import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeistungenRoute = LeistungenRouteImport.update({
   id: '/leistungen',
   path: '/leistungen',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
+  '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
+  '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
+  '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
+    | '/team'
     | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/media'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
+    | '/team'
     | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/media'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
+    | '/team'
     | '/admin/chatbot'
     | '/admin/instagram'
     | '/admin/media'
@@ -201,12 +213,20 @@ export interface RootRouteChildren {
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
   LeistungenRoute: typeof LeistungenRoute
+  TeamRoute: typeof TeamRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leistungen': {
       id: '/leistungen'
       path: '/leistungen'
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
   LeistungenRoute: LeistungenRoute,
+  TeamRoute: TeamRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
