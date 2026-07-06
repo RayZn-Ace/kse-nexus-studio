@@ -5,17 +5,17 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KSE GROUP — Ihre Experten für New Media" },
+      { title: "KSE GROUP — Software, AI & Digital Brands aus Hannover" },
       {
         name: "description",
         content:
-          "KSE GROUP aus Hannover: Ihre Experten für New Media. Social Media, Web, Werbefilm & Branding — kompromisslos umgesetzt.",
+          "KSE GROUP baut Software, AI-Automationen, High-End Websites und Marketing-Systeme. Full-Service Tech- & Kreativ-Agentur aus Hannover.",
       },
-      { property: "og:title", content: "KSE GROUP — Ihre Experten für New Media" },
+      { property: "og:title", content: "KSE GROUP — Software, AI & Digital Brands" },
       {
         property: "og:description",
         content:
-          "Ihre Experten für New Media. Social Media, Web, Werbefilm, Branding — aus Hannover.",
+          "Wenn es automatisiert, optimiert oder digitalisiert werden kann — wir bauen es. Software, AI, Web, Marketing, Branding.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -130,16 +130,16 @@ function BentoHero() {
             className="mt-8 text-5xl md:text-7xl lg:text-[6.5rem] font-black leading-[0.88] tracking-tighter uppercase"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            KSE GROUP —<br />
-            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Ihre Experten</span>
+            Wir bauen<br />
+            <span className="bg-[#ffeb3b] px-2 box-decoration-clone">Software, AI</span>
             <br />
-            für <span className="text-[#ff5722]">New Media</span>
+            &amp; <span className="text-[#ff5722]">Digital Brands</span>
             <span className="inline-block w-3 md:w-4 h-[0.9em] align-[-0.05em] ml-2 bg-[#0a0a0a] animate-pulse" aria-hidden />
           </h1>
           <div className="mt-8 flex items-center gap-4">
             <div className="h-4 w-4 bg-[#ff5722] shrink-0" />
             <p className="text-base md:text-xl font-medium tracking-tight max-w-xl">
-              Social · Web · Werbefilm · Branding. Full-Service Agency, kompromisslos umgesetzt.
+              Wenn es automatisiert, optimiert oder digitalisiert werden kann — wir bauen es.
             </p>
           </div>
         </motion.div>
@@ -213,19 +213,19 @@ function BentoHero() {
 function Marquee() {
   const reduced = useReducedMotion();
   const items = [
-    "Social Media",
+    "Software Development",
     "★",
-    "Web & Tech",
+    "AI & Automation",
     "★",
-    "Werbefilm",
+    "Web & Apps",
+    "★",
+    "Marketing",
     "★",
     "Branding",
     "★",
-    "Performance",
+    "Film & Content",
     "★",
-    "Content",
-    "★",
-    "Strategie",
+    "Events & Ticketing",
     "★",
   ];
   const doubled = [...items, ...items];
@@ -251,10 +251,26 @@ function Marquee() {
 /* ─────────────────────────  Bento Middle (Services + Stats + Testimonial)  ───────────────────────── */
 
 const SERVICES = [
-  { title: "Social Media", body: "Kanäle, denen Menschen folgen wollen — nicht müssen." },
-  { title: "Web & Tech", body: "Sites, die in 3 Sekunden alles sagen: wer, was, warum." },
-  { title: "Werbefilm", body: "Bilder, die zeigen statt erklären. Cinematic, präzise." },
-  { title: "Branding", body: "Identitäten von Grund auf — visuell, sprachlich, strategisch." },
+  {
+    title: "Software Development",
+    body:
+      "Web-Apps, SaaS-Plattformen, Mobile Apps, CRM, Dashboards, Booking- & Ticketing-Systeme. React, Next.js, TypeScript, Supabase.",
+  },
+  {
+    title: "AI & Automation",
+    body:
+      "WhatsApp-CRM, Chatbots, Marketing- & Lead-Automation, interne AI-Assistenten. OpenAI, Claude, Meta- & TikTok-APIs.",
+  },
+  {
+    title: "Web & UX",
+    body:
+      "High-End Sites mit Motion, Typografie und Conversion-Fokus. Kein Template. Jede Site custom gebaut.",
+  },
+  {
+    title: "Marketing & Brand",
+    body:
+      "Content, Paid Ads (Meta, TikTok, Snap), Performance, Branding, Film & Content-Produktion — aus einer Hand.",
+  },
 ];
 
 function BentoMiddle() {
@@ -315,8 +331,8 @@ function BentoMiddle() {
 /* ─────────────────────────  Stats Row  ───────────────────────── */
 
 const STATS = [
-  { value: 50, suffix: "+", label: "Projekte umgesetzt", bg: "#ffffff", fg: "#0a0a0a" },
-  { value: 5, suffix: "", label: "Jahre am Markt", bg: "#ff5722", fg: "#ffffff" },
+  { value: 50, suffix: "+", label: "Projekte ausgeliefert", bg: "#ffffff", fg: "#0a0a0a" },
+  { value: 30, suffix: "+", label: "Automatisierte Prozesse", bg: "#ff5722", fg: "#ffffff" },
   { value: 12, suffix: " Mio.+", label: "Erzielte Reichweite", bg: "#0a0a0a", fg: "#ffeb3b" },
   { value: 100, suffix: "%", label: "Inhabergeführt", bg: "#ffeb3b", fg: "#0a0a0a" },
 ];
@@ -357,13 +373,15 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Konzept & Fahrplan",
-    body: "Klarer Plan mit Timeline und Festpreis — keine versteckten Kosten, keine Überraschungen.",
+    title: "Konzept & Architektur",
+    body:
+      "Klarer Fahrplan mit Timeline, Stack, Milestones und Festpreis — keine versteckten Kosten, keine Überraschungen.",
   },
   {
     n: "03",
-    title: "Umsetzung & Betreuung",
-    body: "Wir liefern, messen und optimieren. Du wirst nie im Unklaren gelassen.",
+    title: "Build, Ship & Scale",
+    body:
+      "Wir bauen, launchen, messen und optimieren. Danach: Betrieb, Updates, Automatisierungen — langfristig.",
   },
 ];
 
@@ -512,7 +530,7 @@ function Footer() {
     <footer className="border-t-4 border-[#0a0a0a] bg-[#0a0a0a] text-white">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-[11px] uppercase tracking-[0.2em] font-bold">
         <span>© 2026 KSE Group</span>
-        <span>Ihre Experten für New Media</span>
+        <span>Software · AI · Digital Brands</span>
         <span>Hannover · Deutschland</span>
         <span className="text-[#ffeb3b]">{time ? `${time} Uhr` : "\u00A0"}</span>
       </div>
