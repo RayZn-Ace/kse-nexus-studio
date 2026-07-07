@@ -28,6 +28,7 @@ import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-genera
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
+import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
@@ -134,6 +135,11 @@ const ApiAdminAiRoute = ApiAdminAiRouteImport.update({
   path: '/api/admin-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminWarroomRoute = AdminWarroomRouteImport.update({
+  id: '/warroom',
+  path: '/warroom',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/admin/warroom'
     | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/admin/warroom'
     | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/admin/warroom'
     | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
@@ -530,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminAiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/warroom': {
+      id: '/admin/warroom'
+      path: '/warroom'
+      fullPath: '/admin/warroom'
+      preLoaderRoute: typeof AdminWarroomRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/tutorials': {
       id: '/admin/tutorials'
       path: '/tutorials'
@@ -613,6 +632,7 @@ interface AdminRouteChildren {
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
+  AdminWarroomRoute: typeof AdminWarroomRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -626,6 +646,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
+  AdminWarroomRoute: AdminWarroomRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
