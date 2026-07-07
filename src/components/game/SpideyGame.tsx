@@ -57,7 +57,8 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
       if (v.hit) continue;
       const dx = v.x - tx;
       const dy = v.y - ty;
-      if (Math.hypot(dx, dy) < 42) {
+      // generous hit radius for touch
+      if (Math.hypot(dx, dy) < 55) {
         v.hit = true;
         s.score += 10;
         setScore(s.score);
@@ -65,9 +66,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
         break;
       }
     }
-    if (!hit && s.score > 0) {
-      // small miss penalty
-    }
+    void hit;
   }, []);
 
   useEffect(() => {
@@ -309,57 +308,70 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   };
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     if (!running) return;
     shoot(e.clientX, e.clientY);
   };
 
+  // lock body scroll while open (mobile UX)
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   return (
     <div
-      className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in overscroll-contain"
       onClick={onClose}
     >
       <div
-        className="relative bg-[#0b1a3a] border-4 border-orange-500 rounded-2xl shadow-2xl max-w-[760px] w-full"
+        className="relative bg-[#0b1a3a] border-2 sm:border-4 border-orange-500 rounded-xl sm:rounded-2xl shadow-2xl max-w-[760px] w-full max-h-[95vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-orange-500/50">
-          <div className="flex items-center gap-3">
-            <span className="text-orange-500 font-black text-lg tracking-wider">KSE · WEB-SLINGER</span>
-            <span className="text-white/70 text-sm hidden sm:inline">Klick auf die Gegner!</span>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 border-orange-500/50">
+          <div className="flex min-w-0 flex-col sm:flex-row sm:items-center sm:gap-3">
+            <span className="truncate text-orange-500 font-black text-sm sm:text-lg tracking-wider">
+              KSE · WEB-SLINGER
+            </span>
+            <span className="hidden sm:inline text-white/70 text-sm">Tippe die Gegner!</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-white font-mono text-sm">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <div className="text-white font-mono text-xs sm:text-sm">
               <span className="text-orange-400">SCORE</span> {score}
             </div>
-            <div className="text-white font-mono text-sm">
-              <span className="text-red-400">LIVES</span> {"♥".repeat(Math.max(0, lives))}
+            <div className="text-white font-mono text-xs sm:text-sm">
+              <span className="text-red-400">♥</span> {Math.max(0, lives)}
             </div>
             <button
               onClick={onClose}
               aria-label="Schließen"
-              className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10"
+              className="text-white/80 hover:text-white p-2 -m-1 rounded hover:bg-white/10 touch-manipulation"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
         </div>
-        <div className="p-3">
+        <div className="p-2 sm:p-3 flex-1 min-h-0 flex items-center justify-center">
           <canvas
             ref={canvasRef}
             width={GAME_W}
             height={GAME_H}
             onPointerDown={onPointerDown}
-            className="w-full h-auto rounded-lg cursor-crosshair touch-none select-none"
+            className="w-full h-auto max-h-full rounded-lg cursor-crosshair touch-none select-none"
             style={{ aspectRatio: `${GAME_W} / ${GAME_H}` }}
           />
         </div>
-        <div className="flex items-center justify-between px-4 pb-4 gap-3">
-          <div className="text-white/60 text-xs">
+        <div className="flex items-center justify-between px-3 sm:px-4 pb-3 sm:pb-4 gap-3">
+          <div className="text-white/60 text-[11px] sm:text-xs">
             Highscore: <span className="text-orange-400 font-bold">{highscore}</span>
+            <span className="hidden sm:inline"> · Tippe zum Netz-Schuss</span>
           </div>
           <button
             onClick={reset}
-            className="bg-orange-500 hover:bg-orange-600 text-black font-black px-5 py-2 rounded-lg tracking-wider"
+            className="bg-orange-500 hover:bg-orange-600 active:scale-95 text-black font-black px-4 sm:px-5 py-2 rounded-lg tracking-wider text-sm sm:text-base touch-manipulation"
           >
             {running ? "NEUSTART" : "NOCHMAL"}
           </button>
