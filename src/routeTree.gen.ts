@@ -39,6 +39,7 @@ import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
 import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
+import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
 const TeamRoute = TeamRouteImport.update({
@@ -191,6 +192,11 @@ const AdminAlarmRoute = AdminAlarmRouteImport.update({
   path: '/alarm',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAbtestRoute = AdminAbtestRouteImport.update({
+  id: '/abtest',
+  path: '/abtest',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   id: '/api/public/media/$',
   path: '/api/public/media/$',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -631,6 +643,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAlarmRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/abtest': {
+      id: '/admin/abtest'
+      path: '/abtest'
+      fullPath: '/admin/abtest'
+      preLoaderRoute: typeof AdminAbtestRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/media/$': {
       id: '/api/public/media/$'
       path: '/api/public/media/$'
@@ -642,6 +661,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAbtestRoute: typeof AdminAbtestRoute
   AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
   AdminCopilotRoute: typeof AdminCopilotRoute
@@ -657,6 +677,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAbtestRoute: AdminAbtestRoute,
   AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
   AdminCopilotRoute: AdminCopilotRoute,
