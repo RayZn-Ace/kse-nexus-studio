@@ -17,6 +17,13 @@ import {
   ArrowUpRight,
   Image as ImageIcon,
   Activity,
+  Target,
+  Siren,
+  Wand2,
+  Radio,
+  FileText,
+  FlaskConical,
+  Eye,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -80,8 +87,15 @@ function AdminLayout() {
 
   const nav = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { to: "/admin/warroom", label: "War Room", icon: Radio },
+    { to: "/admin/alarm", label: "Alarm", icon: Siren },
+    { to: "/admin/leads", label: "Leads", icon: Target },
     { to: "/admin/inbox", label: "Inbox", icon: Inbox },
     { to: "/admin/journey", label: "Journey", icon: Activity },
+    { to: "/admin/copilot", label: "Copilot", icon: Wand2 },
+    { to: "/admin/report", label: "Dossier", icon: FileText },
+    { to: "/admin/spy", label: "Spy Radar", icon: Eye },
+    { to: "/admin/abtest", label: "A/B Duelle", icon: FlaskConical },
     { to: "/admin/tutorials", label: "Tutorials", icon: Video },
     { to: "/admin/media", label: "Medien", icon: ImageIcon },
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
