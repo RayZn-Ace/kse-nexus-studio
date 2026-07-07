@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
-import { Route as LabRouteImport } from './routes/lab'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
@@ -36,11 +35,6 @@ const TeamRoute = TeamRouteImport.update({
 const LeistungenRoute = LeistungenRouteImport.update({
   id: '/leistungen',
   path: '/leistungen',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabRoute = LabRouteImport.update({
-  id: '/lab',
-  path: '/lab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KonfiguratorRoute = KonfiguratorRouteImport.update({
@@ -127,7 +121,6 @@ export interface FileRoutesByFullPath {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
-  '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -146,7 +139,6 @@ export interface FileRoutesByTo {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
-  '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -167,7 +159,6 @@ export interface FileRoutesById {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
-  '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
@@ -189,7 +180,6 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
-    | '/lab'
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
@@ -208,7 +198,6 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
-    | '/lab'
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
@@ -228,7 +217,6 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
-    | '/lab'
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
@@ -249,7 +237,6 @@ export interface RootRouteChildren {
   HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
-  LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
@@ -271,13 +258,6 @@ declare module '@tanstack/react-router' {
       path: '/leistungen'
       fullPath: '/leistungen'
       preLoaderRoute: typeof LeistungenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab': {
-      id: '/lab'
-      path: '/lab'
-      fullPath: '/lab'
-      preLoaderRoute: typeof LabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konfigurator': {
@@ -414,7 +394,6 @@ const rootRouteChildren: RootRouteChildren = {
   HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
-  LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
