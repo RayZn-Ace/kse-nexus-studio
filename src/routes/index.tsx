@@ -16,6 +16,7 @@ import webVideo from "@/assets/service-web.mp4.asset.json";
 import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
 import { TrustBar } from "@/components/site/TrustBar";
 import { Link } from "@tanstack/react-router";
+import { SpideyGame } from "@/components/game/SpideyGame";
 
 export const Route = createFileRoute("/")({
   head: () => ({
