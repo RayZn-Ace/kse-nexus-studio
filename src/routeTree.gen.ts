@@ -24,6 +24,7 @@ import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
+import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
@@ -105,6 +106,11 @@ const ApiKseAgentRoute = ApiKseAgentRouteImport.update({
   path: '/api/kse-agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentSwarmRoute = ApiAgentSwarmRouteImport.update({
+  id: '/api/agent-swarm',
+  path: '/api/agent-swarm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
+  ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiKseAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent-swarm': {
+      id: '/api/agent-swarm'
+      path: '/api/agent-swarm'
+      fullPath: '/api/agent-swarm'
+      preLoaderRoute: typeof ApiAgentSwarmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tutorials': {
       id: '/admin/tutorials'
       path: '/tutorials'
@@ -457,6 +477,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
+  ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
