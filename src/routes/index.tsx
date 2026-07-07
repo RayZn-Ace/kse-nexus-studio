@@ -16,6 +16,7 @@ import webVideo from "@/assets/service-web.mp4.asset.json";
 import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
 import { TrustBar } from "@/components/site/TrustBar";
 import { Link } from "@tanstack/react-router";
+import { SpideyGame } from "@/components/game/SpideyGame";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -1018,21 +1019,31 @@ function ComicWebSlinger() {
 
 function CornerSpiderman() {
   const reduced = useReducedMotion();
-  if (reduced) return null;
+  const [gameOpen, setGameOpen] = useState(false);
   return (
-    <div
-      className="absolute right-[4vw] md:right-[3vw] z-[60] w-[58px] md:w-[90px] lg:w-[110px] pointer-events-none select-none top-[80px] md:top-[100px] lg:top-[115px]"
-      aria-hidden="true"
-      style={{ transformOrigin: "top center" }}
-    >
-      <motion.div
+    <>
+      <div
+        className="absolute right-[4vw] md:right-[3vw] z-[60] w-[58px] md:w-[90px] lg:w-[110px] top-[80px] md:top-[100px] lg:top-[115px] select-none"
         style={{ transformOrigin: "top center" }}
-        animate={{ rotate: [-6, 6, -6] }}
-        transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <ComicWebSlinger />
-      </motion.div>
-    </div>
+        <motion.button
+          type="button"
+          onClick={() => setGameOpen(true)}
+          aria-label="Mini-Spiel starten: KSE Web-Slinger"
+          className="block w-full cursor-pointer bg-transparent border-0 p-0 hover:scale-110 active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full"
+          style={{ transformOrigin: "top center" }}
+          animate={reduced ? undefined : { rotate: [-6, 6, -6] }}
+          transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ComicWebSlinger />
+          <span className="sr-only">Klick mich für ein Mini-Spiel</span>
+        </motion.button>
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 opacity-0 hover:opacity-100 pointer-events-none text-[10px] md:text-xs font-black text-orange-600 whitespace-nowrap bg-white/90 px-2 py-0.5 rounded-full border border-orange-500 transition-opacity">
+          KLICK MICH
+        </div>
+      </div>
+      {gameOpen && <SpideyGame onClose={() => setGameOpen(false)} />}
+    </>
   );
 }
 
