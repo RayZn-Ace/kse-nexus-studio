@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { X, Trophy, Sparkles } from "lucide-react";
 import { trackEvent } from "@/lib/tracking";
 
@@ -100,7 +100,12 @@ export function useEggHunt() {
 function HuntHUD() {
   const { found, total, reset } = useEggHunt();
   const [open, setOpen] = useState(false);
-  if (found.length === 0) return null;
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const hideOn =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/auth";
+  if (found.length === 0 || hideOn) return null;
   const pct = Math.round((found.length / total) * 100);
   return (
     <div className="fixed right-3 sm:right-4 bottom-3 sm:bottom-4 z-[55]">
