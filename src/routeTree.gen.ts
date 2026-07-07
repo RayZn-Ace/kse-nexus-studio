@@ -27,12 +27,20 @@ import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
+import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
+import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
+import { Route as AdminSpyRouteImport } from './routes/admin/spy'
+import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
+import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
+import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
+import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
+import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
 const TeamRoute = TeamRouteImport.update({
@@ -125,14 +133,39 @@ const ApiAgentSwarmRoute = ApiAgentSwarmRouteImport.update({
   path: '/api/agent-swarm',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminAiRoute = ApiAdminAiRouteImport.update({
+  id: '/api/admin-ai',
+  path: '/api/admin-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWarroomRoute = AdminWarroomRouteImport.update({
+  id: '/warroom',
+  path: '/warroom',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSpyRoute = AdminSpyRouteImport.update({
+  id: '/spy',
+  path: '/spy',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportRoute = AdminReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminJourneyRoute = AdminJourneyRouteImport.update({
@@ -150,9 +183,24 @@ const AdminInboxRoute = AdminInboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCopilotRoute = AdminCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminChatbotRoute = AdminChatbotRouteImport.update({
   id: '/chatbot',
   path: '/chatbot',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAlarmRoute = AdminAlarmRouteImport.update({
+  id: '/alarm',
+  path: '/alarm',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAbtestRoute = AdminAbtestRouteImport.update({
+  id: '/abtest',
+  path: '/abtest',
   getParentRoute: () => AdminRoute,
 } as any)
 const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
@@ -174,12 +222,20 @@ export interface FileRoutesByFullPath {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -200,12 +256,20 @@ export interface FileRoutesByTo {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -228,12 +292,20 @@ export interface FileRoutesById {
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
+  '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/admin/warroom': typeof AdminWarroomRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -257,12 +329,20 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
+    | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
+    | '/admin/spy'
     | '/admin/tutorials'
+    | '/admin/warroom'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -283,12 +363,20 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
+    | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
+    | '/admin/spy'
     | '/admin/tutorials'
+    | '/admin/warroom'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -310,12 +398,20 @@ export interface FileRouteTypes {
     | '/lab'
     | '/leistungen'
     | '/team'
+    | '/admin/abtest'
+    | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
+    | '/admin/spy'
     | '/admin/tutorials'
+    | '/admin/warroom'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -338,6 +434,7 @@ export interface RootRouteChildren {
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
+  ApiAdminAiRoute: typeof ApiAdminAiRoute
   ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
@@ -474,6 +571,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentSwarmRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-ai': {
+      id: '/api/admin-ai'
+      path: '/api/admin-ai'
+      fullPath: '/api/admin-ai'
+      preLoaderRoute: typeof ApiAdminAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/warroom': {
+      id: '/admin/warroom'
+      path: '/warroom'
+      fullPath: '/admin/warroom'
+      preLoaderRoute: typeof AdminWarroomRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/tutorials': {
       id: '/admin/tutorials'
       path: '/tutorials'
@@ -481,11 +592,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTutorialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/spy': {
+      id: '/admin/spy'
+      path: '/spy'
+      fullPath: '/admin/spy'
+      preLoaderRoute: typeof AdminSpyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/report': {
+      id: '/admin/report'
+      path: '/report'
+      fullPath: '/admin/report'
+      preLoaderRoute: typeof AdminReportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
       fullPath: '/admin/media'
       preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/journey': {
@@ -509,11 +641,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInboxRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/copilot': {
+      id: '/admin/copilot'
+      path: '/copilot'
+      fullPath: '/admin/copilot'
+      preLoaderRoute: typeof AdminCopilotRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/chatbot': {
       id: '/admin/chatbot'
       path: '/chatbot'
       fullPath: '/admin/chatbot'
       preLoaderRoute: typeof AdminChatbotRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/alarm': {
+      id: '/admin/alarm'
+      path: '/alarm'
+      fullPath: '/admin/alarm'
+      preLoaderRoute: typeof AdminAlarmRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/abtest': {
+      id: '/admin/abtest'
+      path: '/abtest'
+      fullPath: '/admin/abtest'
+      preLoaderRoute: typeof AdminAbtestRouteImport
       parentRoute: typeof AdminRoute
     }
     '/api/public/media/$': {
@@ -527,22 +680,36 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAbtestRoute: typeof AdminAbtestRoute
+  AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
+  AdminCopilotRoute: typeof AdminCopilotRoute
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
+  AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminReportRoute: typeof AdminReportRoute
+  AdminSpyRoute: typeof AdminSpyRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
+  AdminWarroomRoute: typeof AdminWarroomRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAbtestRoute: AdminAbtestRoute,
+  AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
+  AdminCopilotRoute: AdminCopilotRoute,
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
+  AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminReportRoute: AdminReportRoute,
+  AdminSpyRoute: AdminSpyRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
+  AdminWarroomRoute: AdminWarroomRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -561,6 +728,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
+  ApiAdminAiRoute: ApiAdminAiRoute,
   ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
@@ -571,13 +739,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
