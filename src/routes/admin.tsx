@@ -24,6 +24,7 @@ import {
   FileText,
   FlaskConical,
   Eye,
+  CalendarDays,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -92,6 +93,7 @@ function AdminLayout() {
     { to: "/admin/leads", label: "Leads", icon: Target },
     { to: "/admin/inbox", label: "Inbox", icon: Inbox },
     { to: "/admin/journey", label: "Journey", icon: Activity },
+    { to: "/admin/planner", label: "Planner", icon: CalendarDays },
     { to: "/admin/copilot", label: "Copilot", icon: Wand2 },
     { to: "/admin/report", label: "Dossier", icon: FileText },
     { to: "/admin/spy", label: "Spy Radar", icon: Eye },

@@ -15,6 +15,7 @@ import { Route as LabRouteImport } from './routes/lab'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
+import { Route as HallOfFameRouteImport } from './routes/hall-of-fame'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditRouteImport } from './routes/audit'
@@ -32,6 +33,7 @@ import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminSpyRouteImport } from './routes/admin/spy'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
+import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
@@ -71,6 +73,11 @@ const ImpressumRoute = ImpressumRouteImport.update({
 const HeldentatenRoute = HeldentatenRouteImport.update({
   id: '/heldentaten',
   path: '/heldentaten',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HallOfFameRoute = HallOfFameRouteImport.update({
+  id: '/hall-of-fame',
+  path: '/hall-of-fame',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatenschutzRoute = DatenschutzRouteImport.update({
@@ -158,6 +165,11 @@ const AdminReportRoute = AdminReportRouteImport.update({
   path: '/report',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPlannerRoute = AdminPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -216,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -231,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -250,6 +264,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -265,6 +280,7 @@ export interface FileRoutesByTo {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -286,6 +302,7 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -301,6 +318,7 @@ export interface FileRoutesById {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -323,6 +341,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -338,6 +357,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -357,6 +377,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -372,6 +393,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -392,6 +414,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -407,6 +430,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -428,6 +452,7 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   DatenschutzRoute: typeof DatenschutzRoute
+  HallOfFameRoute: typeof HallOfFameRoute
   HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
@@ -485,6 +510,13 @@ declare module '@tanstack/react-router' {
       path: '/heldentaten'
       fullPath: '/heldentaten'
       preLoaderRoute: typeof HeldentatenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hall-of-fame': {
+      id: '/hall-of-fame'
+      path: '/hall-of-fame'
+      fullPath: '/hall-of-fame'
+      preLoaderRoute: typeof HallOfFameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/datenschutz': {
@@ -606,6 +638,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/planner': {
+      id: '/admin/planner'
+      path: '/planner'
+      fullPath: '/admin/planner'
+      preLoaderRoute: typeof AdminPlannerRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
@@ -689,6 +728,7 @@ interface AdminRouteChildren {
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminPlannerRoute: typeof AdminPlannerRoute
   AdminReportRoute: typeof AdminReportRoute
   AdminSpyRoute: typeof AdminSpyRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
@@ -706,6 +746,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJourneyRoute: AdminJourneyRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminPlannerRoute: AdminPlannerRoute,
   AdminReportRoute: AdminReportRoute,
   AdminSpyRoute: AdminSpyRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
@@ -722,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   DatenschutzRoute: DatenschutzRoute,
+  HallOfFameRoute: HallOfFameRoute,
   HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
