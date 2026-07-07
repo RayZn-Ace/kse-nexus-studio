@@ -30,6 +30,7 @@ import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
+import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
@@ -141,6 +142,11 @@ const AdminMediaRoute = AdminMediaRouteImport.update({
   path: '/media',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminJourneyRoute = AdminJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/admin-ai'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/admin-ai'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/leads'
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/admin-ai'
@@ -508,6 +520,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMediaRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/journey': {
       id: '/admin/journey'
       path: '/journey'
@@ -551,6 +570,7 @@ interface AdminRouteChildren {
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
+  AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -561,6 +581,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
+  AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminIndexRoute: AdminIndexRoute,
