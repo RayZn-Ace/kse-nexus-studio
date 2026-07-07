@@ -711,8 +711,8 @@ function StepPilot({
           </p>
         </div>
 
-        {/* Right: Preview */}
-        <div className="min-h-[420px]">
+        {/* Right: Preview — fixed height, inner scroll */}
+        <div className="h-[720px] max-h-[80vh] overflow-y-auto overflow-x-hidden border-2 border-[#0a0a0a] bg-white [scrollbar-width:thin]">
           {loading && <PilotSkeleton />}
           {!loading && !pilot && !error && <PilotPlaceholder />}
           {!loading && pilot && <PilotPreview pilot={pilot} />}
