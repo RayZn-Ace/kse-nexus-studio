@@ -34,6 +34,7 @@ import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
+import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
@@ -163,6 +164,11 @@ const AdminInboxRoute = AdminInboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCopilotRoute = AdminCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminChatbotRoute = AdminChatbotRouteImport.update({
   id: '/chatbot',
   path: '/chatbot',
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInboxRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/copilot': {
+      id: '/admin/copilot'
+      path: '/copilot'
+      fullPath: '/admin/copilot'
+      preLoaderRoute: typeof AdminCopilotRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/chatbot': {
       id: '/admin/chatbot'
       path: '/chatbot'
@@ -587,6 +606,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
+  AdminCopilotRoute: typeof AdminCopilotRoute
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
@@ -599,6 +619,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
+  AdminCopilotRoute: AdminCopilotRoute,
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
