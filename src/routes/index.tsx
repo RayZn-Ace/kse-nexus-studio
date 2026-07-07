@@ -17,6 +17,8 @@ import marketingVideo from "@/assets/service-marketing.mp4.asset.json";
 import { TrustBar } from "@/components/site/TrustBar";
 import { Link } from "@tanstack/react-router";
 import { SpideyGame } from "@/components/game/SpideyGame";
+import { QuickBuilder } from "@/components/site/QuickBuilder";
+import { HiddenSpidey } from "@/components/site/EasterEggHunt";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -1055,10 +1057,15 @@ function Index() {
         <Marquee />
         <BentoMiddle />
         <StatsRow />
+        <QuickBuilder />
         <ProcessSection />
         <ContactSection />
       </main>
       <Footer />
+      {/* Hidden Easter-Egg spideys — subtle positions across the page */}
+      <div className="fixed left-2 top-[42%] z-40 hidden sm:block">
+        <HiddenSpidey id="hero-corner" />
+      </div>
     </div>
   );
 }
