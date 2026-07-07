@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, type MotionValue } from "framer-motion";
 import { useRef } from "react";
+import { HiddenSpidey } from "@/components/site/EasterEggHunt";
 
 export const Route = createFileRoute("/leistungen")({
   head: () => ({
@@ -643,6 +644,9 @@ function LeistungenPage() {
         <UnboxSection key={pkg.n} pkg={pkg} index={i} />
       ))}
       <Outro />
+      <div className="fixed right-2 top-24 z-40">
+        <HiddenSpidey id="leistungen-title" size={20} />
+      </div>
     </div>
   );
 }
