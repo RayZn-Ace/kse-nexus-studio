@@ -57,6 +57,7 @@ const DEEDS: Deed[] = [
     description:
       "Custom CRM mit Lead-Routing, Terminautomatik und E-Mail-Pipelines. Kein Salesforce, kein Overhead.",
     accent: "#ff5722",
+    video: deed01.url,
   },
   {
     client: "Urban Bites",
@@ -68,6 +69,7 @@ const DEEDS: Deed[] = [
     description:
       "AI-Chatbot nimmt Bestellungen entgegen, beantwortet Fragen und gibt Küche-Bons an Slack weiter.",
     accent: "#ffeb3b",
+    video: deed02.url,
   },
   {
     client: "Modeatelier Lena",
@@ -79,6 +81,7 @@ const DEEDS: Deed[] = [
     description:
       "Mobile-first Site mit Motion, editorialer Typografie und direkter Showroom-Buchung.",
     accent: "#0a0a0a",
+    video: deed03.url,
   },
   {
     client: "FitStart Hannover",
@@ -90,6 +93,7 @@ const DEEDS: Deed[] = [
     description:
       "Von Creatives über Retargeting bis zur Landingpage: kompletter Funnel mit Echtzeit-Dashboard.",
     accent: "#ff5722",
+    video: deed04.url,
   },
   {
     client: "BauTech GmbH",
@@ -101,6 +105,7 @@ const DEEDS: Deed[] = [
     description:
       "Logo, Farbwelt, Typografie, Templates und eine Brand-Story, die im B2B funktioniert.",
     accent: "#ffeb3b",
+    video: deed05.url,
   },
   {
     client: "MediConnect",
@@ -112,6 +117,7 @@ const DEEDS: Deed[] = [
     description:
       "DSGVO-konformes Portal mit Authentifizierung, Dokumenten-Upload und Erinnerungs-Automatik.",
     accent: "#0a0a0a",
+    video: deed06.url,
   },
   {
     client: "EventForward",
@@ -123,6 +129,7 @@ const DEEDS: Deed[] = [
     description:
       "E-Mail- und Formular-Anfragen werden von einem AI-Agenten klassifiziert, beantwortet und angebotsfertig übergeben.",
     accent: "#ffeb3b",
+    video: deed07.url,
   },
   {
     client: "GreenRoots",
@@ -134,6 +141,7 @@ const DEEDS: Deed[] = [
     description:
       "Content-Strategie, Creator-Briefings, Ads und ein Shop-System für den viraler Launch.",
     accent: "#ff5722",
+    video: deed08.url,
   },
   {
     client: "CodeCraft Studio",
@@ -145,6 +153,7 @@ const DEEDS: Deed[] = [
     description:
       "Conversion-optimierte Landingpage mit interaktiver Demo, Preisrechner und Calendly-Integration.",
     accent: "#ffeb3b",
+    video: deed09.url,
   },
   {
     client: "KSE GROUP",
@@ -156,6 +165,7 @@ const DEEDS: Deed[] = [
     description:
       "Eigenmarke neu aufgelegt: Website, Team-Seite, Komik-Asthetik und ein komplett neuer Auftritt.",
     accent: "#0a0a0a",
+    video: deed10.url,
   },
 ];
 
