@@ -1020,11 +1020,6 @@ function ComicWebSlinger() {
 function CornerSpiderman() {
   const reduced = useReducedMotion();
   const [gameOpen, setGameOpen] = useState(false);
-  const [hintSeen, setHintSeen] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setHintSeen(localStorage.getItem("kse_spidey_hint") === "1");
-  }, []);
   return (
     <>
       <div
@@ -1033,11 +1028,7 @@ function CornerSpiderman() {
       >
         <motion.button
           type="button"
-          onClick={() => {
-            setGameOpen(true);
-            setHintSeen(true);
-            if (typeof window !== "undefined") localStorage.setItem("kse_spidey_hint", "1");
-          }}
+          onClick={() => setGameOpen(true)}
           aria-label="Mini-Spiel starten: KSE Web-Slinger"
           className="block w-full cursor-pointer bg-transparent border-0 p-0 hover:scale-110 active:scale-95 transition-transform focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-full touch-manipulation"
           style={{ transformOrigin: "top center" }}
@@ -1047,11 +1038,6 @@ function CornerSpiderman() {
           <ComicWebSlinger />
           <span className="sr-only">Klick mich für ein Mini-Spiel</span>
         </motion.button>
-        {!hintSeen && (
-          <div className="absolute -bottom-5 md:-bottom-6 left-1/2 -translate-x-1/2 pointer-events-none text-[9px] md:text-xs font-black text-orange-600 whitespace-nowrap bg-white/95 px-2 py-0.5 rounded-full border border-orange-500 shadow animate-pulse">
-            SPIEL MICH
-          </div>
-        )}
       </div>
       {gameOpen && <SpideyGame onClose={() => setGameOpen(false)} />}
     </>
