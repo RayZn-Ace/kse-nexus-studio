@@ -210,7 +210,6 @@ function RewardModal({ onClose }: { onClose: () => void }) {
           </p>
           <Link
             to="/audit"
-            search={{ code: "SPIDEY" } as never}
             onClick={onClose}
             className="inline-flex items-center gap-2 bg-white text-red-700 font-semibold rounded-full px-6 py-3 hover:scale-105 transition-transform"
           >
