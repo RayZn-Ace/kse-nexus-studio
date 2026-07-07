@@ -4,7 +4,7 @@ import { Mail, Trash2, Archive, MailOpen, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/")({ component: Inbox });
+export const Route = createFileRoute("/admin/inbox")({ component: Inbox });
 
 type Msg = {
   id: string; name: string; email: string; subject: string | null;
