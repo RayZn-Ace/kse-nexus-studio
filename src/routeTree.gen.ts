@@ -21,6 +21,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
@@ -89,6 +90,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
+  id: '/api/website-audit',
+  path: '/api/website-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
   id: '/api/pilot-generator',
   path: '/api/pilot-generator',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/admin/tutorials'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin/tutorials'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/tutorials'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   TeamRoute: typeof TeamRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
+  ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/website-audit': {
+      id: '/api/website-audit'
+      path: '/api/website-audit'
+      fullPath: '/api/website-audit'
+      preLoaderRoute: typeof ApiWebsiteAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pilot-generator': {
       id: '/api/pilot-generator'
       path: '/api/pilot-generator'
@@ -439,19 +459,10 @@ const rootRouteChildren: RootRouteChildren = {
   TeamRoute: TeamRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
+  ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
