@@ -27,6 +27,7 @@ import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
+import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
@@ -125,6 +126,11 @@ const ApiAgentSwarmRoute = ApiAgentSwarmRouteImport.update({
   path: '/api/agent-swarm',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminAiRoute = ApiAdminAiRouteImport.update({
+  id: '/api/admin-ai',
+  path: '/api/admin-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/admin-ai': typeof ApiAdminAiRoute
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/admin-ai'
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
@@ -338,6 +350,7 @@ export interface RootRouteChildren {
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
+  ApiAdminAiRoute: typeof ApiAdminAiRoute
   ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentSwarmRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin-ai': {
+      id: '/api/admin-ai'
+      path: '/api/admin-ai'
+      fullPath: '/api/admin-ai'
+      preLoaderRoute: typeof ApiAdminAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tutorials': {
       id: '/admin/tutorials'
       path: '/tutorials'
@@ -561,6 +581,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
+  ApiAdminAiRoute: ApiAdminAiRoute,
   ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
@@ -571,13 +592,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
