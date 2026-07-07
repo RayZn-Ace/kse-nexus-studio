@@ -566,10 +566,12 @@ function StepContact({
   state,
   setState,
   priceRange,
+  pilot,
 }: {
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;
   priceRange: { lo: number; hi: number } | null;
+  pilot: Pilot | null;
 }) {
   const set = (k: keyof State) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setState((s) => ({ ...s, [k]: e.target.value }));
@@ -616,6 +618,9 @@ function StepContact({
         <SummaryRow label="Leistungen" value={state.services.join(" · ") || "—"} />
         <SummaryRow label="Timeline" value={TIMELINES.find((t) => t.id === state.timeline)?.label ?? "—"} />
         <SummaryRow label="Budget" value={BUDGETS.find((b) => b.id === state.budget)?.label ?? "—"} />
+        {pilot?.projectName && (
+          <SummaryRow label="Pilot" value={`${pilot.codename ?? pilot.projectName} — ${pilot.tagline ?? ""}`} />
+        )}
 
         {priceRange && (
           <div className="mt-5 pt-4 border-t border-white/20">
@@ -635,6 +640,301 @@ function StepContact({
           Deine Daten werden ausschließlich zur Bearbeitung deiner Anfrage genutzt. Keine Weitergabe an Dritte.
         </p>
       </aside>
+    </div>
+  );
+}
+
+/* ─────────────  Pilot Step  ───────────── */
+
+function StepPilot({
+  description,
+  onChange,
+  pilot,
+  loading,
+  error,
+  onGenerate,
+  services,
+}: {
+  description: string;
+  onChange: (v: string) => void;
+  pilot: Pilot | null;
+  loading: boolean;
+  error: string | null;
+  onGenerate: () => void;
+  services: string[];
+}) {
+  return (
+    <div>
+      <StepHead
+        label="/ 04"
+        title="Dein Pilot — live generiert."
+        hint="Beschreib deine Idee. Unser AI-System baut eine konkrete Projekt-Vorschau."
+      />
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+        {/* Left: Input */}
+        <div>
+          <label className="block">
+            <span className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-2">
+              Was schwebt dir vor?
+            </span>
+            <textarea
+              value={description}
+              onChange={(e) => onChange(e.target.value)}
+              rows={8}
+              maxLength={1200}
+              placeholder="z.B. 'Ein internes Tool für unsere Monteure: Aufträge sehen, Fotos hochladen, Rechnung erzeugen. Aktuell alles Zettelwirtschaft.'"
+              className="w-full border-2 border-[#0a0a0a] p-3 text-sm bg-white focus:outline-none focus:bg-[#fffbe0] resize-none"
+            />
+            <div className="mt-1 text-[10px] uppercase tracking-[0.2em] font-bold text-[#0a0a0a]/50">
+              {description.length}/1200 — je konkreter, desto besser der Pilot
+            </div>
+          </label>
+
+          <BrutalButton
+            variant="yellow"
+            onClick={onGenerate}
+            disabled={loading || services.length === 0}
+            className="mt-4 w-full"
+          >
+            {loading ? "Pilot wird gebaut …" : pilot ? "Neu generieren ↻" : "Pilot generieren ⚡"}
+          </BrutalButton>
+
+          {error && (
+            <div className="mt-3 border-2 border-[#ef4444] bg-[#fee] p-3 text-xs text-[#7f1d1d]">
+              {error}
+            </div>
+          )}
+
+          <p className="mt-4 text-xs text-[#0a0a0a]/60">
+            Kein Vertrag, keine Verpflichtung. Das ist ein Konzept-Entwurf, damit du siehst, wie wir denken.
+          </p>
+        </div>
+
+        {/* Right: Preview */}
+        <div className="min-h-[420px]">
+          {loading && <PilotSkeleton />}
+          {!loading && !pilot && !error && <PilotPlaceholder />}
+          {!loading && pilot && <PilotPreview pilot={pilot} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PilotPlaceholder() {
+  return (
+    <div className="h-full min-h-[420px] border-2 border-dashed border-[#0a0a0a]/25 bg-[#fafafa] grid place-items-center text-center p-8">
+      <div>
+        <div className="text-6xl mb-4" style={{ fontFamily: "var(--font-display)" }}>
+          ⚡
+        </div>
+        <div
+          className="text-xl font-black uppercase tracking-tighter"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Warte auf Briefing
+        </div>
+        <p className="mt-2 text-sm text-[#0a0a0a]/60 max-w-xs mx-auto">
+          Beschreib dein Projekt links und klick auf „Pilot generieren". In ~10 Sekunden steht hier ein Konzept.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PilotSkeleton() {
+  return (
+    <div className="h-full min-h-[420px] border-2 border-[#0a0a0a] bg-[#0a0a0a] text-[#22c55e] p-6 font-mono text-xs">
+      <div className="opacity-60">$ pilot --generate</div>
+      <div className="mt-2 space-y-1">
+        <div>» analyzing brief …</div>
+        <div>» matching architecture patterns …</div>
+        <div>» drafting screens …</div>
+        <div>» estimating milestones …</div>
+        <div className="animate-pulse">» _</div>
+      </div>
+      <div className="mt-6 space-y-2">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="h-3 bg-[#22c55e]/20 animate-pulse"
+            style={{ width: `${60 + ((i * 13) % 40)}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PilotPreview({ pilot }: { pilot: Pilot }) {
+  return (
+    <div className="border-2 border-[#0a0a0a] bg-white shadow-[8px_8px_0_#ff5722]">
+      {/* Header bar — mock browser */}
+      <div className="border-b-2 border-[#0a0a0a] bg-[#f5f5f5] px-4 py-2 flex items-center gap-2">
+        <span className="h-3 w-3 rounded-full bg-[#ff5722]" />
+        <span className="h-3 w-3 rounded-full bg-[#ffeb3b]" />
+        <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
+        <div className="ml-3 flex-1 text-[10px] font-mono text-[#0a0a0a]/60 truncate">
+          kse-pilot://{(pilot.codename ?? "project").toLowerCase().replace(/\s+/g, "-")}
+        </div>
+        <span className="text-[9px] uppercase tracking-[0.2em] font-black bg-[#ffeb3b] px-2 py-0.5 border border-[#0a0a0a]">
+          Live Concept
+        </span>
+      </div>
+
+      {/* Hero */}
+      <div className="bg-[#0a0a0a] text-white p-6">
+        <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722]">
+          / {pilot.codename ?? "PILOT-01"}
+        </div>
+        <h3
+          className="mt-2 text-2xl md:text-4xl font-black uppercase tracking-tighter leading-[0.95]"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {pilot.projectName ?? "Dein Projekt"}
+        </h3>
+        {pilot.tagline && (
+          <div className="mt-2 text-sm md:text-base text-[#ffeb3b] font-bold">
+            „{pilot.tagline}"
+          </div>
+        )}
+        {pilot.summary && (
+          <p className="mt-3 text-sm text-white/70 leading-relaxed">{pilot.summary}</p>
+        )}
+        {pilot.targetUser && (
+          <div className="mt-3 text-[10px] uppercase tracking-[0.2em] font-bold text-white/50">
+            Für: <span className="text-white">{pilot.targetUser}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Features */}
+      {pilot.keyFeatures && pilot.keyFeatures.length > 0 && (
+        <div className="p-5 border-b-2 border-[#0a0a0a]/10">
+          <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722] mb-3">
+            / Kern-Features
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {pilot.keyFeatures.map((f, i) => (
+              <div key={i} className="border-2 border-[#0a0a0a] p-3 bg-[#fffbe0]">
+                <div className="text-xs font-black uppercase tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                  {String(i + 1).padStart(2, "0")} · {f.title}
+                </div>
+                <div className="mt-1 text-xs text-[#0a0a0a]/70">{f.detail}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Screens */}
+      {pilot.screens && pilot.screens.length > 0 && (
+        <div className="p-5 border-b-2 border-[#0a0a0a]/10">
+          <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722] mb-3">
+            / Screens
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {pilot.screens.map((s, i) => (
+              <div key={i} className="border-2 border-[#0a0a0a] bg-white overflow-hidden">
+                <div className="h-16 bg-gradient-to-br from-[#0a0a0a] to-[#333] flex items-center justify-center text-[9px] text-white/60 font-mono">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="p-2">
+                  <div className="text-[10px] font-black uppercase tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                    {s.name}
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-[#0a0a0a]/60 line-clamp-2">
+                    {s.purpose}
+                  </div>
+                  {s.elements?.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-0.5">
+                      {s.elements.slice(0, 3).map((el, j) => (
+                        <span key={j} className="text-[8px] bg-[#ffeb3b] border border-[#0a0a0a] px-1 py-px font-bold uppercase tracking-tight">
+                          {el}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Milestones */}
+      {pilot.milestones && pilot.milestones.length > 0 && (
+        <div className="p-5 border-b-2 border-[#0a0a0a]/10">
+          <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722] mb-3">
+            / Roadmap
+          </div>
+          <div className="space-y-2">
+            {pilot.milestones.map((m, i) => (
+              <div key={i} className="flex gap-3 items-start border-l-4 border-[#0a0a0a] pl-3">
+                <div className="text-[10px] uppercase tracking-[0.2em] font-black bg-[#0a0a0a] text-white px-2 py-0.5 whitespace-nowrap">
+                  {m.week}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-black uppercase tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
+                    {m.title}
+                  </div>
+                  <div className="text-[11px] text-[#0a0a0a]/60">{m.output}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stack + Differentiators */}
+      <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {pilot.techStack && pilot.techStack.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722] mb-2">
+              / Stack
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {pilot.techStack.map((t, i) => (
+                <span key={i} className="text-[10px] font-mono border border-[#0a0a0a] px-2 py-0.5 bg-[#f5f5f5]">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {pilot.differentiators && pilot.differentiators.length > 0 && (
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#ff5722] mb-2">
+              / Warum besonders
+            </div>
+            <ul className="space-y-1">
+              {pilot.differentiators.map((d, i) => (
+                <li key={i} className="text-xs text-[#0a0a0a]/80 flex gap-2">
+                  <span className="text-[#22c55e] font-black">→</span>
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {pilot.risks && pilot.risks.length > 0 && (
+        <div className="border-t-2 border-[#0a0a0a]/10 p-5 bg-[#fffbe0]">
+          <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#0a0a0a]/70 mb-2">
+            / Offene Punkte fürs Erstgespräch
+          </div>
+          <ul className="space-y-1">
+            {pilot.risks.map((r, i) => (
+              <li key={i} className="text-xs text-[#0a0a0a]/80 flex gap-2">
+                <span className="font-black">?</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
