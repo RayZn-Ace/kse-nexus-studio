@@ -474,7 +474,11 @@ function Lab() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: bootDone ? i * 0.04 : 0 }}
-                onClick={() => !isClassified && setActive(exp)}
+                onClick={() => {
+                  if (isClassified) return;
+                  setActive(exp);
+                  setTab("test");
+                }}
                 className={`relative border-2 border-white/20 bg-black/40 backdrop-blur-sm p-6 hover:border-white/70 hover:bg-black/60 transition-all group cursor-pointer ${
                   isClassified ? "overflow-hidden" : ""
                 }`}
@@ -706,10 +710,10 @@ function Lab() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl border-2 border-white/30 bg-[#0a0a0a] p-6 md:p-8 relative"
+              className="w-full max-w-3xl max-h-[92vh] overflow-y-auto border-2 border-white/30 bg-[#0a0a0a] p-6 md:p-8 relative"
             >
               <div className="absolute -top-3 left-4 bg-[#0a0a0a] px-2 font-mono text-[10px] text-[#ffeb3b] tracking-widest">
-                DOSSIER · {active.code}
+                {tab === "test" ? "TESTMODUS" : "DOSSIER"} · {active.code}
               </div>
               <button
                 onClick={() => setActive(null)}
@@ -740,49 +744,87 @@ function Lab() {
                   </h3>
                 </div>
               </div>
-              <p className="mt-5 text-sm text-white/70 leading-relaxed">{active.desc}</p>
 
-              {active.metrics && (
-                <div className="mt-6 grid grid-cols-3 border-2 border-white/20">
-                  {active.metrics.map((m, i) => (
-                    <div
-                      key={m.label}
-                      className={`p-3 ${i < active.metrics!.length - 1 ? "border-r-2 border-white/20" : ""}`}
-                    >
-                      <div className="font-mono text-[10px] text-white/40 uppercase">{m.label}</div>
-                      <div className="mt-1 font-display font-black text-lg text-[#ffeb3b]">
-                        {m.value}
-                      </div>
+              {/* Tabs */}
+              <div className="mt-5 flex gap-0 border-b-2 border-white/20 font-mono text-xs">
+                <button
+                  onClick={() => setTab("test")}
+                  className={`px-4 py-2 border-b-2 -mb-0.5 uppercase tracking-wider transition-colors ${
+                    tab === "test"
+                      ? "border-[#ffeb3b] text-[#ffeb3b]"
+                      : "border-transparent text-white/50 hover:text-white"
+                  }`}
+                >
+                  ▶ Testmodus
+                </button>
+                <button
+                  onClick={() => setTab("dossier")}
+                  className={`px-4 py-2 border-b-2 -mb-0.5 uppercase tracking-wider transition-colors ${
+                    tab === "dossier"
+                      ? "border-[#ff5722] text-[#ff5722]"
+                      : "border-transparent text-white/50 hover:text-white"
+                  }`}
+                >
+                  Dossier
+                </button>
+              </div>
+
+              {tab === "test" && (
+                <div className="mt-5">
+                  <p className="text-xs text-white/50 mb-3 font-mono">
+                    ▸ Sandbox — spiel damit rum. Kein Login, keine echten Daten, kein Risiko.
+                  </p>
+                  <LabDemo id={active.id} />
+                </div>
+              )}
+
+              {tab === "dossier" && (
+                <div className="mt-5">
+                  <p className="text-sm text-white/70 leading-relaxed">{active.desc}</p>
+
+                  {active.metrics && (
+                    <div className="mt-5 grid grid-cols-3 border-2 border-white/20">
+                      {active.metrics.map((m, i) => (
+                        <div
+                          key={m.label}
+                          className={`p-3 ${i < active.metrics!.length - 1 ? "border-r-2 border-white/20" : ""}`}
+                        >
+                          <div className="font-mono text-[10px] text-white/40 uppercase">{m.label}</div>
+                          <div className="mt-1 font-display font-black text-lg text-[#ffeb3b]">
+                            {m.value}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  <div className="mt-5">
+                    <div className="font-mono text-[10px] text-white/40 mb-2 uppercase">Stack</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {active.stack.map((s) => (
+                        <span
+                          key={s}
+                          className="text-xs font-mono px-2 py-1 border border-white/30 text-white/80"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {active.log && (
+                    <div className="mt-5 border-2 border-white/20 bg-black p-3 font-mono text-xs text-[#10b981]">
+                      <span className="text-white/40">$ tail -1 {active.id}.log</span>
+                      <div className="mt-1">{active.log}</div>
+                    </div>
+                  )}
+
+                  <div className="mt-5 flex items-center justify-between font-mono text-[10px] text-white/40">
+                    <span>classification · internal</span>
+                    <span>last update · {tick % 60}s ago</span>
+                  </div>
                 </div>
               )}
-
-              <div className="mt-6">
-                <div className="font-mono text-[10px] text-white/40 mb-2 uppercase">Stack</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {active.stack.map((s) => (
-                    <span
-                      key={s}
-                      className="text-xs font-mono px-2 py-1 border border-white/30 text-white/80"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {active.log && (
-                <div className="mt-6 border-2 border-white/20 bg-black p-3 font-mono text-xs text-[#10b981]">
-                  <span className="text-white/40">$ tail -1 {active.id}.log</span>
-                  <div className="mt-1">{active.log}</div>
-                </div>
-              )}
-
-              <div className="mt-6 flex items-center justify-between font-mono text-[10px] text-white/40">
-                <span>classification · internal</span>
-                <span>last update · {tick % 60}s ago</span>
-              </div>
             </motion.div>
           </motion.div>
         )}
