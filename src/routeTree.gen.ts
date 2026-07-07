@@ -20,6 +20,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
@@ -81,6 +82,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiKseAgentRoute = ApiKseAgentRouteImport.update({
+  id: '/api/kse-agent',
+  path: '/api/kse-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/kse-agent': typeof ApiKseAgentRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/kse-agent': typeof ApiKseAgentRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/kse-agent': typeof ApiKseAgentRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/kse-agent'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/kse-agent'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/kse-agent'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   KonfiguratorRoute: typeof KonfiguratorRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
+  ApiKseAgentRoute: typeof ApiKseAgentRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/kse-agent': {
+      id: '/api/kse-agent'
+      path: '/api/kse-agent'
+      fullPath: '/api/kse-agent'
+      preLoaderRoute: typeof ApiKseAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tutorials': {
       id: '/admin/tutorials'
       path: '/tutorials'
@@ -376,6 +396,7 @@ const rootRouteChildren: RootRouteChildren = {
   KonfiguratorRoute: KonfiguratorRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
+  ApiKseAgentRoute: ApiKseAgentRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
