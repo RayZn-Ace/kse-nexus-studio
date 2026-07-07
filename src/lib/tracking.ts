@@ -24,7 +24,7 @@ export async function trackEvent(
       path: window.location.pathname,
       referrer: document.referrer || null,
       user_agent: navigator.userAgent,
-      meta: meta ?? null,
+      meta: (meta ?? null) as never,
     });
   } catch {
     /* ignore */
