@@ -62,6 +62,7 @@ type State = {
   services: string[];
   timeline: string | null;
   budget: string | null;
+  description: string;
   name: string;
   company: string;
   email: string;
@@ -73,11 +74,26 @@ const initial: State = {
   services: [],
   timeline: null,
   budget: null,
+  description: "",
   name: "",
   company: "",
   email: "",
   phone: "",
   message: "",
+};
+
+type Pilot = {
+  projectName?: string;
+  codename?: string;
+  tagline?: string;
+  summary?: string;
+  targetUser?: string;
+  keyFeatures?: { title: string; detail: string }[];
+  techStack?: string[];
+  screens?: { name: string; purpose: string; elements: string[] }[];
+  milestones?: { week: string; title: string; output: string }[];
+  differentiators?: string[];
+  risks?: string[];
 };
 
 const contactSchema = z.object({
@@ -145,6 +161,9 @@ function KonfiguratorPage() {
   const [state, setState] = useState<State>(initial);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [pilot, setPilot] = useState<Pilot | null>(null);
+  const [pilotLoading, setPilotLoading] = useState(false);
+  const [pilotError, setPilotError] = useState<string | null>(null);
 
   const priceRange = useMemo(() => {
     if (!state.services.length) return null;
@@ -166,7 +185,36 @@ function KonfiguratorPage() {
     (step === 0 && state.services.length > 0) ||
     (step === 1 && state.timeline) ||
     (step === 2 && state.budget) ||
-    step === 3;
+    step === 3 ||
+    step === 4;
+
+  const TOTAL_STEPS = 5;
+
+  async function generatePilot() {
+    setPilotLoading(true);
+    setPilotError(null);
+    setPilot(null);
+    try {
+      const res = await fetch("/api/pilot-generator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          services: state.services,
+          timeline: state.timeline,
+          budget: state.budget,
+          description: state.description,
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = (await res.json()) as Pilot;
+      setPilot(data);
+    } catch (e) {
+      setPilotError(e instanceof Error ? e.message : "Fehler bei der Generierung");
+      toast.error("Pilot konnte nicht generiert werden");
+    } finally {
+      setPilotLoading(false);
+    }
+  }
 
   const toggleService = (id: string) =>
     setState((s) => ({
@@ -200,6 +248,8 @@ function KonfiguratorPage() {
       (priceRange ? `Kalkulierte Range: ${priceRange.lo.toLocaleString("de-DE")} – ${priceRange.hi.toLocaleString("de-DE")} €\n` : "") +
       (state.company ? `Firma: ${state.company}\n` : "") +
       (state.phone ? `Telefon: ${state.phone}\n` : "") +
+      (state.description ? `\nVision:\n${state.description}\n` : "") +
+      (pilot ? `\n— GENERIERTER PILOT —\n${JSON.stringify(pilot, null, 2)}\n` : "") +
       (state.message ? `\nNachricht:\n${state.message}` : "");
 
     const { error } = await supabase.from("contact_messages").insert({
@@ -274,14 +324,14 @@ function KonfiguratorPage() {
 
             {/* Steps */}
             <div className="flex items-center gap-3 mb-8">
-              {[0, 1, 2, 3].map((i) => (
+              {[0, 1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex items-center gap-3">
                   <StepDot i={i} active={step === i} done={step > i} />
-                  {i < 3 && <div className={`h-0.5 w-6 md:w-12 ${step > i ? "bg-[#22c55e]" : "bg-[#0a0a0a]/20"}`} />}
+                  {i < 4 && <div className={`h-0.5 w-4 md:w-10 ${step > i ? "bg-[#22c55e]" : "bg-[#0a0a0a]/20"}`} />}
                 </div>
               ))}
               <div className="ml-auto text-[11px] uppercase tracking-[0.2em] font-bold text-[#0a0a0a]/60">
-                Schritt {step + 1} / 4
+                Schritt {step + 1} / {TOTAL_STEPS}
               </div>
             </div>
 
@@ -304,10 +354,22 @@ function KonfiguratorPage() {
                   />
                 )}
                 {step === 3 && (
+                  <StepPilot
+                    description={state.description}
+                    onChange={(v) => setState((s) => ({ ...s, description: v }))}
+                    pilot={pilot}
+                    loading={pilotLoading}
+                    error={pilotError}
+                    onGenerate={generatePilot}
+                    services={state.services}
+                  />
+                )}
+                {step === 4 && (
                   <StepContact
                     state={state}
                     setState={setState}
                     priceRange={priceRange}
+                    pilot={pilot}
                   />
                 )}
               </div>
@@ -321,7 +383,7 @@ function KonfiguratorPage() {
                   ← Zurück
                 </BrutalButton>
 
-                {step < 3 ? (
+                {step < 4 ? (
                   <BrutalButton
                     variant="yellow"
                     onClick={() => setStep((s) => s + 1)}
