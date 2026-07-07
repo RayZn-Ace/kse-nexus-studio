@@ -23,6 +23,7 @@ import {
   Waves,
   BrainCircuit,
 } from "lucide-react";
+import { LabDemo } from "@/components/lab/LabDemo";
 
 export const Route = createFileRoute("/lab")({
   head: () => ({
@@ -263,6 +264,7 @@ function useTicker() {
 function Lab() {
   const [time, setTime] = useState("");
   const [active, setActive] = useState<Experiment | null>(null);
+  const [tab, setTab] = useState<"dossier" | "test">("dossier");
   const [bootDone, setBootDone] = useState(false);
   const [bootIdx, setBootIdx] = useState(0);
   const [vaultInput, setVaultInput] = useState("");
@@ -282,6 +284,11 @@ function Lab() {
     const i = setInterval(t, 1000);
     return () => clearInterval(i);
   }, []);
+
+  // reset modal tab when experiment changes
+  useEffect(() => {
+    setTab("dossier");
+  }, [active?.id]);
 
   useEffect(() => {
     if (bootIdx >= BOOT_LINES.length) {
@@ -530,7 +537,7 @@ function Lab() {
                       ))}
                     </div>
                     <div className="relative mt-4 inline-flex items-center gap-1 text-[10px] font-mono text-white/40 group-hover:text-[#ffeb3b] transition-colors">
-                      OPEN DOSSIER <ChevronRight className="w-3 h-3" />
+                      TESTMODUS ÖFFNEN <ChevronRight className="w-3 h-3" />
                     </div>
                   </>
                 )}
