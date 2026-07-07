@@ -38,6 +38,8 @@ function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [stages, setStages] = useState<Record<string, StageId>>({});
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<StageId | null>(null);
 
   useEffect(() => {
     setStages(loadStages());
@@ -70,8 +72,20 @@ function Leads() {
         <div className="p-6 grid grid-cols-5 gap-4 min-w-[1400px]">
           {STAGES.map((s) => {
             const items = leads.filter((l) => getStage(l.id) === s.id);
+            const isOver = overStage === s.id;
             return (
-              <div key={s.id} className="flex flex-col">
+              <div
+                key={s.id}
+                className="flex flex-col"
+                onDragOver={(e) => { e.preventDefault(); setOverStage(s.id); }}
+                onDragLeave={() => setOverStage((c) => (c === s.id ? null : c))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const id = e.dataTransfer.getData("text/plain") || dragId;
+                  if (id) setStage(id, s.id);
+                  setDragId(null); setOverStage(null);
+                }}
+              >
                 <div className="border-2 border-[#0a0a0a] bg-white p-3 mb-3" style={{ boxShadow: "4px 4px 0 0 #0a0a0a" }}>
                   <div className="flex items-center justify-between">
                     <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: s.color }}>{s.label}</div>
@@ -79,12 +93,20 @@ function Leads() {
                   </div>
                   <div className="mt-2 h-1 w-full bg-[#f5f2ea] border border-[#0a0a0a]"><div className="h-full" style={{ background: s.color, width: `${Math.min(100, items.length * 10)}%` }} /></div>
                 </div>
-                <div className="space-y-2 flex-1">
+                <div className={`space-y-2 flex-1 min-h-[120px] p-1 -m-1 transition-colors ${isOver ? "bg-[#ff5722]/10 outline-2 outline-dashed outline-[#ff5722]" : ""}`}>
                   {items.map((l) => (
-                    <LeadCard key={l.id} lead={l} stage={getStage(l.id)} onChange={(st) => setStage(l.id, st)} />
+                    <LeadCard
+                      key={l.id}
+                      lead={l}
+                      stage={getStage(l.id)}
+                      onChange={(st) => setStage(l.id, st)}
+                      dragging={dragId === l.id}
+                      onDragStart={() => setDragId(l.id)}
+                      onDragEnd={() => { setDragId(null); setOverStage(null); }}
+                    />
                   ))}
                   {items.length === 0 && (
-                    <div className="border-2 border-dashed border-[#0a0a0a]/20 p-4 text-[10px] font-black uppercase tracking-widest text-[#0a0a0a]/30 text-center">Leer</div>
+                    <div className="border-2 border-dashed border-[#0a0a0a]/20 p-4 text-[10px] font-black uppercase tracking-widest text-[#0a0a0a]/30 text-center">{isOver ? "Hier ablegen" : "Leer"}</div>
                   )}
                 </div>
               </div>
@@ -106,17 +128,23 @@ function Header() {
         <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[#ff5722]">/ Taktik-Pipeline</div>
         <h1 className="font-black text-2xl uppercase tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Lead Radar</h1>
       </div>
-      <div className="ml-auto text-[10px] font-mono text-[#0a0a0a]/50">Drag by button → move mission stage</div>
+      <div className="ml-auto text-[10px] font-mono text-[#0a0a0a]/50">Karten ziehen oder Stage-Dropdown nutzen</div>
     </header>
   );
 }
 
-function LeadCard({ lead, stage, onChange }: { lead: Lead; stage: StageId; onChange: (s: StageId) => void }) {
+function LeadCard({ lead, stage, onChange, dragging, onDragStart, onDragEnd }: { lead: Lead; stage: StageId; onChange: (s: StageId) => void; dragging: boolean; onDragStart: () => void; onDragEnd: () => void }) {
   const [open, setOpen] = useState(false);
   const currentIdx = STAGES.findIndex((s) => s.id === stage);
   const next = STAGES[Math.min(STAGES.length - 1, currentIdx + 1)];
   return (
-    <div className="border-2 border-[#0a0a0a] bg-white p-3" style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}>
+    <div
+      draggable
+      onDragStart={(e) => { e.dataTransfer.setData("text/plain", lead.id); e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
+      onDragEnd={onDragEnd}
+      className={`border-2 border-[#0a0a0a] bg-white p-3 cursor-grab active:cursor-grabbing select-none transition-transform ${dragging ? "opacity-40 rotate-1 scale-95" : "hover:-translate-y-0.5"}`}
+      style={{ boxShadow: "3px 3px 0 0 #0a0a0a" }}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="font-black text-sm truncate">{lead.name}</div>
