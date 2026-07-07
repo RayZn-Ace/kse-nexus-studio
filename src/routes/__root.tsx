@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -128,6 +129,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/auth";
 
   useEffect(() => {
     // Initial pageview
@@ -143,12 +149,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <EasterEggProvider>
         <Outlet />
-        <WhatsAppButton />
-        <KseAgent />
-        <CustomCursor />
-        <CookieConsent />
-        <SocialProof />
-        <LiveVisitors />
+        {!isAdmin && (
+          <>
+            <WhatsAppButton />
+            <KseAgent />
+            <CustomCursor />
+            <CookieConsent />
+            <SocialProof />
+            <LiveVisitors />
+          </>
+        )}
         <Toaster theme="dark" position="bottom-right" />
       </EasterEggProvider>
     </QueryClientProvider>
