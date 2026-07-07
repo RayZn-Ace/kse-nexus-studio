@@ -278,13 +278,14 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
         ctx.fillStyle = "rgba(0,0,0,0.7)";
         ctx.fillRect(0, 0, GAME_W, GAME_H);
         ctx.fillStyle = "#f97316";
-        ctx.font = "bold 56px system-ui";
+        ctx.font = "bold 48px system-ui";
         ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", GAME_W / 2, GAME_H / 2 - 20);
+        ctx.fillText("GAME OVER", GAME_W / 2, GAME_H / 2 - 10);
         ctx.fillStyle = "#fff";
-        ctx.font = "20px system-ui";
-        ctx.fillText(`Score: ${s.score}   Highscore: ${highscore}`, GAME_W / 2, GAME_H / 2 + 20);
-        ctx.fillText("Klick unten auf NEUSTART", GAME_W / 2, GAME_H / 2 + 50);
+        ctx.font = "22px system-ui";
+        ctx.fillText(`Score ${s.score} · Highscore ${highscore}`, GAME_W / 2, GAME_H / 2 + 28);
+        ctx.font = "18px system-ui";
+        ctx.fillText("Tippe unten auf NOCHMAL", GAME_W / 2, GAME_H / 2 + 58);
         ctx.textAlign = "start";
       }
 
