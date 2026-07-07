@@ -17,12 +17,16 @@ import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuditRouteImport } from './routes/audit'
+import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
+import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
@@ -69,6 +73,16 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentSwarmRoute = AgentSwarmRouteImport.update({
+  id: '/agent-swarm',
+  path: '/agent-swarm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -89,6 +103,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
+  id: '/api/website-audit',
+  path: '/api/website-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
   id: '/api/pilot-generator',
   path: '/api/pilot-generator',
@@ -97,6 +116,11 @@ const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
 const ApiKseAgentRoute = ApiKseAgentRouteImport.update({
   id: '/api/kse-agent',
   path: '/api/kse-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentSwarmRoute = ApiAgentSwarmRouteImport.update({
+  id: '/api/agent-swarm',
+  path: '/api/agent-swarm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
@@ -128,6 +152,8 @@ const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agent-swarm': typeof AgentSwarmRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
   '/heldentaten': typeof HeldentatenRoute
@@ -140,14 +166,18 @@ export interface FileRoutesByFullPath {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent-swarm': typeof AgentSwarmRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
   '/heldentaten': typeof HeldentatenRoute
@@ -160,8 +190,10 @@ export interface FileRoutesByTo {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -170,6 +202,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agent-swarm': typeof AgentSwarmRoute
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
   '/heldentaten': typeof HeldentatenRoute
@@ -182,8 +216,10 @@ export interface FileRoutesById {
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
+  '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -193,6 +229,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/agent-swarm'
+    | '/audit'
     | '/auth'
     | '/datenschutz'
     | '/heldentaten'
@@ -205,14 +243,18 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agent-swarm'
+    | '/audit'
     | '/auth'
     | '/datenschutz'
     | '/heldentaten'
@@ -225,8 +267,10 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -234,6 +278,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/agent-swarm'
+    | '/audit'
     | '/auth'
     | '/datenschutz'
     | '/heldentaten'
@@ -246,8 +292,10 @@ export interface FileRouteTypes {
     | '/admin/instagram'
     | '/admin/media'
     | '/admin/tutorials'
+    | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/website-audit'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -256,6 +304,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AgentSwarmRoute: typeof AgentSwarmRoute
+  AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   DatenschutzRoute: typeof DatenschutzRoute
   HeldentatenRoute: typeof HeldentatenRoute
@@ -264,8 +314,10 @@ export interface RootRouteChildren {
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
+  ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
+  ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -328,6 +380,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-swarm': {
+      id: '/agent-swarm'
+      path: '/agent-swarm'
+      fullPath: '/agent-swarm'
+      preLoaderRoute: typeof AgentSwarmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -356,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/website-audit': {
+      id: '/api/website-audit'
+      path: '/api/website-audit'
+      fullPath: '/api/website-audit'
+      preLoaderRoute: typeof ApiWebsiteAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pilot-generator': {
       id: '/api/pilot-generator'
       path: '/api/pilot-generator'
@@ -368,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/api/kse-agent'
       fullPath: '/api/kse-agent'
       preLoaderRoute: typeof ApiKseAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent-swarm': {
+      id: '/api/agent-swarm'
+      path: '/api/agent-swarm'
+      fullPath: '/api/agent-swarm'
+      preLoaderRoute: typeof ApiAgentSwarmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/tutorials': {
@@ -429,6 +509,8 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AgentSwarmRoute: AgentSwarmRoute,
+  AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   DatenschutzRoute: DatenschutzRoute,
   HeldentatenRoute: HeldentatenRoute,
@@ -437,21 +519,13 @@ const rootRouteChildren: RootRouteChildren = {
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
+  ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
+  ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
