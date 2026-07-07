@@ -21,6 +21,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
@@ -88,6 +89,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
+  id: '/api/pilot-generator',
+  path: '/api/pilot-generator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiKseAgentRoute = ApiKseAgentRouteImport.update({
   id: '/api/kse-agent',
   path: '/api/kse-agent',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
+  '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
+  '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/admin/media': typeof AdminMediaRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
+  '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/kse-agent'
+    | '/api/pilot-generator'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/kse-agent'
+    | '/api/pilot-generator'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/tutorials'
     | '/api/kse-agent'
+    | '/api/pilot-generator'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -253,6 +265,7 @@ export interface RootRouteChildren {
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
+  ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pilot-generator': {
+      id: '/api/pilot-generator'
+      path: '/api/pilot-generator'
+      fullPath: '/api/pilot-generator'
+      preLoaderRoute: typeof ApiPilotGeneratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/kse-agent': {
       id: '/api/kse-agent'
       path: '/api/kse-agent'
@@ -418,6 +438,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
+  ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
