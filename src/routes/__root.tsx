@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { CustomCursor } from "@/components/site/CustomCursor";
 import { CookieConsent } from "@/components/site/CookieConsent";
+import { KseAgent } from "@/components/site/KseAgent";
 
 function NotFoundComponent() {
   return (
@@ -126,6 +127,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <WhatsAppButton />
+      <KseAgent />
       <CustomCursor />
       <CookieConsent />
       <Toaster theme="dark" position="bottom-right" />
