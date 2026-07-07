@@ -712,7 +712,7 @@ function StepPilot({
         </div>
 
         {/* Right: Preview — fixed height, inner scroll */}
-        <div className="h-[720px] max-h-[80vh] overflow-y-auto overflow-x-hidden border-2 border-[#0a0a0a] bg-white [scrollbar-width:thin]">
+        <div className="h-[720px] max-h-[80vh] overflow-y-auto overflow-x-hidden border-2 border-[#0a0a0a] bg-white shadow-[8px_8px_0_#ff5722] [scrollbar-width:thin]">
           {loading && <PilotSkeleton />}
           {!loading && !pilot && !error && <PilotPlaceholder />}
           {!loading && pilot && <PilotPreview pilot={pilot} />}
@@ -724,7 +724,7 @@ function StepPilot({
 
 function PilotPlaceholder() {
   return (
-    <div className="h-full min-h-[420px] border-2 border-dashed border-[#0a0a0a]/25 bg-[#fafafa] grid place-items-center text-center p-8">
+    <div className="min-h-full border border-dashed border-[#0a0a0a]/25 bg-[#fafafa] grid place-items-center text-center p-8">
       <div>
         <div className="text-6xl mb-4" style={{ fontFamily: "var(--font-display)" }}>
           ⚡
@@ -745,7 +745,7 @@ function PilotPlaceholder() {
 
 function PilotSkeleton() {
   return (
-    <div className="h-full min-h-[420px] border-2 border-[#0a0a0a] bg-[#0a0a0a] text-[#22c55e] p-6 font-mono text-xs">
+    <div className="min-h-full bg-[#0a0a0a] text-[#22c55e] p-6 font-mono text-xs">
       <div className="opacity-60">$ pilot --generate</div>
       <div className="mt-2 space-y-1">
         <div>» analyzing brief …</div>
@@ -769,7 +769,7 @@ function PilotSkeleton() {
 
 function PilotPreview({ pilot }: { pilot: Pilot }) {
   return (
-    <div className="border-2 border-[#0a0a0a] bg-white shadow-[8px_8px_0_#ff5722]">
+    <div className="bg-white">
       {/* Header bar — mock browser */}
       <div className="border-b-2 border-[#0a0a0a] bg-[#f5f5f5] px-4 py-2 flex items-center gap-2">
         <span className="h-3 w-3 rounded-full bg-[#ff5722]" />
