@@ -21,6 +21,7 @@ import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
@@ -93,6 +94,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
@@ -179,11 +185,11 @@ export interface FileRoutesByFullPath {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/agent-swarm': typeof AgentSwarmRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
@@ -205,6 +211,7 @@ export interface FileRoutesByTo {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
@@ -232,6 +239,7 @@ export interface FileRoutesById {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
@@ -260,11 +268,11 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
+    | '/admin/'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/agent-swarm'
     | '/audit'
     | '/auth'
@@ -286,6 +294,7 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
+    | '/admin'
     | '/api/public/media/$'
   id:
     | '__root__'
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
+    | '/admin/'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
@@ -422,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/share/$token': {
       id: '/share/$token'
       path: '/share/$token'
@@ -516,6 +533,7 @@ interface AdminRouteChildren {
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -525,6 +543,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJourneyRoute: AdminJourneyRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
