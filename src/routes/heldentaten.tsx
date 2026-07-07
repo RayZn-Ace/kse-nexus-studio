@@ -250,6 +250,7 @@ function Hero() {
 
 function DeedWall() {
   const [filter, setFilter] = useState<Category>("Alle");
+  const [active, setActive] = useState<Deed | null>(null);
   const reduced = useReducedMotion();
   const filtered = filter === "Alle" ? DEEDS : DEEDS.filter((d) => d.category === filter);
 
@@ -284,7 +285,11 @@ function DeedWall() {
             whileInView={reduced ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.45, delay: i * 0.05, ease: [0.2, 0.8, 0.2, 1] }}
-            className="group/deed border-4 border-[#0a0a0a] bg-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-1 hover:-translate-x-1 hover:[box-shadow:14px_14px_0_0_#0a0a0a] flex flex-col"
+            onClick={() => setActive(deed)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActive(deed); } }}
+            className="group/deed cursor-pointer border-4 border-[#0a0a0a] bg-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-1 hover:-translate-x-1 hover:[box-shadow:14px_14px_0_0_#0a0a0a] focus:outline-none focus-visible:[box-shadow:14px_14px_0_0_#ff5722] flex flex-col"
             style={{ boxShadow: "8px 8px 0 0 #0a0a0a" }}
           >
             {/* Top bar */}
@@ -337,11 +342,125 @@ function DeedWall() {
                   {deed.resultLabel}
                 </div>
               </div>
+
+              {/* Play hint */}
+              <div className="mt-5 flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-bold text-[#0a0a0a]/60 group-hover/deed:text-[#ff5722] transition-colors">
+                <span className="grid place-items-center h-6 w-6 border-2 border-current">▶</span>
+                Video ansehen
+              </div>
             </div>
           </motion.article>
         ))}
       </div>
+
+      <DeedModal deed={active} onClose={() => setActive(null)} />
     </section>
+  );
+}
+
+function DeedModal({ deed, onClose }: { deed: Deed | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!deed) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [deed, onClose]);
+
+  return (
+    <AnimatePresence>
+      {deed && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[100] bg-[#0a0a0a]/85 backdrop-blur-sm grid place-items-center p-4 md:p-8"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+            className="relative w-full max-w-4xl bg-white border-4 border-[#0a0a0a]"
+            style={{ boxShadow: "14px 14px 0 0 #ff5722" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b-2 border-[#0a0a0a] p-3 bg-[#f5f1e8]">
+              <div className="flex items-center gap-3 min-w-0">
+                <span
+                  className="border-2 border-[#0a0a0a] px-2 py-0.5 text-[9px] uppercase tracking-[0.25em] font-bold shrink-0"
+                  style={{ background: deed.accent, color: deed.accent === "#ffeb3b" ? "#0a0a0a" : "#ffffff" }}
+                >
+                  {deed.category}
+                </span>
+                <span className="truncate text-[10px] uppercase tracking-[0.25em] font-bold text-[#0a0a0a]/60">
+                  {deed.client}
+                </span>
+              </div>
+              <button
+                onClick={onClose}
+                aria-label="Schließen"
+                className="grid place-items-center h-8 w-8 border-2 border-[#0a0a0a] bg-white hover:bg-[#0a0a0a] hover:text-white transition-colors font-black"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="relative bg-[#0a0a0a] aspect-video">
+              <video
+                key={deed.video}
+                src={deed.video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
+
+            <div className="p-5 md:p-6 border-t-2 border-[#0a0a0a]">
+              <h3
+                className="font-black tracking-tighter uppercase leading-[0.95] text-2xl md:text-3xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {deed.title}
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-[#0a0a0a]/80">
+                {deed.description}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <div
+                  className="font-black text-2xl md:text-3xl tracking-tighter"
+                  style={{ fontFamily: "var(--font-display)", color: deed.accent === "#0a0a0a" ? "#ff5722" : deed.accent }}
+                >
+                  {deed.result}
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#0a0a0a]/60">
+                  {deed.resultLabel}
+                </div>
+                <div className="ml-auto flex flex-wrap gap-2">
+                  {deed.heroes.map((h) => (
+                    <span
+                      key={h}
+                      className="inline-flex items-center border-2 border-[#0a0a0a] bg-[#f5f1e8] px-2 py-1 text-[10px] uppercase tracking-[0.2em] font-bold"
+                    >
+                      {h}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
