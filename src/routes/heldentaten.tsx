@@ -11,6 +11,7 @@ import deed07 from "@/assets/videos/deed-07.mp4.asset.json";
 import deed08 from "@/assets/videos/deed-08.mp4.asset.json";
 import deed09 from "@/assets/videos/deed-09.mp4.asset.json";
 import deed10 from "@/assets/videos/deed-10.mp4.asset.json";
+import deed11 from "@/assets/videos/deed-11.mp4.asset.json";
 
 export const Route = createFileRoute("/heldentaten")({
   head: () => ({
@@ -166,6 +167,18 @@ const DEEDS: Deed[] = [
       "Eigenmarke neu aufgelegt: Website, Team-Seite, Komik-Asthetik und ein komplett neuer Auftritt.",
     accent: "#0a0a0a",
     video: deed10.url,
+  },
+  {
+    client: "BS Montagen (Wolfsburg)",
+    category: "Software",
+    title: "Website + eigenes Rechnungstool im Backend",
+    heroes: ["The Architect", "The Cipher", "The Pixel Sorcerer"],
+    result: "0 €",
+    resultLabel: "Lizenzkosten pro Monat",
+    description:
+      "Neue Marken-Website für das Familienunternehmen aus Wolfsburg — inklusive 3-Klick-Bewerbung. Dazu ein komplett eigenes Rechnungs- und Angebotstool im Backend: Kunden, Projekte, Positionen, PDF-Export und Nummernkreise. Kein sevDesk, kein Lexoffice, kein Abo.",
+    accent: "#ff5722",
+    video: deed11.url,
   },
 ];
 
