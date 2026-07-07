@@ -30,6 +30,7 @@ import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
+import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
@@ -145,6 +146,11 @@ const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   path: '/tutorials',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReportRoute = AdminReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/report': typeof AdminReportRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/report'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -556,6 +568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTutorialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/report': {
+      id: '/admin/report'
+      path: '/report'
+      fullPath: '/admin/report'
+      preLoaderRoute: typeof AdminReportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
@@ -631,6 +650,7 @@ interface AdminRouteChildren {
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminReportRoute: typeof AdminReportRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminWarroomRoute: typeof AdminWarroomRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -645,6 +665,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJourneyRoute: AdminJourneyRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminReportRoute: AdminReportRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminWarroomRoute: AdminWarroomRoute,
   AdminIndexRoute: AdminIndexRoute,
