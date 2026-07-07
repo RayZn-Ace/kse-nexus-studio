@@ -32,6 +32,7 @@ import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminSpyRouteImport } from './routes/admin/spy'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
+import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
@@ -158,6 +159,11 @@ const AdminReportRoute = AdminReportRouteImport.update({
   path: '/report',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPlannerRoute = AdminPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/admin/journey'
     | '/admin/leads'
     | '/admin/media'
+    | '/admin/planner'
     | '/admin/report'
     | '/admin/spy'
     | '/admin/tutorials'
@@ -606,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/planner': {
+      id: '/admin/planner'
+      path: '/planner'
+      fullPath: '/admin/planner'
+      preLoaderRoute: typeof AdminPlannerRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
@@ -689,6 +708,7 @@ interface AdminRouteChildren {
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminPlannerRoute: typeof AdminPlannerRoute
   AdminReportRoute: typeof AdminReportRoute
   AdminSpyRoute: typeof AdminSpyRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
@@ -706,6 +726,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJourneyRoute: AdminJourneyRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminPlannerRoute: AdminPlannerRoute,
   AdminReportRoute: AdminReportRoute,
   AdminSpyRoute: AdminSpyRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
