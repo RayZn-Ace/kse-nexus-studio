@@ -21,7 +21,6 @@ import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
@@ -31,6 +30,7 @@ import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
+import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
@@ -94,11 +94,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
@@ -144,6 +139,11 @@ const AdminInstagramRoute = AdminInstagramRouteImport.update({
   path: '/instagram',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminInboxRoute = AdminInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminChatbotRoute = AdminChatbotRouteImport.update({
   id: '/chatbot',
   path: '/chatbot',
@@ -169,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
@@ -178,11 +179,11 @@ export interface FileRoutesByFullPath {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
-  '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agent-swarm': typeof AgentSwarmRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
@@ -194,6 +195,7 @@ export interface FileRoutesByTo {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
@@ -203,7 +205,6 @@ export interface FileRoutesByTo {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
-  '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
@@ -221,6 +222,7 @@ export interface FileRoutesById {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/media': typeof AdminMediaRoute
@@ -230,7 +232,6 @@ export interface FileRoutesById {
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/share/$token': typeof ShareTokenRoute
-  '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
@@ -249,6 +250,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
+    | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
     | '/admin/media'
@@ -258,11 +260,11 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
-    | '/admin/'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/agent-swarm'
     | '/audit'
     | '/auth'
@@ -274,6 +276,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
+    | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
     | '/admin/media'
@@ -283,7 +286,6 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
-    | '/admin'
     | '/api/public/media/$'
   id:
     | '__root__'
@@ -300,6 +302,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/chatbot'
+    | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
     | '/admin/media'
@@ -309,7 +312,6 @@ export interface FileRouteTypes {
     | '/api/pilot-generator'
     | '/api/website-audit'
     | '/share/$token'
-    | '/admin/'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
@@ -420,13 +422,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/share/$token': {
       id: '/share/$token'
       path: '/share/$token'
@@ -490,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInstagramRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/inbox': {
+      id: '/admin/inbox'
+      path: '/inbox'
+      fullPath: '/admin/inbox'
+      preLoaderRoute: typeof AdminInboxRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/chatbot': {
       id: '/admin/chatbot'
       path: '/chatbot'
@@ -509,20 +511,20 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminChatbotRoute: typeof AdminChatbotRoute
+  AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminChatbotRoute: AdminChatbotRoute,
+  AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
-  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
