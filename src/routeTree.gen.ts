@@ -18,6 +18,7 @@ import { Route as HeldentatenRouteImport } from './routes/heldentaten'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditRouteImport } from './routes/audit'
+import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -75,6 +76,11 @@ const AuthRoute = AuthRouteImport.update({
 const AuditRoute = AuditRouteImport.update({
   id: '/audit',
   path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentSwarmRoute = AgentSwarmRouteImport.update({
+  id: '/agent-swarm',
+  path: '/agent-swarm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -146,6 +152,7 @@ const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agent-swarm': typeof AgentSwarmRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent-swarm': typeof AgentSwarmRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/agent-swarm': typeof AgentSwarmRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/agent-swarm'
     | '/audit'
     | '/auth'
     | '/datenschutz'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agent-swarm'
     | '/audit'
     | '/auth'
     | '/datenschutz'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/agent-swarm'
     | '/audit'
     | '/auth'
     | '/datenschutz'
@@ -292,6 +304,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AgentSwarmRoute: typeof AgentSwarmRoute
   AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   DatenschutzRoute: typeof DatenschutzRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/audit'
       preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-swarm': {
+      id: '/agent-swarm'
+      path: '/agent-swarm'
+      fullPath: '/agent-swarm'
+      preLoaderRoute: typeof AgentSwarmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -489,6 +509,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AgentSwarmRoute: AgentSwarmRoute,
   AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   DatenschutzRoute: DatenschutzRoute,
