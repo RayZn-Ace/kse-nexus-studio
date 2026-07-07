@@ -152,8 +152,14 @@ function Nav() {
         </a>
         <div className="shrink-0 flex items-center gap-2">
           <Link
-            to="/team"
+            to="/heldentaten"
             className="hidden md:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-white text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
+          >
+            Heldentaten
+          </Link>
+          <Link
+            to="/team"
+            className="hidden sm:inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-white text-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-[#0a0a0a] hover:text-white transition-colors"
           >
             Team
           </Link>

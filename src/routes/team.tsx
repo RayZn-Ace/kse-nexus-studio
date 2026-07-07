@@ -443,6 +443,7 @@ function Footer() {
       </div>
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-8 flex flex-wrap gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.2em] font-bold text-white/60">
         <Link to="/" className="hover:text-[#ffeb3b] transition-colors">Home</Link>
+        <Link to="/heldentaten" className="hover:text-[#ffeb3b] transition-colors">Heldentaten</Link>
         <Link to="/leistungen" className="hover:text-[#ffeb3b] transition-colors">Leistungen</Link>
         <Link to="/konfigurator" className="hover:text-[#ffeb3b] transition-colors">Konfigurator</Link>
         <Link to="/impressum" className="hover:text-[#ffeb3b] transition-colors">Impressum</Link>

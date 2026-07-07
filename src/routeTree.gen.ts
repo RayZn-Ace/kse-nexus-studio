@@ -13,6 +13,7 @@ import { Route as TeamRouteImport } from './routes/team'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
+import { Route as HeldentatenRouteImport } from './routes/heldentaten'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -43,6 +44,11 @@ const KonfiguratorRoute = KonfiguratorRouteImport.update({
 const ImpressumRoute = ImpressumRouteImport.update({
   id: '/impressum',
   path: '/impressum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeldentatenRoute = HeldentatenRouteImport.update({
+  id: '/heldentaten',
+  path: '/heldentaten',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatenschutzRoute = DatenschutzRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
   '/leistungen': typeof LeistungenRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/datenschutz'
+    | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/datenschutz'
+    | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/datenschutz'
+    | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
     | '/leistungen'
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   DatenschutzRoute: typeof DatenschutzRoute
+  HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
   LeistungenRoute: typeof LeistungenRoute
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/impressum'
       fullPath: '/impressum'
       preLoaderRoute: typeof ImpressumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/heldentaten': {
+      id: '/heldentaten'
+      path: '/heldentaten'
+      fullPath: '/heldentaten'
+      preLoaderRoute: typeof HeldentatenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/datenschutz': {
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   DatenschutzRoute: DatenschutzRoute,
+  HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
   LeistungenRoute: LeistungenRoute,
