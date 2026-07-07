@@ -15,6 +15,7 @@ import { Route as LabRouteImport } from './routes/lab'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
+import { Route as HallOfFameRouteImport } from './routes/hall-of-fame'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditRouteImport } from './routes/audit'
@@ -72,6 +73,11 @@ const ImpressumRoute = ImpressumRouteImport.update({
 const HeldentatenRoute = HeldentatenRouteImport.update({
   id: '/heldentaten',
   path: '/heldentaten',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HallOfFameRoute = HallOfFameRouteImport.update({
+  id: '/hall-of-fame',
+  path: '/hall-of-fame',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatenschutzRoute = DatenschutzRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/datenschutz': typeof DatenschutzRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/auth'
     | '/datenschutz'
+    | '/hall-of-fame'
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
@@ -440,6 +452,7 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   DatenschutzRoute: typeof DatenschutzRoute
+  HallOfFameRoute: typeof HallOfFameRoute
   HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
@@ -497,6 +510,13 @@ declare module '@tanstack/react-router' {
       path: '/heldentaten'
       fullPath: '/heldentaten'
       preLoaderRoute: typeof HeldentatenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hall-of-fame': {
+      id: '/hall-of-fame'
+      path: '/hall-of-fame'
+      fullPath: '/hall-of-fame'
+      preLoaderRoute: typeof HallOfFameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/datenschutz': {
@@ -743,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   DatenschutzRoute: DatenschutzRoute,
+  HallOfFameRoute: HallOfFameRoute,
   HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
