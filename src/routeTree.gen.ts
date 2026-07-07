@@ -23,9 +23,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
-import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
@@ -103,6 +103,11 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
+  id: '/api/website-audit',
+  path: '/api/website-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
   id: '/api/pilot-generator',
   path: '/api/pilot-generator',
@@ -111,11 +116,6 @@ const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
 const ApiKseAgentRoute = ApiKseAgentRouteImport.update({
   id: '/api/kse-agent',
   path: '/api/kse-agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
-  id: '/api/website-audit',
-  path: '/api/website-audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAgentSwarmRoute = ApiAgentSwarmRouteImport.update({
@@ -422,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/website-audit': {
+      id: '/api/website-audit'
+      path: '/api/website-audit'
+      fullPath: '/api/website-audit'
+      preLoaderRoute: typeof ApiWebsiteAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pilot-generator': {
       id: '/api/pilot-generator'
       path: '/api/pilot-generator'
@@ -434,13 +441,6 @@ declare module '@tanstack/react-router' {
       path: '/api/kse-agent'
       fullPath: '/api/kse-agent'
       preLoaderRoute: typeof ApiKseAgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/website-audit': {
-      id: '/api/website-audit'
-      path: '/api/website-audit'
-      fullPath: '/api/website-audit'
-      preLoaderRoute: typeof ApiWebsiteAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/agent-swarm': {
@@ -529,13 +529,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
