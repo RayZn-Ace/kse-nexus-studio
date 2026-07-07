@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import deed01 from "@/assets/videos/deed-01.mp4.asset.json";
+import deed02 from "@/assets/videos/deed-02.mp4.asset.json";
+import deed03 from "@/assets/videos/deed-03.mp4.asset.json";
+import deed04 from "@/assets/videos/deed-04.mp4.asset.json";
+import deed05 from "@/assets/videos/deed-05.mp4.asset.json";
+import deed06 from "@/assets/videos/deed-06.mp4.asset.json";
+import deed07 from "@/assets/videos/deed-07.mp4.asset.json";
+import deed08 from "@/assets/videos/deed-08.mp4.asset.json";
+import deed09 from "@/assets/videos/deed-09.mp4.asset.json";
+import deed10 from "@/assets/videos/deed-10.mp4.asset.json";
 
 export const Route = createFileRoute("/heldentaten")({
   head: () => ({
@@ -33,6 +43,7 @@ type Deed = {
   resultLabel: string;
   description: string;
   accent: "#ff5722" | "#ffeb3b" | "#0a0a0a";
+  video: string;
 };
 
 const DEEDS: Deed[] = [
