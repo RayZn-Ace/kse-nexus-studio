@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   Outlet,
   Link,
@@ -15,6 +16,9 @@ import { CustomCursor } from "@/components/site/CustomCursor";
 import { CookieConsent } from "@/components/site/CookieConsent";
 import { KseAgent } from "@/components/site/KseAgent";
 import { SocialProof } from "@/components/site/SocialProof";
+import { LiveVisitors } from "@/components/site/LiveVisitors";
+import { EasterEggProvider } from "@/components/site/EasterEggHunt";
+import { trackEvent } from "@/lib/tracking";
 
 function NotFoundComponent() {
   return (
@@ -123,16 +127,30 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Initial pageview
+    trackEvent("pageview");
+    // Track subsequent client-side navigations
+    const unsub = router.subscribe("onResolved", () => {
+      trackEvent("pageview");
+    });
+    return () => unsub();
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <WhatsAppButton />
-      <KseAgent />
-      <CustomCursor />
-      <CookieConsent />
-      <SocialProof />
-      <Toaster theme="dark" position="bottom-right" />
+      <EasterEggProvider>
+        <Outlet />
+        <WhatsAppButton />
+        <KseAgent />
+        <CustomCursor />
+        <CookieConsent />
+        <SocialProof />
+        <LiveVisitors />
+        <Toaster theme="dark" position="bottom-right" />
+      </EasterEggProvider>
     </QueryClientProvider>
   );
 }

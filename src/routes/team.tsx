@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { HiddenSpidey } from "@/components/site/EasterEggHunt";
 import architect from "@/assets/team-architect.jpg";
 import automator from "@/assets/team-automator.jpg";
 import pixel from "@/assets/team-pixel.jpg";
@@ -188,6 +189,9 @@ function TeamPage() {
       <Roster />
       <RecruitCTA />
       <Footer />
+      <div className="fixed left-3 bottom-24 z-40 hidden sm:block">
+        <HiddenSpidey id="team-footer" size={20} />
+      </div>
     </div>
   );
 }

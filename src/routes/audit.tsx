@@ -16,6 +16,7 @@ import {
   MousePointer2,
   Bot,
 } from "lucide-react";
+import { HiddenSpidey } from "@/components/site/EasterEggHunt";
 
 export const Route = createFileRoute("/audit")({
   head: () => ({
@@ -92,6 +93,9 @@ function AuditPage() {
   return (
     <div className="min-h-screen bg-[#f5f2ea] text-[#0a0a0a]">
       <header className="border-b-2 border-[#0a0a0a] bg-white">
+        <div className="fixed right-2 top-24 z-40">
+          <HiddenSpidey id="audit-cta" size={20} />
+        </div>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-8">
           <Link
             to="/"

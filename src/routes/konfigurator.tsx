@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { HiddenSpidey } from "@/components/site/EasterEggHunt";
 
 export const Route = createFileRoute("/konfigurator")({
   head: () => ({
@@ -301,6 +302,9 @@ function KonfiguratorPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-14">
+        <div className="fixed left-3 bottom-24 z-40 hidden sm:block">
+          <HiddenSpidey id="konfigurator-price" size={20} />
+        </div>
         {done ? (
           <SuccessScreen state={state} priceRange={priceRange} />
         ) : (
