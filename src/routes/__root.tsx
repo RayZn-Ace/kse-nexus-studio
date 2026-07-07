@@ -14,6 +14,7 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { CustomCursor } from "@/components/site/CustomCursor";
 import { CookieConsent } from "@/components/site/CookieConsent";
 import { KseAgent } from "@/components/site/KseAgent";
+import { SocialProof } from "@/components/site/SocialProof";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,7 @@ function RootComponent() {
       <KseAgent />
       <CustomCursor />
       <CookieConsent />
+      <SocialProof />
       <Toaster theme="dark" position="bottom-right" />
     </QueryClientProvider>
   );
