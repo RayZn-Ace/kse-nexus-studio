@@ -368,8 +368,8 @@ function MissionPortal() {
           <section>
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-3">/ Dokumente</h2>
             <div className="border-2 border-[#0a0a0a] bg-white" style={{ boxShadow: "6px 6px 0 0 #0a0a0a" }}>
-              {FILES.map((f, i) => (
-                <div key={i} className={`flex items-center gap-3 p-3 md:p-4 ${i < FILES.length - 1 ? "border-b-2 border-[#0a0a0a]/10" : ""} hover:bg-[#f5f2ea] group`}>
+              {displayFiles.map((f, i) => (
+                <div key={i} className={`flex items-center gap-3 p-3 md:p-4 ${i < displayFiles.length - 1 ? "border-b-2 border-[#0a0a0a]/10" : ""} hover:bg-[#f5f2ea] group`}>
                   <div className="w-9 h-9 border-2 border-[#0a0a0a] grid place-items-center bg-[#f5f2ea] text-[9px] font-black">
                     {f.type}
                   </div>
@@ -448,7 +448,7 @@ function MissionPortal() {
               {[1, 2, 3, 4, 5].map(n => (
                 <button
                   key={n}
-                  onClick={() => setRating(n)}
+                  onClick={() => submitRating(n)}
                   onMouseEnter={() => setHover(n)}
                   onMouseLeave={() => setHover(0)}
                   aria-label={`${n} Sterne`}
@@ -460,8 +460,20 @@ function MissionPortal() {
                   />
                 </button>
               ))}
-              {rating > 0 && <span className="ml-3 text-sm font-black uppercase tracking-widest text-[#ff5722]">Danke!</span>}
+              {rating > 0 && <span className="ml-3 text-sm font-black uppercase tracking-widest text-[#ff5722]">{ratingSaved ? "Gespeichert ✓" : "Danke!"}</span>}
             </div>
+            {rating > 0 && (
+              <div className="mt-4">
+                <textarea
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  onBlur={() => submitRating(rating)}
+                  placeholder="Optional: Kommentar hinzufügen…"
+                  rows={2}
+                  className="w-full border-2 border-white/30 bg-white/10 text-white placeholder-white/40 p-2 text-sm focus:outline-none focus:border-[#ff5722]"
+                />
+              </div>
+            )}
           </div>
         </section>
 
