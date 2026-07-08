@@ -25,6 +25,8 @@ import {
   FlaskConical,
   Eye,
   CalendarDays,
+  Trophy,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -102,6 +104,7 @@ function AdminLayout() {
     { to: "/admin/media", label: "Medien", icon: ImageIcon },
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
     { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
+    { to: "/admin/achievements", label: "Achievements", icon: Trophy },
   ];
 
   return (

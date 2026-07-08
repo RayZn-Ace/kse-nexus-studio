@@ -24,6 +24,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
@@ -119,6 +120,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionTokenRoute = MissionTokenRouteImport.update({
+  id: '/mission/$token',
+  path: '/mission/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -476,6 +488,7 @@ export interface RootRouteChildren {
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
+  MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -585,6 +598,13 @@ declare module '@tanstack/react-router' {
       path: '/share/$token'
       fullPath: '/share/$token'
       preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/$token': {
+      id: '/mission/$token'
+      path: '/mission/$token'
+      fullPath: '/mission/$token'
+      preLoaderRoute: typeof MissionTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/website-audit': {
@@ -796,6 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
+  MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
