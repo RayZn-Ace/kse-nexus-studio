@@ -195,6 +195,20 @@ function MissionPortal() {
 
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSaved, setRatingSaved] = useState(false);
+
+  async function submitRating(stars: number) {
+    setRating(stars);
+    if (!token) return;
+    // ensure row exists, then update
+    await supabase.from("mission_config").upsert({ token }, { onConflict: "token", ignoreDuplicates: true });
+    await supabase.from("mission_config")
+      .update({ rating: stars, rating_comment: ratingComment || null, rated_at: new Date().toISOString() })
+      .eq("token", token);
+    setRatingSaved(true);
+    setTimeout(() => setRatingSaved(false), 2000);
+  }
 
   const doneCount = milestones.filter(m => m.status === "done").length;
   const progress = Math.round((doneCount / MILESTONES.length) * 100);
