@@ -137,6 +137,57 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_config: {
+        Row: {
+          client_name: string | null
+          contact: string | null
+          created_at: string
+          files: Json
+          launch_date: string | null
+          milestones: Json
+          notes: string | null
+          rated_at: string | null
+          rating: number | null
+          rating_comment: string | null
+          scope: string | null
+          token: string
+          updated_at: string
+          updates: Json
+        }
+        Insert: {
+          client_name?: string | null
+          contact?: string | null
+          created_at?: string
+          files?: Json
+          launch_date?: string | null
+          milestones?: Json
+          notes?: string | null
+          rated_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
+          scope?: string | null
+          token: string
+          updated_at?: string
+          updates?: Json
+        }
+        Update: {
+          client_name?: string | null
+          contact?: string | null
+          created_at?: string
+          files?: Json
+          launch_date?: string | null
+          milestones?: Json
+          notes?: string | null
+          rated_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
+          scope?: string | null
+          token?: string
+          updated_at?: string
+          updates?: Json
+        }
+        Relationships: []
+      }
       portal_messages: {
         Row: {
           body: string
