@@ -65,12 +65,22 @@ function MissionPortal() {
   const seed = hash(token || "mission");
   const rnd = mulberry32(seed);
 
-  const client = pick(rnd, CLIENTS);
+  const seedClient = pick(rnd, CLIENTS);
   const activeIdx = 2 + Math.floor(rnd() * 3); // 2..4
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - (14 + Math.floor(rnd() * 40)));
-  const launchDate = new Date(startDate);
-  launchDate.setDate(launchDate.getDate() + 45 + Math.floor(rnd() * 30));
+  const seedLaunch = new Date(startDate);
+  seedLaunch.setDate(seedLaunch.getDate() + 45 + Math.floor(rnd() * 30));
+
+  // Overrides from mission_config
+  const [override, setOverride] = useState<{
+    client_name?: string | null; scope?: string | null; contact?: string | null;
+    launch_date?: string | null;
+    milestones?: { key: string; label: string; desc: string; status: "done" | "active" | "todo" }[];
+    updates?: { day: number; text: string }[];
+    files?: { name: string; size: string; type: string }[];
+    rating?: number | null; rating_comment?: string | null;
+  } | null>(null);
 
   const [milestones, setMilestones] = useState(() =>
     MILESTONES.map((m, i) => ({
@@ -79,13 +89,35 @@ function MissionPortal() {
     }))
   );
 
+  const client = {
+    name: override?.client_name || seedClient.name,
+    scope: override?.scope || seedClient.scope,
+    contact: override?.contact || seedClient.contact,
+  };
+  const launchDate = override?.launch_date ? new Date(override.launch_date) : seedLaunch;
+  const displayFiles = override?.files && override.files.length ? override.files : FILES;
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      const { data } = await supabase.from("mission_config").select("*").eq("token", token).maybeSingle();
+      if (!data) return;
+      setOverride(data as never);
+      if (Array.isArray(data.milestones) && data.milestones.length) {
+        setMilestones(data.milestones as never);
+      }
+      if (data.rating) setRating(data.rating);
+    })();
+  }, [token]);
+
   const updates = useMemo(() => {
+    if (override?.updates && override.updates.length) return [...override.updates].sort((a, b) => b.day - a.day);
     const arr: { day: number; text: string }[] = [];
     for (let i = 0; i < 6; i++) {
       arr.push({ day: Math.floor(rnd() * 40) + 1, text: pick(rnd, UPDATES) });
     }
     return arr.sort((a, b) => b.day - a.day);
-  }, [token]);
+  }, [token, override]);
 
   type PortalMsg = {
     id: string;
@@ -163,6 +195,20 @@ function MissionPortal() {
 
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSaved, setRatingSaved] = useState(false);
+
+  async function submitRating(stars: number) {
+    setRating(stars);
+    if (!token) return;
+    // ensure row exists, then update
+    await supabase.from("mission_config").upsert({ token }, { onConflict: "token", ignoreDuplicates: true });
+    await supabase.from("mission_config")
+      .update({ rating: stars, rating_comment: ratingComment || null, rated_at: new Date().toISOString() })
+      .eq("token", token);
+    setRatingSaved(true);
+    setTimeout(() => setRatingSaved(false), 2000);
+  }
 
   const doneCount = milestones.filter(m => m.status === "done").length;
   const progress = Math.round((doneCount / MILESTONES.length) * 100);
@@ -322,8 +368,8 @@ function MissionPortal() {
           <section>
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-3">/ Dokumente</h2>
             <div className="border-2 border-[#0a0a0a] bg-white" style={{ boxShadow: "6px 6px 0 0 #0a0a0a" }}>
-              {FILES.map((f, i) => (
-                <div key={i} className={`flex items-center gap-3 p-3 md:p-4 ${i < FILES.length - 1 ? "border-b-2 border-[#0a0a0a]/10" : ""} hover:bg-[#f5f2ea] group`}>
+              {displayFiles.map((f, i) => (
+                <div key={i} className={`flex items-center gap-3 p-3 md:p-4 ${i < displayFiles.length - 1 ? "border-b-2 border-[#0a0a0a]/10" : ""} hover:bg-[#f5f2ea] group`}>
                   <div className="w-9 h-9 border-2 border-[#0a0a0a] grid place-items-center bg-[#f5f2ea] text-[9px] font-black">
                     {f.type}
                   </div>
@@ -402,7 +448,7 @@ function MissionPortal() {
               {[1, 2, 3, 4, 5].map(n => (
                 <button
                   key={n}
-                  onClick={() => setRating(n)}
+                  onClick={() => submitRating(n)}
                   onMouseEnter={() => setHover(n)}
                   onMouseLeave={() => setHover(0)}
                   aria-label={`${n} Sterne`}
@@ -414,8 +460,20 @@ function MissionPortal() {
                   />
                 </button>
               ))}
-              {rating > 0 && <span className="ml-3 text-sm font-black uppercase tracking-widest text-[#ff5722]">Danke!</span>}
+              {rating > 0 && <span className="ml-3 text-sm font-black uppercase tracking-widest text-[#ff5722]">{ratingSaved ? "Gespeichert ✓" : "Danke!"}</span>}
             </div>
+            {rating > 0 && (
+              <div className="mt-4">
+                <textarea
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  onBlur={() => submitRating(rating)}
+                  placeholder="Optional: Kommentar hinzufügen…"
+                  rows={2}
+                  className="w-full border-2 border-white/30 bg-white/10 text-white placeholder-white/40 p-2 text-sm focus:outline-none focus:border-[#ff5722]"
+                />
+              </div>
+            )}
           </div>
         </section>
 
