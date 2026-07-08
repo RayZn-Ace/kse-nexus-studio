@@ -137,6 +137,36 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_messages: {
+        Row: {
+          body: string
+          created_at: string
+          delivered_at: string | null
+          from_role: string
+          id: string
+          read_at: string | null
+          token: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          delivered_at?: string | null
+          from_role: string
+          id?: string
+          read_at?: string | null
+          token: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          delivered_at?: string | null
+          from_role?: string
+          id?: string
+          read_at?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
       posts_log: {
         Row: {
           caption: string | null
