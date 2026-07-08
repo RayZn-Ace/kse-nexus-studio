@@ -26,7 +26,6 @@ import {
   Eye,
   CalendarDays,
   Trophy,
-  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
