@@ -42,6 +42,7 @@ import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
 import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
+import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
@@ -210,6 +211,11 @@ const AdminAlarmRoute = AdminAlarmRouteImport.update({
   path: '/alarm',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAchievementsRoute = AdminAchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAbtestRoute = AdminAbtestRouteImport.update({
   id: '/abtest',
   path: '/abtest',
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -272,6 +279,7 @@ export interface FileRoutesByTo {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -701,6 +713,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAlarmRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/achievements': {
+      id: '/admin/achievements'
+      path: '/achievements'
+      fullPath: '/admin/achievements'
+      preLoaderRoute: typeof AdminAchievementsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/abtest': {
       id: '/admin/abtest'
       path: '/abtest'
@@ -720,6 +739,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAbtestRoute: typeof AdminAbtestRoute
+  AdminAchievementsRoute: typeof AdminAchievementsRoute
   AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
   AdminCopilotRoute: typeof AdminCopilotRoute
@@ -738,6 +758,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAbtestRoute: AdminAbtestRoute,
+  AdminAchievementsRoute: AdminAchievementsRoute,
   AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
   AdminCopilotRoute: AdminCopilotRoute,
@@ -781,13 +802,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
