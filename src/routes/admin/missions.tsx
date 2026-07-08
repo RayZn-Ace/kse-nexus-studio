@@ -57,8 +57,8 @@ function MissionsLayout() {
   }
 
   return (
-    <div className="flex-1 flex min-h-0">
-      <aside className="w-96 border-r-2 border-[#0a0a0a] bg-white flex flex-col">
+    <div className="h-screen flex min-h-0">
+      <aside className="w-96 shrink-0 border-r-2 border-[#0a0a0a] bg-white flex flex-col">
         <div className="p-4 border-b-2 border-[#0a0a0a]">
           <div className="flex items-center gap-2 mb-3">
             <Rocket className="w-4 h-4 text-[#ff5722]" />
