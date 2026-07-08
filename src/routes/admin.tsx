@@ -26,6 +26,7 @@ import {
   Eye,
   CalendarDays,
   Trophy,
+  MessagesSquare,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -93,6 +94,7 @@ function AdminLayout() {
     { to: "/admin/alarm", label: "Alarm", icon: Siren },
     { to: "/admin/leads", label: "Leads", icon: Target },
     { to: "/admin/inbox", label: "Inbox", icon: Inbox },
+    { to: "/admin/chats", label: "Direktchats", icon: MessagesSquare },
     { to: "/admin/journey", label: "Journey", icon: Activity },
     { to: "/admin/planner", label: "Planner", icon: CalendarDays },
     { to: "/admin/copilot", label: "Copilot", icon: Wand2 },

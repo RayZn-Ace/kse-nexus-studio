@@ -41,6 +41,7 @@ import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
 import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
+import { Route as AdminChatsRouteImport } from './routes/admin/chats'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
@@ -207,6 +208,11 @@ const AdminCopilotRoute = AdminCopilotRouteImport.update({
   path: '/copilot',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminChatsRoute = AdminChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminChatbotRoute = AdminChatbotRouteImport.update({
   id: '/chatbot',
   path: '/chatbot',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
@@ -329,6 +337,7 @@ export interface FileRoutesById {
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
@@ -370,6 +379,7 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/chats'
     | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
@@ -408,6 +418,7 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/chats'
     | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
+    | '/admin/chats'
     | '/admin/copilot'
     | '/admin/inbox'
     | '/admin/instagram'
@@ -719,6 +731,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCopilotRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/chats': {
+      id: '/admin/chats'
+      path: '/chats'
+      fullPath: '/admin/chats'
+      preLoaderRoute: typeof AdminChatsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/chatbot': {
       id: '/admin/chatbot'
       path: '/chatbot'
@@ -762,6 +781,7 @@ interface AdminRouteChildren {
   AdminAchievementsRoute: typeof AdminAchievementsRoute
   AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
+  AdminChatsRoute: typeof AdminChatsRoute
   AdminCopilotRoute: typeof AdminCopilotRoute
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
@@ -781,6 +801,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAchievementsRoute: AdminAchievementsRoute,
   AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
+  AdminChatsRoute: AdminChatsRoute,
   AdminCopilotRoute: AdminCopilotRoute,
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
