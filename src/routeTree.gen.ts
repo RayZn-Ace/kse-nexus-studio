@@ -47,6 +47,7 @@ import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
+import { Route as AdminMissionsTokenRouteImport } from './routes/admin/missions.$token'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
 const TeamRoute = TeamRouteImport.update({
@@ -239,6 +240,11 @@ const AdminAbtestRoute = AdminAbtestRouteImport.update({
   path: '/abtest',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMissionsTokenRoute = AdminMissionsTokenRouteImport.update({
+  id: '/$token',
+  path: '/$token',
+  getParentRoute: () => AdminMissionsRoute,
+} as any)
 const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   id: '/api/public/media/$',
   path: '/api/public/media/$',
@@ -270,7 +276,7 @@ export interface FileRoutesByFullPath {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
-  '/admin/missions': typeof AdminMissionsRoute
+  '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
@@ -284,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
@@ -310,7 +317,7 @@ export interface FileRoutesByTo {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
-  '/admin/missions': typeof AdminMissionsRoute
+  '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
@@ -352,7 +360,7 @@ export interface FileRoutesById {
   '/admin/journey': typeof AdminJourneyRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
-  '/admin/missions': typeof AdminMissionsRoute
+  '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
   '/admin/spy': typeof AdminSpyRoute
@@ -366,6 +374,7 @@ export interface FileRoutesById {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
@@ -409,6 +418,7 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin/'
+    | '/admin/missions/$token'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -449,6 +459,7 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin'
+    | '/admin/missions/$token'
     | '/api/public/media/$'
   id:
     | '__root__'
@@ -490,6 +501,7 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin/'
+    | '/admin/missions/$token'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
@@ -785,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAbtestRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/missions/$token': {
+      id: '/admin/missions/$token'
+      path: '/$token'
+      fullPath: '/admin/missions/$token'
+      preLoaderRoute: typeof AdminMissionsTokenRouteImport
+      parentRoute: typeof AdminMissionsRoute
+    }
     '/api/public/media/$': {
       id: '/api/public/media/$'
       path: '/api/public/media/$'
@@ -794,6 +813,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminMissionsRouteChildren {
+  AdminMissionsTokenRoute: typeof AdminMissionsTokenRoute
+}
+
+const AdminMissionsRouteChildren: AdminMissionsRouteChildren = {
+  AdminMissionsTokenRoute: AdminMissionsTokenRoute,
+}
+
+const AdminMissionsRouteWithChildren = AdminMissionsRoute._addFileChildren(
+  AdminMissionsRouteChildren,
+)
 
 interface AdminRouteChildren {
   AdminAbtestRoute: typeof AdminAbtestRoute
@@ -807,7 +838,7 @@ interface AdminRouteChildren {
   AdminJourneyRoute: typeof AdminJourneyRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
-  AdminMissionsRoute: typeof AdminMissionsRoute
+  AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
   AdminPlannerRoute: typeof AdminPlannerRoute
   AdminReportRoute: typeof AdminReportRoute
   AdminSpyRoute: typeof AdminSpyRoute
@@ -828,7 +859,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJourneyRoute: AdminJourneyRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
-  AdminMissionsRoute: AdminMissionsRoute,
+  AdminMissionsRoute: AdminMissionsRouteWithChildren,
   AdminPlannerRoute: AdminPlannerRoute,
   AdminReportRoute: AdminReportRoute,
   AdminSpyRoute: AdminSpyRoute,

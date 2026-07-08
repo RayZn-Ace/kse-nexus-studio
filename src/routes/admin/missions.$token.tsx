@@ -40,7 +40,12 @@ function MissionDetail() {
       setLoading(true);
       const { data } = await supabase.from("mission_config").select("*").eq("token", token).maybeSingle();
       if (data) {
-        setCfg(data as Config);
+        setCfg({
+          ...(data as unknown as Config),
+          milestones: (data.milestones as unknown as Milestone[]) ?? [],
+          updates: (data.updates as unknown as Update[]) ?? [],
+          files: (data.files as unknown as FileItem[]) ?? [],
+        });
       } else {
         setCfg({
           token, client_name: "", scope: "", contact: "", launch_date: null,
