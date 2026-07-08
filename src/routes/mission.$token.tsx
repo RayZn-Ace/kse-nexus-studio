@@ -65,12 +65,22 @@ function MissionPortal() {
   const seed = hash(token || "mission");
   const rnd = mulberry32(seed);
 
-  const client = pick(rnd, CLIENTS);
+  const seedClient = pick(rnd, CLIENTS);
   const activeIdx = 2 + Math.floor(rnd() * 3); // 2..4
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - (14 + Math.floor(rnd() * 40)));
-  const launchDate = new Date(startDate);
-  launchDate.setDate(launchDate.getDate() + 45 + Math.floor(rnd() * 30));
+  const seedLaunch = new Date(startDate);
+  seedLaunch.setDate(seedLaunch.getDate() + 45 + Math.floor(rnd() * 30));
+
+  // Overrides from mission_config
+  const [override, setOverride] = useState<{
+    client_name?: string | null; scope?: string | null; contact?: string | null;
+    launch_date?: string | null;
+    milestones?: { key: string; label: string; desc: string; status: "done" | "active" | "todo" }[];
+    updates?: { day: number; text: string }[];
+    files?: { name: string; size: string; type: string }[];
+    rating?: number | null; rating_comment?: string | null;
+  } | null>(null);
 
   const [milestones, setMilestones] = useState(() =>
     MILESTONES.map((m, i) => ({
@@ -79,13 +89,35 @@ function MissionPortal() {
     }))
   );
 
+  const client = {
+    name: override?.client_name || seedClient.name,
+    scope: override?.scope || seedClient.scope,
+    contact: override?.contact || seedClient.contact,
+  };
+  const launchDate = override?.launch_date ? new Date(override.launch_date) : seedLaunch;
+  const displayFiles = override?.files && override.files.length ? override.files : FILES;
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      const { data } = await supabase.from("mission_config").select("*").eq("token", token).maybeSingle();
+      if (!data) return;
+      setOverride(data as never);
+      if (Array.isArray(data.milestones) && data.milestones.length) {
+        setMilestones(data.milestones as never);
+      }
+      if (data.rating) setRating(data.rating);
+    })();
+  }, [token]);
+
   const updates = useMemo(() => {
+    if (override?.updates && override.updates.length) return [...override.updates].sort((a, b) => b.day - a.day);
     const arr: { day: number; text: string }[] = [];
     for (let i = 0; i < 6; i++) {
       arr.push({ day: Math.floor(rnd() * 40) + 1, text: pick(rnd, UPDATES) });
     }
     return arr.sort((a, b) => b.day - a.day);
-  }, [token]);
+  }, [token, override]);
 
   type PortalMsg = {
     id: string;
