@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle2, Circle, Clock, FileText, MessageSquare, Rocket, Star,
   Download, ExternalLink, Sparkles, Target, Zap, Calendar,
+  Check, CheckCheck,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/mission/$token")({
   head: ({ params }) => ({
@@ -85,12 +87,79 @@ function MissionPortal() {
     return arr.sort((a, b) => b.day - a.day);
   }, [token]);
 
-  const [msgs, setMsgs] = useState<{ from: "kse" | "client"; text: string; time: string }[]>(() => [
-    { from: "kse", text: `Willkommen ${client.contact.split(" ")[0]}! Hier findest du alles zur Mission "${client.scope}".`, time: "vor 3 Tagen" },
-    { from: "client", text: "Sieht mega aus 🚀 Wann können wir die neue Version live sehen?", time: "vor 2 Tagen" },
-    { from: "kse", text: "Prototyp ist heute Abend deploybar — Link folgt via Mail.", time: "vor 1 Tag" },
-  ]);
+  type PortalMsg = {
+    id: string;
+    token: string;
+    from_role: "client" | "kse";
+    body: string;
+    created_at: string;
+    delivered_at: string | null;
+    read_at: string | null;
+  };
+  const [msgs, setMsgs] = useState<PortalMsg[]>([]);
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load + subscribe
+  useEffect(() => {
+    if (!token) return;
+    let mounted = true;
+
+    (async () => {
+      const { data } = await supabase
+        .from("portal_messages")
+        .select("*")
+        .eq("token", token)
+        .order("created_at", { ascending: true });
+      if (!mounted) return;
+      const rows = (data || []) as PortalMsg[];
+      setMsgs(rows);
+      // Mark all KSE messages as delivered + read for the client
+      const unseenKse = rows.filter((m) => m.from_role === "kse" && !m.read_at).map((m) => m.id);
+      if (unseenKse.length) {
+        await supabase
+          .from("portal_messages")
+          .update({ delivered_at: new Date().toISOString(), read_at: new Date().toISOString() })
+          .in("id", unseenKse);
+      }
+    })();
+
+    const channel = supabase
+      .channel(`portal:${token}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "portal_messages", filter: `token=eq.${token}` },
+        async (payload) => {
+          const m = payload.new as PortalMsg;
+          setMsgs((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+          if (m.from_role === "kse") {
+            await supabase
+              .from("portal_messages")
+              .update({ delivered_at: new Date().toISOString(), read_at: new Date().toISOString() })
+              .eq("id", m.id);
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "portal_messages", filter: `token=eq.${token}` },
+        (payload) => {
+          const m = payload.new as PortalMsg;
+          setMsgs((prev) => prev.map((x) => (x.id === m.id ? m : x)));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [token]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [msgs.length]);
 
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -107,13 +176,32 @@ function MissionPortal() {
     }));
   }
 
-  function sendMsg() {
-    if (!draft.trim()) return;
-    setMsgs(prev => [...prev, { from: "client", text: draft.trim(), time: "gerade eben" }]);
+  async function sendMsg() {
+    const text = draft.trim();
+    if (!text || sending || !token) return;
+    setSending(true);
     setDraft("");
-    setTimeout(() => {
-      setMsgs(prev => [...prev, { from: "kse", text: "Danke für dein Feedback — wir melden uns kurzfristig!", time: "gerade eben" }]);
-    }, 900);
+    const { error } = await supabase
+      .from("portal_messages")
+      .insert({ token, from_role: "client", body: text });
+    if (error) {
+      // put draft back on failure
+      setDraft(text);
+      alert("Nachricht konnte nicht gesendet werden.");
+    }
+    setSending(false);
+  }
+
+  function relTime(iso: string) {
+    const t = new Date(iso).getTime();
+    const diff = Date.now() - t;
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return "gerade eben";
+    if (m < 60) return `vor ${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `vor ${h}h`;
+    const d = Math.floor(h / 24);
+    return `vor ${d}d`;
   }
 
   return (
@@ -256,17 +344,33 @@ function MissionPortal() {
         <section className="mb-10">
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-3">/ Direktkanal</h2>
           <div className="border-2 border-[#0a0a0a] bg-white p-5" style={{ boxShadow: "6px 6px 0 0 #0a0a0a" }}>
-            <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
-              {msgs.map((m, i) => (
-                <div key={i} className={`flex ${m.from === "client" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[80%] border-2 border-[#0a0a0a] p-3 ${m.from === "client" ? "bg-[#ff5722] text-white" : "bg-[#f5f2ea]"}`}>
-                    <div className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">
-                      {m.from === "client" ? "Du" : "KSE Team"} · {m.time}
-                    </div>
-                    <div className="text-sm">{m.text}</div>
-                  </div>
+            <div ref={scrollRef} className="space-y-3 mb-4 max-h-80 overflow-y-auto pr-1">
+              {msgs.length === 0 && (
+                <div className="text-center py-6 text-xs text-[#0a0a0a]/50 font-black uppercase tracking-widest">
+                  Noch keine Nachrichten — schreib uns!
                 </div>
-              ))}
+              )}
+              {msgs.map((m) => {
+                const mine = m.from_role === "client";
+                const status = m.read_at ? "read" : m.delivered_at ? "delivered" : "sent";
+                return (
+                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] border-2 border-[#0a0a0a] p-3 ${mine ? "bg-[#ff5722] text-white" : "bg-[#f5f2ea]"}`}>
+                      <div className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">
+                        {mine ? "Du" : "KSE Team"} · {relTime(m.created_at)}
+                      </div>
+                      <div className="text-sm whitespace-pre-wrap break-words">{m.body}</div>
+                      {mine && (
+                        <div className="flex items-center justify-end gap-1 mt-1 text-[10px] opacity-90">
+                          {status === "sent" && <Check className="w-3 h-3" />}
+                          {status === "delivered" && <CheckCheck className="w-3.5 h-3.5" />}
+                          {status === "read" && <CheckCheck className="w-3.5 h-3.5 text-[#7dd3fc]" />}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex gap-2">
               <input
@@ -274,9 +378,10 @@ function MissionPortal() {
                 onChange={e => setDraft(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") sendMsg(); }}
                 placeholder="Nachricht schreiben…"
+                disabled={sending}
                 className="flex-1 border-2 border-[#0a0a0a] px-3 py-2 text-sm bg-[#f5f2ea] focus:outline-none focus:bg-white"
               />
-              <button onClick={sendMsg} className="px-4 py-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#ff5722] flex items-center gap-1.5">
+              <button onClick={sendMsg} disabled={sending || !draft.trim()} className="px-4 py-2 border-2 border-[#0a0a0a] bg-[#0a0a0a] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#ff5722] disabled:opacity-50 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5" /> Senden
               </button>
             </div>
