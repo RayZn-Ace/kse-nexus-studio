@@ -24,6 +24,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
+import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
@@ -42,6 +43,7 @@ import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
 import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
+import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
@@ -118,6 +120,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionTokenRoute = MissionTokenRouteImport.update({
+  id: '/mission/$token',
+  path: '/mission/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
@@ -210,6 +217,11 @@ const AdminAlarmRoute = AdminAlarmRouteImport.update({
   path: '/alarm',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAchievementsRoute = AdminAchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAbtestRoute = AdminAbtestRouteImport.update({
   id: '/abtest',
   path: '/abtest',
@@ -236,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -254,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -272,6 +286,7 @@ export interface FileRoutesByTo {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -290,6 +305,7 @@ export interface FileRoutesByTo {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -310,6 +326,7 @@ export interface FileRoutesById {
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
   '/admin/abtest': typeof AdminAbtestRoute
+  '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/copilot': typeof AdminCopilotRoute
@@ -328,6 +345,7 @@ export interface FileRoutesById {
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
+  '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
@@ -349,6 +367,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -367,6 +386,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -385,6 +405,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -403,6 +424,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin'
     | '/api/public/media/$'
@@ -422,6 +444,7 @@ export interface FileRouteTypes {
     | '/leistungen'
     | '/team'
     | '/admin/abtest'
+    | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/copilot'
@@ -440,6 +463,7 @@ export interface FileRouteTypes {
     | '/api/kse-agent'
     | '/api/pilot-generator'
     | '/api/website-audit'
+    | '/mission/$token'
     | '/share/$token'
     | '/admin/'
     | '/api/public/media/$'
@@ -464,6 +488,7 @@ export interface RootRouteChildren {
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
+  MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -573,6 +598,13 @@ declare module '@tanstack/react-router' {
       path: '/share/$token'
       fullPath: '/share/$token'
       preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission/$token': {
+      id: '/mission/$token'
+      path: '/mission/$token'
+      fullPath: '/mission/$token'
+      preLoaderRoute: typeof MissionTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/website-audit': {
@@ -701,6 +733,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAlarmRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/achievements': {
+      id: '/admin/achievements'
+      path: '/achievements'
+      fullPath: '/admin/achievements'
+      preLoaderRoute: typeof AdminAchievementsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/abtest': {
       id: '/admin/abtest'
       path: '/abtest'
@@ -720,6 +759,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAbtestRoute: typeof AdminAbtestRoute
+  AdminAchievementsRoute: typeof AdminAchievementsRoute
   AdminAlarmRoute: typeof AdminAlarmRoute
   AdminChatbotRoute: typeof AdminChatbotRoute
   AdminCopilotRoute: typeof AdminCopilotRoute
@@ -738,6 +778,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAbtestRoute: AdminAbtestRoute,
+  AdminAchievementsRoute: AdminAchievementsRoute,
   AdminAlarmRoute: AdminAlarmRoute,
   AdminChatbotRoute: AdminChatbotRoute,
   AdminCopilotRoute: AdminCopilotRoute,
@@ -775,6 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
+  MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
