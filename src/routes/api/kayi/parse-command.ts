@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { parseCommandLocal, parseCommandViaLovableAI } from "@/lib/kseadsio/kayiParserService";
+import { parseCommandLocal, parseCommandViaCloudflareAI } from "@/lib/kseadsio/kayiParserService";
 import { evaluateRisk } from "@/lib/kseadsio/riskEngineService";
 import { buildExecutionActions } from "@/lib/kseadsio/metaAdsService";
 
@@ -19,12 +19,13 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
           if (!body.command) return Response.json({ error: "command required" }, { status: 400 });
 
           let plan = parseCommandLocal(body.command);
-          let source: "local" | "cloud" = "local";
-          const apiKey = process.env.LOVABLE_API_KEY;
-          if (apiKey) {
+          let source: "local" | "cloudflare" = "local";
+          const cfAccount = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const cfToken = process.env.CLOUDFLARE_API_TOKEN;
+          if (cfAccount && cfToken) {
             try {
-              plan = await parseCommandViaLovableAI(body.command, apiKey);
-              source = "cloud";
+              plan = await parseCommandViaCloudflareAI(body.command, cfAccount, cfToken);
+              source = "cloudflare";
             } catch {
               // Fall back silently to local rule-based parser
             }
