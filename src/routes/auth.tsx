@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Login — KSE Group" }] }),
   validateSearch: (search: Record<string, unknown>) => ({
-    next: sanitizeNext(typeof search.next === "string" ? search.next : undefined),
+    next: typeof search.next === "string" ? sanitizeNext(search.next) : undefined,
   }),
   component: AuthPage,
 });
@@ -31,7 +31,8 @@ const schema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { next } = Route.useSearch();
+  const { next: rawNext } = Route.useSearch();
+  const next = rawNext ?? "/admin";
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
