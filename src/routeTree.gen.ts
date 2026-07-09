@@ -36,6 +36,7 @@ import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminSpyRouteImport } from './routes/admin/spy'
+import { Route as AdminShopRouteImport } from './routes/admin/shop'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMissionsRouteImport } from './routes/admin/missions'
@@ -197,6 +198,11 @@ const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
 const AdminSpyRoute = AdminSpyRouteImport.update({
   id: '/spy',
   path: '/spy',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminShopRoute = AdminShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminReportRoute = AdminReportRouteImport.update({
@@ -373,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -485,6 +493,7 @@ export interface FileRoutesById {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -543,6 +552,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -598,6 +608,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -654,6 +665,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -906,6 +918,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSpyRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/shop': {
+      id: '/admin/shop'
+      path: '/shop'
+      fullPath: '/admin/shop'
+      preLoaderRoute: typeof AdminShopRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/report': {
       id: '/admin/report'
       path: '/report'
@@ -1126,6 +1145,7 @@ interface AdminRouteChildren {
   AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
   AdminPlannerRoute: typeof AdminPlannerRoute
   AdminReportRoute: typeof AdminReportRoute
+  AdminShopRoute: typeof AdminShopRoute
   AdminSpyRoute: typeof AdminSpyRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminWarroomRoute: typeof AdminWarroomRoute
@@ -1148,6 +1168,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMissionsRoute: AdminMissionsRouteWithChildren,
   AdminPlannerRoute: AdminPlannerRoute,
   AdminReportRoute: AdminReportRoute,
+  AdminShopRoute: AdminShopRoute,
   AdminSpyRoute: AdminSpyRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminWarroomRoute: AdminWarroomRoute,
