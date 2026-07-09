@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://nzmgbtvflrjqaemknilh.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "ksepi",
+      "version": "0.1.0",
+      "title": "KSEPI Debug API"
+    },
+    "tools": [
+      {
+        "name": "ksepi_overview",
+        "title": "KSEPI overview",
+        "description": "Explain the available KSEPI admin debug tools, safe boundaries, and connection URLs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": null,
+        "outputSchema": null
+      },
+      {
+        "name": "ksepi_code_bundle",
+        "title": "Read KSEAdsio source bundle",
+        "description": "Return selected KSEAdsio source files so an AI can inspect the Meta execution flow without secrets.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "enum": [
+                "src/routes/api/kseadsio/meta.ts",
+                "src/lib/kseadsio/metaGraph.server.ts",
+                "src/lib/kseadsio/metaAdsService.ts",
+                "src/lib/kseadsio/kayiParserService.ts",
+                "src/lib/kseadsio/riskEngineService.ts",
+                "src/lib/kseadsio/types.ts",
+                "src/routes/kseadsio.tsx"
+              ],
+              "description": "Specific source file to return. Omit for a compact bundle of all key files."
+            },
+            "max_chars": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 80000,
+              "default": 40000
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "ksepi_database_snapshot",
+        "title": "Read redacted backend snapshot",
+        "description": "Return schema awareness and redacted recent rows relevant to KSEAdsio debugging through admin RLS.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "include_recent_rows": {
+              "type": "boolean",
+              "default": true
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 15
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "ksepi_meta_diagnostics",
+        "title": "Inspect Meta Ads diagnostics",
+        "description": "Fetch redacted Meta campaign/adset diagnostics needed to debug copy/create failures.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "source_campaign_id": {
+              "type": "string",
+              "minLength": 3
+            },
+            "ad_account_id": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
