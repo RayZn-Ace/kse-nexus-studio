@@ -1311,12 +1311,20 @@ function Field({
       <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
         {label}
         {hint && (
-          <span
-            title={hint}
-            className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-white/20 text-white/50 hover:text-cyan-300 hover:border-cyan-300/60 cursor-help text-[9px] normal-case tracking-normal"
-            aria-label={hint}
-          >
-            ?
+          <span className="relative inline-flex group/hint">
+            <span
+              tabIndex={0}
+              aria-label={hint}
+              className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-white/25 text-white/60 hover:text-cyan-300 hover:border-cyan-300/70 focus:text-cyan-300 focus:border-cyan-300/70 outline-none cursor-help text-[10px] normal-case tracking-normal font-sans leading-none"
+            >
+              ?
+            </span>
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 z-50 w-72 rounded-md border border-cyan-400/30 bg-black/95 backdrop-blur px-3 py-2 text-[11px] font-sans normal-case tracking-normal leading-snug text-white/90 shadow-xl opacity-0 translate-x-1 transition-all duration-150 group-hover/hint:opacity-100 group-hover/hint:translate-x-0 group-focus-within/hint:opacity-100 group-focus-within/hint:translate-x-0"
+            >
+              {hint}
+            </span>
           </span>
         )}
       </span>

@@ -1,13 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 
 export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
   const [variant, setVariant] = useState<"default" | "hover" | "tile">("default");
   const [enabled, setEnabled] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const disabled = pathname.startsWith("/kseadsio");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (disabled) {
+      setEnabled(false);
+      document.documentElement.classList.remove("kse-has-cursor");
+      return;
+    }
     const isFine = window.matchMedia("(pointer: fine)").matches;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!isFine || prefersReduced) return;
@@ -52,9 +60,9 @@ export function CustomCursor() {
       window.removeEventListener("mouseover", onOver);
       document.documentElement.classList.remove("kse-has-cursor");
     };
-  }, []);
+  }, [disabled]);
 
-  if (!enabled) return null;
+  if (!enabled || disabled) return null;
 
   const isTile = variant === "tile";
   const isHover = variant === "hover";
