@@ -626,7 +626,7 @@ type ParseResult = {
   source: string;
 };
 
-function CommandCenter() {
+function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
   const [cmd, setCmd] = useState(demoCommand);
   const [result, setResult] = useState<ParseResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -695,10 +695,17 @@ function CommandCenter() {
       alert("Ausführung blockiert — bitte Risiken beheben.");
       return;
     }
-    if (!confirm("Wirklich freigeben und (im Mock-Modus) ausführen?")) return;
+    if (
+      !confirm(
+        liveMode
+          ? "LIVE-Modus: Aktionen werden echt an Meta Ads gesendet. Wirklich ausführen?"
+          : "Wirklich freigeben und (im Mock-Modus) ausführen?",
+      )
+    )
+      return;
     setExecuting(true);
     try {
-      const res = await executeActions(result.actions);
+      const res = await executeActions(result.actions, liveMode);
       setExecuted(res);
       if (commandId) {
         await (supabase as any)
