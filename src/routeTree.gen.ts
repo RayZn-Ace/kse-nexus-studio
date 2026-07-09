@@ -48,6 +48,7 @@ import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
+import { Route as ApiKseadsioVerifyAdAccountRouteImport } from './routes/api/kseadsio/verify-ad-account'
 import { Route as ApiKayiParseCommandRouteImport } from './routes/api/kayi/parse-command'
 import { Route as AdminMissionsTokenRouteImport } from './routes/admin/missions.$token'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
@@ -247,6 +248,12 @@ const AdminAbtestRoute = AdminAbtestRouteImport.update({
   path: '/abtest',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiKseadsioVerifyAdAccountRoute =
+  ApiKseadsioVerifyAdAccountRouteImport.update({
+    id: '/api/kseadsio/verify-ad-account',
+    path: '/api/kseadsio/verify-ad-account',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiKayiParseCommandRoute = ApiKayiParseCommandRouteImport.update({
   id: '/api/kayi/parse-command',
   path: '/api/kayi/parse-command',
@@ -305,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
@@ -348,6 +356,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
@@ -393,6 +402,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/verify-ad-account'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -482,6 +493,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/verify-ad-account'
     | '/api/public/media/$'
   id:
     | '__root__'
@@ -526,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/verify-ad-account'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
@@ -552,6 +565,7 @@ export interface RootRouteChildren {
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
+  ApiKseadsioVerifyAdAccountRoute: typeof ApiKseadsioVerifyAdAccountRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
 
@@ -830,6 +844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAbtestRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/kseadsio/verify-ad-account': {
+      id: '/api/kseadsio/verify-ad-account'
+      path: '/api/kseadsio/verify-ad-account'
+      fullPath: '/api/kseadsio/verify-ad-account'
+      preLoaderRoute: typeof ApiKseadsioVerifyAdAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/kayi/parse-command': {
       id: '/api/kayi/parse-command'
       path: '/api/kayi/parse-command'
@@ -933,6 +954,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
+  ApiKseadsioVerifyAdAccountRoute: ApiKseadsioVerifyAdAccountRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
 export const routeTree = rootRouteImport
