@@ -28,6 +28,7 @@ import {
   Trophy,
   MessagesSquare,
   Rocket,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -108,6 +109,7 @@ function AdminLayout() {
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
     { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
     { to: "/admin/achievements", label: "Achievements", icon: Trophy },
+    { to: "/admin/kseadsio", label: "KSEAdsio", icon: Sparkles },
   ];
 
   return (
