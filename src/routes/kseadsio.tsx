@@ -160,6 +160,34 @@ function KseAdsioShell() {
   const navigate = useNavigate();
   const [booted, setBooted] = useState(false);
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [liveMode, setLiveMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setLiveMode(localStorage.getItem("kseadsio_live_mode") === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const toggleLiveMode = () => {
+    setLiveMode((prev) => {
+      const next = !prev;
+      if (next) {
+        const ok = confirm(
+          "LIVE-Modus aktivieren?\n\nAusführungen würden echte Änderungen an Meta Ads senden. " +
+            "Die Meta API ist aktuell noch nicht verbunden — Aktionen schlagen daher fehl statt still zu simulieren.",
+        );
+        if (!ok) return prev;
+      }
+      try {
+        localStorage.setItem("kseadsio_live_mode", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -301,14 +329,33 @@ function KseAdsioShell() {
             </h1>
           </div>
           <div className="hidden md:flex items-center gap-4 text-xs font-mono text-white/40">
-            <span>MOCK MODE</span>
+            <button
+              onClick={toggleLiveMode}
+              title={
+                liveMode
+                  ? "LIVE: Aktionen würden echt an Meta Ads gesendet. Klicken für Mock."
+                  : "MOCK: Aktionen werden nur simuliert. Klicken für Live."
+              }
+              className={`flex items-center gap-2 px-3 py-1.5 rounded border transition-colors ${
+                liveMode
+                  ? "border-red-400/50 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                  : "border-white/15 bg-white/5 text-white/60 hover:bg-white/10"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  liveMode ? "bg-red-400 animate-pulse" : "bg-white/40"
+                }`}
+              />
+              {liveMode ? "LIVE MODE" : "MOCK MODE"}
+            </button>
             <span className="w-px h-4 bg-white/20" />
             <span className="text-cyan-300">SAFE ON</span>
           </div>
         </header>
         <main className="flex-1 p-8 overflow-y-auto">
           {tab === "dashboard" && <Dashboard />}
-          {tab === "command" && <CommandCenter />}
+          {tab === "command" && <CommandCenter liveMode={liveMode} />}
           {tab === "creatives" && <CreativeCheck />}
           {tab === "logs" && <AuditLogs />}
           {tab === "settings" && <SettingsPanel />}
