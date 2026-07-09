@@ -160,29 +160,15 @@ function KseAdsioShell() {
   const navigate = useNavigate();
   const [booted, setBooted] = useState(false);
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [liveMode, setLiveMode] = useState<boolean>(false);
-
-  useEffect(() => {
-    try {
-      setLiveMode(localStorage.getItem("kseadsio_live_mode") === "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
+  const [liveMode] = useState<boolean>(true);
   const toggleLiveMode = () => {
-    setLiveMode((prev) => {
-      const next = !prev;
-      if (next) {
-        const ok = confirm(
-          "LIVE-Modus aktivieren?\n\nAusführungen würden echte Änderungen an Meta Ads senden. " +
-            "Die Meta API ist aktuell noch nicht verbunden — Aktionen schlagen daher fehl statt still zu simulieren.",
-        );
-        if (!ok) return prev;
-      }
-      try {
-        localStorage.setItem("kseadsio_live_mode", next ? "1" : "0");
-      } catch {
+    // Live is the only mode — no simulation anywhere.
+  };
+  // Suppress unused-warning artefact from previous toggle logic.
+  void (() => {
+    try {
+      /* noop */
+    } catch {
         /* ignore */
       }
       return next;
