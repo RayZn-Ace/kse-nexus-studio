@@ -133,7 +133,9 @@ function RootComponent() {
   const isAdmin =
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
-    pathname === "/auth";
+    pathname === "/auth" ||
+    pathname === "/kseadsio" ||
+    pathname.startsWith("/kseadsio/");
 
   useEffect(() => {
     // Initial pageview
