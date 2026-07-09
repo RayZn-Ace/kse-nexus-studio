@@ -38,7 +38,6 @@ import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMissionsRouteImport } from './routes/admin/missions'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
-import { Route as AdminKseadsioRouteImport } from './routes/admin/kseadsio'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
@@ -197,11 +196,6 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminKseadsioRoute = AdminKseadsioRouteImport.update({
-  id: '/kseadsio',
-  path: '/kseadsio',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminJourneyRoute = AdminJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -286,7 +280,6 @@ export interface FileRoutesByFullPath {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -329,7 +322,6 @@ export interface FileRoutesByTo {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -374,7 +366,6 @@ export interface FileRoutesById {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -420,7 +411,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -463,7 +453,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -507,7 +496,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -759,13 +747,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/kseadsio': {
-      id: '/admin/kseadsio'
-      path: '/kseadsio'
-      fullPath: '/admin/kseadsio'
-      preLoaderRoute: typeof AdminKseadsioRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/journey': {
       id: '/admin/journey'
       path: '/journey'
@@ -875,7 +856,6 @@ interface AdminRouteChildren {
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
-  AdminKseadsioRoute: typeof AdminKseadsioRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
@@ -897,7 +877,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
-  AdminKseadsioRoute: AdminKseadsioRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminMissionsRoute: AdminMissionsRouteWithChildren,
