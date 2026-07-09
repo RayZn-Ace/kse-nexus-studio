@@ -1164,6 +1164,9 @@ function SettingsPanel() {
 
   return (
     <div className="grid xl:grid-cols-2 gap-6 max-w-6xl">
+      <div className="xl:col-span-2">
+        <HealthPanel />
+      </div>
       <GlassCard className="p-5 space-y-3">
         <SectionTitle icon={Database}>Meta Business</SectionTitle>
         <Field
