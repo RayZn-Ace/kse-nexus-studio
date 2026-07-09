@@ -77,6 +77,23 @@ type GraphAd = {
   creative?: { id: string };
 };
 
+type GraphAdsetTemplate = {
+  id: string;
+  targeting?: Record<string, unknown>;
+  billing_event?: string;
+  optimization_goal?: string;
+  promoted_object?: Record<string, unknown>;
+  destination_type?: string;
+  bid_strategy?: string;
+};
+
+type GraphGeoSearch = {
+  key?: string;
+  name?: string;
+  type?: string;
+  country_code?: string;
+};
+
 type GraphCreative = {
   id: string;
   name?: string;
@@ -96,6 +113,107 @@ type GraphCreative = {
   };
   thumbnail_url?: string;
 };
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function asNumber(value: unknown): number | undefined {
+  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function cleanGeoLocations(value: unknown): Record<string, unknown> | null {
+  const geo = { ...asRecord(value) };
+  if (Array.isArray(geo.custom_locations)) {
+    const valid = geo.custom_locations
+      .map((raw) => {
+        const loc = asRecord(raw);
+        const latitude = asNumber(loc.latitude);
+        const longitude = asNumber(loc.longitude);
+        if (latitude === undefined || longitude === undefined) return null;
+        return { ...loc, latitude, longitude };
+      })
+      .filter(Boolean);
+    if (valid.length) geo.custom_locations = valid;
+    else delete geo.custom_locations;
+  }
+  const meaningfulKeys = ["countries", "cities", "regions", "zips", "geo_markets", "custom_locations"];
+  return meaningfulKeys.some((key) => Array.isArray(geo[key]) && (geo[key] as unknown[]).length > 0) ? geo : null;
+}
+
+async function resolveCityGeo(
+  token: string,
+  name: string | undefined,
+  radius: number | undefined,
+  distanceUnit: string | undefined,
+): Promise<Record<string, unknown> | null> {
+  const q = name?.trim();
+  if (!q) return null;
+  const search = await graphGet<{ data: GraphGeoSearch[] }>(
+    `/search?type=adgeolocation&location_types=${encodeURIComponent(JSON.stringify(["city"]))}&q=${encodeURIComponent(q)}&country_code=DE&limit=10`,
+    token,
+  );
+  const hit = search.data.find((x) => x.key && x.type?.toLowerCase() === "city") ?? search.data.find((x) => x.key);
+  if (!hit?.key) return null;
+  return {
+    cities: [
+      {
+        key: hit.key,
+        radius: radius ?? 25,
+        distance_unit: distanceUnit === "mile" ? "mile" : "kilometer",
+      },
+    ],
+  };
+}
+
+async function buildTargeting(
+  token: string,
+  templateTargeting: Record<string, unknown> | undefined,
+  plannedTargeting: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const merged: Record<string, unknown> = { ...(templateTargeting ?? {}) };
+  if (typeof plannedTargeting.age_min === "number") merged.age_min = plannedTargeting.age_min;
+  if (typeof plannedTargeting.age_max === "number") merged.age_max = plannedTargeting.age_max;
+  if (Array.isArray(plannedTargeting.publisher_platforms)) merged.publisher_platforms = plannedTargeting.publisher_platforms;
+
+  if (Array.isArray(plannedTargeting.placements)) {
+    const placements = new Set(plannedTargeting.placements.filter((x): x is string => typeof x === "string"));
+    const facebookPositions: string[] = [];
+    const instagramPositions: string[] = [];
+    if (placements.has("facebook_stories")) facebookPositions.push("story");
+    if (placements.has("facebook_reels")) facebookPositions.push("facebook_reels");
+    if (placements.has("facebook_feed")) facebookPositions.push("feed");
+    if (placements.has("instagram_stories")) instagramPositions.push("story");
+    if (placements.has("instagram_reels")) instagramPositions.push("reels");
+    if (placements.has("instagram_feed")) instagramPositions.push("stream");
+    if (facebookPositions.length) merged.facebook_positions = facebookPositions;
+    if (instagramPositions.length) merged.instagram_positions = instagramPositions;
+  }
+
+  const plannedGeo = asRecord(plannedTargeting.geo_locations);
+  const customLocations = Array.isArray(plannedGeo.custom_locations)
+    ? plannedGeo.custom_locations.map(asRecord)
+    : [];
+  const directGeo = cleanGeoLocations(plannedGeo);
+  if (directGeo) {
+    merged.geo_locations = directGeo;
+  } else if (customLocations.length) {
+    const first = customLocations[0];
+    const radius = asNumber(first.radius);
+    const resolved = await resolveCityGeo(
+      token,
+      typeof first.name === "string" ? first.name : undefined,
+      radius,
+      typeof first.distance_unit === "string" ? first.distance_unit : undefined,
+    );
+    merged.geo_locations = resolved ?? cleanGeoLocations(merged.geo_locations) ?? { countries: ["DE"] };
+  } else {
+    merged.geo_locations = cleanGeoLocations(merged.geo_locations) ?? { countries: ["DE"] };
+  }
+
+  return merged;
+}
 
 async function opListCreatives(campaignId: string): Promise<MetaCreative[]> {
   const token = await pickToken();
