@@ -326,6 +326,26 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const planned = (p.targeting ?? {}) as Record<string, unknown>;
       const targeting = await buildTargeting(ctx.token, tmpl?.targeting, planned);
 
+      if (tmpl?.id) {
+        const copy = await graphPost<{ copied_adset_id?: string; adset_id?: string; id?: string }>(
+          `/${tmpl.id}/copies`,
+          ctx.token,
+          {
+            campaign_id: ctx.new_campaign_id,
+            status_option: p.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
+            rename_options: JSON.stringify({ rename_suffix: " · KayI Adset" }),
+          },
+        );
+        const newAdsetId = copy.copied_adset_id ?? copy.adset_id ?? copy.id;
+        if (!newAdsetId) throw new Error("Meta hat keine neue Adset-ID zurückgegeben");
+        await graphPost(`/${newAdsetId}`, ctx.token, {
+          targeting,
+          status: p.status ?? "PAUSED",
+        });
+        ctx.new_adset_id = newAdsetId;
+        return { new_adset_id: newAdsetId, copied_from_adset_id: tmpl.id };
+      }
+
       const body: Record<string, unknown> = {
         name: `KayI Adset · ${new Date().toISOString().slice(0, 16)}`,
         campaign_id: ctx.new_campaign_id,
