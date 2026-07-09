@@ -295,23 +295,28 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const sourceId = ctx.source_campaign_id;
       if (!sourceId) throw new Error("source_campaign_id fehlt");
 
-      // Fetch source campaign budget mode + a template adset for defaults.
-      const camp = await graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
-        `/${ctx.new_campaign_id}?fields=daily_budget,lifetime_budget`,
-        ctx.token,
+      // Fetch budget mode + a template adset for defaults. Prefer template
+      // optimization/promoted_object over KayI guesses, because Meta rejects
+      // incompatible combinations with a generic "Invalid parameter".
+      const [newCamp, sourceCamp] = await Promise.all([
+        graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
+          `/${ctx.new_campaign_id}?fields=daily_budget,lifetime_budget`,
+          ctx.token,
+        ),
+        graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
+          `/${sourceId}?fields=daily_budget,lifetime_budget`,
+          ctx.token,
+        ),
+      ]);
+      const cboEnabled = Boolean(
+        newCamp.daily_budget ||
+          newCamp.lifetime_budget ||
+          sourceCamp.daily_budget ||
+          sourceCamp.lifetime_budget,
       );
-      const cboEnabled = Boolean(camp.daily_budget || camp.lifetime_budget);
 
       const tmplRes = await graphGet<{
-        data: Array<{
-          id: string;
-          targeting?: Record<string, unknown>;
-          billing_event?: string;
-          optimization_goal?: string;
-          promoted_object?: Record<string, unknown>;
-          destination_type?: string;
-          bid_strategy?: string;
-        }>;
+        data: GraphAdsetTemplate[];
       }>(
         `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy&limit=1`,
         ctx.token,
@@ -319,38 +324,22 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const tmpl = tmplRes.data[0];
 
       const planned = (p.targeting ?? {}) as Record<string, unknown>;
-      const baseTargeting = (tmpl?.targeting ?? {}) as Record<string, unknown>;
-      const merged: Record<string, unknown> = { ...baseTargeting };
-      if (typeof planned.age_min === "number") merged.age_min = planned.age_min;
-      if (typeof planned.age_max === "number") merged.age_max = planned.age_max;
-      if (Array.isArray(planned.publisher_platforms))
-        merged.publisher_platforms = planned.publisher_platforms;
-
-      const geo = (planned.geo_locations ?? {}) as { custom_locations?: Array<Record<string, unknown>> };
-      const validCustom = (geo.custom_locations ?? []).filter(
-        (l) => typeof l.latitude === "number" && typeof l.longitude === "number",
-      );
-      if (validCustom.length) {
-        merged.geo_locations = { custom_locations: validCustom };
-      } else if (!merged.geo_locations) {
-        merged.geo_locations = { countries: ["DE"] };
-      }
+      const targeting = await buildTargeting(ctx.token, tmpl?.targeting, planned);
 
       const body: Record<string, unknown> = {
         name: `KayI Adset · ${new Date().toISOString().slice(0, 16)}`,
         campaign_id: ctx.new_campaign_id,
-        billing_event: p.billing_event ?? tmpl?.billing_event ?? "IMPRESSIONS",
-        optimization_goal: p.optimization_goal ?? tmpl?.optimization_goal ?? "LINK_CLICKS",
-        targeting: merged,
+        billing_event: tmpl?.billing_event ?? p.billing_event ?? "IMPRESSIONS",
+        optimization_goal: tmpl?.optimization_goal ?? p.optimization_goal ?? "LINK_CLICKS",
+        targeting,
         status: p.status ?? "PAUSED",
       };
-      const promoted = (p.promoted_object as Record<string, unknown> | undefined) ?? tmpl?.promoted_object;
+      const promoted = tmpl?.promoted_object ?? (p.promoted_object as Record<string, unknown> | undefined);
       if (promoted) body.promoted_object = promoted;
       if (tmpl?.destination_type) body.destination_type = tmpl.destination_type;
-      if (tmpl?.bid_strategy) body.bid_strategy = tmpl.bid_strategy;
       // Only set adset budget when the campaign does NOT use CBO.
       if (!cboEnabled) {
-        const budget = (p.daily_budget as number | undefined) ?? (tmpl && camp ? undefined : undefined);
+        const budget = p.daily_budget as number | undefined;
         if (budget) body.daily_budget = budget;
         else body.daily_budget = 500; // Meta minimum ~€5/day fallback
       }
