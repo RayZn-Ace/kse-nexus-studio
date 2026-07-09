@@ -28,6 +28,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
+import { Route as ApiShopRouteImport } from './routes/api/shop'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
@@ -156,6 +157,11 @@ const MissionTokenRoute = MissionTokenRouteImport.update({
 const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
   id: '/api/website-audit',
   path: '/api/website-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiShopRoute = ApiShopRouteImport.update({
+  id: '/api/shop',
+  path: '/api/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
@@ -374,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -484,6 +492,7 @@ export interface FileRoutesById {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -650,6 +661,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -688,6 +700,7 @@ export interface RootRouteChildren {
   ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
+  ApiShopRoute: typeof ApiShopRoute
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
@@ -835,6 +848,13 @@ declare module '@tanstack/react-router' {
       path: '/api/website-audit'
       fullPath: '/api/website-audit'
       preLoaderRoute: typeof ApiWebsiteAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/shop': {
+      id: '/api/shop'
+      path: '/api/shop'
+      fullPath: '/api/shop'
+      preLoaderRoute: typeof ApiShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pilot-generator': {
@@ -1159,6 +1179,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
+  ApiShopRoute: ApiShopRoute,
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
