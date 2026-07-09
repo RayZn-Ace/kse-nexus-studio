@@ -1092,6 +1092,16 @@ function SettingsPanel() {
 
   if (!s) return <div className="text-white/40 text-sm">Lade…</div>;
   const set = (k: string, v: any) => setS({ ...s, [k]: v });
+  const setList = (k: string, v: string) =>
+    setS({
+      ...s,
+      [k]: v
+        .split(/[\n,]/)
+        .map((x) => x.trim())
+        .filter(Boolean),
+    });
+  const listToText = (arr: string[] | null | undefined) =>
+    Array.isArray(arr) ? arr.join("\n") : "";
 
   return (
     <div className="grid xl:grid-cols-2 gap-6 max-w-6xl">
@@ -1101,29 +1111,67 @@ function SettingsPanel() {
           label="Meta Business ID"
           v={s.meta_business_id}
           onChange={(v) => set("meta_business_id", v)}
+          hint="Business Manager → Einstellungen → Unternehmensinfo. Die numerische ID oben unter dem Firmennamen."
+          placeholder="z.B. 1029384756123456"
         />
         <Field
-          label="Meta Ad Account ID"
+          label="Haupt-Ad-Account ID"
           v={s.meta_ad_account_id}
           onChange={(v) => set("meta_ad_account_id", v)}
           placeholder="act_1234567890"
+          hint="Ads Manager oben links → das Konto auswählen. Die ID beginnt mit 'act_' und steht in der URL nach 'act='."
         />
         <Field
-          label="Meta Access Token"
+          label="System User Access Token"
           v={s.meta_access_token_encrypted}
           onChange={(v) => set("meta_access_token_encrypted", v)}
           type="password"
+          hint="Business Settings → Users → System Users → deinen System User wählen → 'Generate Token'. Scopes: ads_management, ads_read, business_management, pages_read_engagement. Long-Lived / Never Expires empfohlen."
+          placeholder="EAAG… (langer System-User-Token)"
+        />
+        <Field
+          label="System User ID (optional)"
+          v={s.system_user_id}
+          onChange={(v) => set("system_user_id", v)}
+          hint="Business Settings → Users → System Users → in der URL oder Detailansicht sichtbar. Für Audit-Logs."
+          placeholder="123456789012345"
         />
         <Field
           label="Pixel / Dataset ID"
           v={s.default_pixel_id}
           onChange={(v) => set("default_pixel_id", v)}
+          hint="Events Manager → Datenquellen → Pixel auswählen → ID rechts oben. Das ist der Standard-Pixel; weitere unten."
         />
         <Field
           label="Default Landingpage"
           v={s.default_landing_page}
           onChange={(v) => set("default_landing_page", v)}
+          hint="Die URL, auf die Ads standardmäßig verlinken, wenn im KayI-Befehl keine explizit angegeben wird."
         />
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-3">
+        <SectionTitle icon={Database}>Weitere Ad Accounts &amp; Pixel</SectionTitle>
+        <Field
+          label="Weitere Ad Account IDs"
+          v={listToText(s.extra_ad_account_ids)}
+          onChange={(v) => setList("extra_ad_account_ids", v)}
+          multiline
+          hint="Eine pro Zeile (oder Komma-getrennt). Format 'act_...'. Business Settings → Konten → Werbekonten."
+          placeholder={"act_9876543210\nact_1122334455"}
+        />
+        <Field
+          label="Weitere Pixel / Dataset IDs"
+          v={listToText(s.extra_pixel_ids)}
+          onChange={(v) => setList("extra_pixel_ids", v)}
+          multiline
+          hint="Eine pro Zeile. Events Manager → alle Datenquellen. KayI kann Kampagnen dem passenden Pixel zuordnen."
+          placeholder={"926446183790326\n1029384756112233"}
+        />
+        <p className="text-[11px] text-white/40">
+          Der System-User-Token oben muss Zugriff auf alle hier gelisteten
+          Assets haben (Business Settings → Users → System User → Assets zuweisen).
+        </p>
       </GlassCard>
 
       <GlassCard className="p-5 space-y-3">
@@ -1133,12 +1181,14 @@ function SettingsPanel() {
           v={s.ollama_api_url}
           onChange={(v) => set("ollama_api_url", v)}
           placeholder="http://localhost:11434"
+          hint="Adresse deiner lokalen Ollama-Instanz. Wenn Ollama auf demselben Rechner läuft: http://localhost:11434"
         />
         <Field
           label="Modell"
           v={s.ollama_model}
           onChange={(v) => set("ollama_model", v)}
           placeholder="llama3, qwen2, mistral…"
+          hint="Name des in Ollama installierten Modells (z.B. 'llama3'). Mit 'ollama list' im Terminal prüfbar."
         />
         <p className="text-[11px] text-white/40">
           Wenn nicht erreichbar, nutzt KayI automatisch den regelbasierten Parser.
@@ -1154,7 +1204,10 @@ function SettingsPanel() {
             onChange={(e) => set("safe_mode", e.target.checked)}
             className="w-4 h-4 accent-cyan-400"
           />
-          <span className="text-sm">
+          <span
+            className="text-sm cursor-help"
+            title="Wenn aktiv, werden alle neu erstellten oder duplizierten Kampagnen zunächst als PAUSED angelegt. Du musst sie im Meta Ads Manager (oder im Approval-Schritt) manuell aktivieren."
+          >
             Safe Mode aktiv (neue Kampagnen immer PAUSED)
           </span>
         </label>
@@ -1163,12 +1216,14 @@ function SettingsPanel() {
           type="number"
           v={s.max_campaign_budget}
           onChange={(v) => set("max_campaign_budget", Number(v))}
+          hint="Harte Obergrenze. Befehle mit höherem Tagesbudget werden von der Risk Engine blockiert."
         />
         <Field
           label="Max Budget-Erhöhung pro Tag (%)"
           type="number"
           v={s.max_daily_budget_increase_percent}
           onChange={(v) => set("max_daily_budget_increase_percent", Number(v))}
+          hint="Schutz gegen versehentliche Budget-Explosion. Erhöhungen über diesem Prozentsatz brauchen extra Bestätigung."
         />
       </GlassCard>
 
@@ -1179,6 +1234,7 @@ function SettingsPanel() {
           type="number"
           v={s.default_daily_budget_eur}
           onChange={(v) => set("default_daily_budget_eur", Number(v))}
+          hint="Wird verwendet, wenn im KayI-Befehl kein Budget angegeben ist."
         />
         <div className="grid grid-cols-2 gap-3">
           <Field
@@ -1186,12 +1242,14 @@ function SettingsPanel() {
             type="number"
             v={s.default_age_min}
             onChange={(v) => set("default_age_min", Number(v))}
+            hint="Standard Mindestalter der Zielgruppe (Meta erlaubt min. 18)."
           />
           <Field
             label="Alter max"
             type="number"
             v={s.default_age_max}
             onChange={(v) => set("default_age_max", Number(v))}
+            hint="Standard Maximalalter der Zielgruppe (Meta max. 65+)."
           />
         </div>
       </GlassCard>
@@ -1237,25 +1295,48 @@ function Field({
   onChange,
   type = "text",
   placeholder,
+  hint,
+  multiline,
 }: {
   label: string;
   v: any;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  hint?: string;
+  multiline?: boolean;
 }) {
   return (
     <label className="block">
-      <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
+      <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
         {label}
+        {hint && (
+          <span
+            title={hint}
+            className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-white/20 text-white/50 hover:text-cyan-300 hover:border-cyan-300/60 cursor-help text-[9px] normal-case tracking-normal"
+            aria-label={hint}
+          >
+            ?
+          </span>
+        )}
       </span>
-      <input
-        type={type}
-        value={v ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
-      />
+      {multiline ? (
+        <textarea
+          value={v ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={3}
+          className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono resize-y"
+        />
+      ) : (
+        <input
+          type={type}
+          value={v ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
+        />
+      )}
     </label>
   );
 }

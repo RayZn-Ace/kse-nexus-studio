@@ -249,7 +249,10 @@ export type Database = {
           default_landing_page: string | null
           default_pixel_id: string | null
           default_placements: Json | null
+          extra_ad_account_ids: string[]
+          extra_pixel_ids: string[]
           id: string
+          is_system_user_token: boolean
           max_campaign_budget: number | null
           max_daily_budget_increase_percent: number | null
           meta_access_token_encrypted: string | null
@@ -258,6 +261,7 @@ export type Database = {
           ollama_api_url: string | null
           ollama_model: string | null
           safe_mode: boolean
+          system_user_id: string | null
           updated_at: string
         }
         Insert: {
@@ -268,7 +272,10 @@ export type Database = {
           default_landing_page?: string | null
           default_pixel_id?: string | null
           default_placements?: Json | null
+          extra_ad_account_ids?: string[]
+          extra_pixel_ids?: string[]
           id?: string
+          is_system_user_token?: boolean
           max_campaign_budget?: number | null
           max_daily_budget_increase_percent?: number | null
           meta_access_token_encrypted?: string | null
@@ -277,6 +284,7 @@ export type Database = {
           ollama_api_url?: string | null
           ollama_model?: string | null
           safe_mode?: boolean
+          system_user_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -287,7 +295,10 @@ export type Database = {
           default_landing_page?: string | null
           default_pixel_id?: string | null
           default_placements?: Json | null
+          extra_ad_account_ids?: string[]
+          extra_pixel_ids?: string[]
           id?: string
+          is_system_user_token?: boolean
           max_campaign_budget?: number | null
           max_daily_budget_increase_percent?: number | null
           meta_access_token_encrypted?: string | null
@@ -296,6 +307,7 @@ export type Database = {
           ollama_api_url?: string | null
           ollama_model?: string | null
           safe_mode?: boolean
+          system_user_id?: string | null
           updated_at?: string
         }
         Relationships: []
