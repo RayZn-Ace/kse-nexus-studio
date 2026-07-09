@@ -291,6 +291,42 @@ export type Database = {
           },
         ]
       }
+      kseadsio_pixels: {
+        Row: {
+          created_at: string
+          id: string
+          last_fired_time: string | null
+          last_verified_at: string | null
+          name: string | null
+          pixel_id: string
+          updated_at: string
+          verification_error: string | null
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_fired_time?: string | null
+          last_verified_at?: string | null
+          name?: string | null
+          pixel_id: string
+          updated_at?: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_fired_time?: string | null
+          last_verified_at?: string | null
+          name?: string | null
+          pixel_id?: string
+          updated_at?: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Relationships: []
+      }
       kseadsio_settings: {
         Row: {
           created_at: string
