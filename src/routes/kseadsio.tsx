@@ -22,6 +22,7 @@ import {
   Plus,
   Trash2,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,10 @@ import {
   listCampaigns,
   getCampaignCreatives,
   executeActions,
+  getInsights,
+  listEntities,
+  type InsightsLevel,
+  type InsightsRowShaped,
 } from "@/lib/kseadsio/metaAdsService";
 import { demoCommand } from "@/lib/kseadsio/demoData";
 import type {
@@ -50,7 +55,7 @@ export const Route = createFileRoute("/kseadsio")({
   component: KseAdsioShell,
 });
 
-type Tab = "dashboard" | "command" | "creatives" | "logs" | "settings";
+type Tab = "dashboard" | "insights" | "command" | "creatives" | "logs" | "settings";
 
 // ─────────────────────────────────────────────────────────────
 // Boot animation
@@ -197,6 +202,7 @@ function KseAdsioShell() {
 
   const nav: Array<{ id: Tab; label: string; icon: typeof Activity; hint: string }> = [
     { id: "dashboard", label: "Dashboard", icon: Activity, hint: "Overview" },
+    { id: "insights", label: "Insights", icon: BarChart3, hint: "Analytics live" },
     { id: "command", label: "Command", icon: Terminal, hint: "KayI Terminal" },
     { id: "creatives", label: "Creatives", icon: Zap, hint: "Ads & Texte" },
     { id: "logs", label: "Audit Logs", icon: ScrollText, hint: "History" },
@@ -298,6 +304,7 @@ function KseAdsioShell() {
             </div>
             <h1 className="text-2xl font-black tracking-tight">
               {tab === "dashboard" && "Ads Command Overview"}
+              {tab === "insights" && "Ads Insights & Analytics"}
               {tab === "command" && "KayI Terminal"}
               {tab === "creatives" && "Creative & Text Check"}
               {tab === "logs" && "Audit Trail"}
@@ -329,6 +336,7 @@ function KseAdsioShell() {
         </header>
         <main className="flex-1 p-8 overflow-y-auto">
           {tab === "dashboard" && <Dashboard />}
+          {tab === "insights" && <InsightsPanel />}
           {tab === "command" && <CommandCenter liveMode={liveMode} />}
           {tab === "creatives" && <CreativeCheck />}
           {tab === "logs" && <AuditLogs />}
