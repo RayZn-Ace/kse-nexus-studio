@@ -326,24 +326,34 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const planned = (p.targeting ?? {}) as Record<string, unknown>;
       const targeting = await buildTargeting(ctx.token, tmpl?.targeting, planned);
 
+      // Try /copies first — it inherits promoted_object, pixel, page etc.
+      // Meta rejects some adsets with subcode 1870189 ("cannot be copied"),
+      // e.g. when the source uses dynamic creative or an unsupported
+      // optimization. Fall back to a native /adsets create in that case.
       if (tmpl?.id) {
-        const copy = await graphPost<{ copied_adset_id?: string; adset_id?: string; id?: string }>(
-          `/${tmpl.id}/copies`,
-          ctx.token,
-          {
-            campaign_id: ctx.new_campaign_id,
-            status_option: p.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
-            rename_options: JSON.stringify({ rename_suffix: " · KayI Adset" }),
-          },
-        );
-        const newAdsetId = copy.copied_adset_id ?? copy.adset_id ?? copy.id;
-        if (!newAdsetId) throw new Error("Meta hat keine neue Adset-ID zurückgegeben");
-        await graphPost(`/${newAdsetId}`, ctx.token, {
-          targeting,
-          status: p.status ?? "PAUSED",
-        });
-        ctx.new_adset_id = newAdsetId;
-        return { new_adset_id: newAdsetId, copied_from_adset_id: tmpl.id };
+        try {
+          const copy = await graphPost<{ copied_adset_id?: string; adset_id?: string; id?: string }>(
+            `/${tmpl.id}/copies`,
+            ctx.token,
+            {
+              campaign_id: ctx.new_campaign_id,
+              status_option: p.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
+              rename_options: JSON.stringify({ rename_suffix: " · KayI Adset" }),
+            },
+          );
+          const newAdsetId = copy.copied_adset_id ?? copy.adset_id ?? copy.id;
+          if (!newAdsetId) throw new Error("Meta hat keine neue Adset-ID zurückgegeben");
+          await graphPost(`/${newAdsetId}`, ctx.token, {
+            targeting,
+            status: p.status ?? "PAUSED",
+          });
+          ctx.new_adset_id = newAdsetId;
+          return { new_adset_id: newAdsetId, copied_from_adset_id: tmpl.id };
+        } catch (copyErr) {
+          const msg = copyErr instanceof Error ? copyErr.message : String(copyErr);
+          if (!/1870189|cannot be copied|Invalid parameter/i.test(msg)) throw copyErr;
+          // fall through to native creation using tmpl as defaults
+        }
       }
 
       const body: Record<string, unknown> = {
@@ -366,7 +376,7 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
 
       const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, body);
       ctx.new_adset_id = r.id;
-      return { new_adset_id: r.id };
+      return { new_adset_id: r.id, fallback: "native_create" };
     }
 
     case "copy_ads": {
