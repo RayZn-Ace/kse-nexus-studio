@@ -955,7 +955,7 @@ function InsightsPanel() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function InsField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
       <span className="text-[10px] uppercase tracking-widest text-white/40 font-mono">{label}</span>
