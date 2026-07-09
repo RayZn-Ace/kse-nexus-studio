@@ -347,7 +347,7 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const tmplRes = await graphGet<{
         data: GraphAdsetTemplate[];
       }>(
-        `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy,start_time,end_time,daily_budget,lifetime_budget&limit=1`,
+        `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy,bid_amount,pacing_type,attribution_spec,dsa_beneficiary,dsa_payor,start_time,end_time,daily_budget,lifetime_budget&limit=1`,
         ctx.token,
       );
       const tmpl = tmplRes.data[0];
@@ -396,6 +396,13 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const promoted = tmpl?.promoted_object ?? (p.promoted_object as Record<string, unknown> | undefined);
       if (promoted) body.promoted_object = promoted;
       if (tmpl?.destination_type) body.destination_type = tmpl.destination_type;
+      if (tmpl?.bid_strategy) body.bid_strategy = tmpl.bid_strategy;
+      if (tmpl?.bid_amount !== undefined) body.bid_amount = asNumber(tmpl.bid_amount);
+      if (Array.isArray(tmpl?.pacing_type) && tmpl!.pacing_type!.length) body.pacing_type = tmpl!.pacing_type;
+      if (tmpl?.attribution_spec) body.attribution_spec = tmpl.attribution_spec;
+      // EU DSA: required in EEA. Copy from template when present.
+      if (tmpl?.dsa_beneficiary) body.dsa_beneficiary = tmpl.dsa_beneficiary;
+      if (tmpl?.dsa_payor) body.dsa_payor = tmpl.dsa_payor;
       const startTime = futureIso(p.start_time) ?? futureIso(tmpl?.start_time);
       const endTime = futureIso(p.end_time) ?? futureIso(p.time_stop) ?? futureIso(tmpl?.end_time);
       const needsEndTime = Boolean(newCamp.lifetime_budget || sourceCamp.lifetime_budget || tmpl?.lifetime_budget);
