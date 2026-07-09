@@ -761,7 +761,7 @@ function InsightsPanel() {
               onChange={(e) => setAccountId(e.target.value)}
               className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
             >
-              {accounts.map((a) => (
+              {accounts.map((a: { id: string; name: string }) => (
                 <option key={a.id} value={a.id}>
                   {a.name} · {a.id}
                 </option>
