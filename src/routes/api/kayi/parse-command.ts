@@ -31,20 +31,31 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
             }
           }
 
-          // Resolve pixel by name from connected pixels if not detected as ID
+          const lower = body.command.toLowerCase();
+          const tokenize = (s: string) =>
+            s
+              .toLowerCase()
+              .split(/[^a-zäöüß0-9]+/i)
+              .filter((w) => w.length >= 4 && !["pixel", "pixels", "account", "landing", "page"].includes(w));
+
+          // Resolve pixel by name (full match OR any distinctive token)
           if (!plan.pixel_id && body.known_pixels?.length) {
-            const lower = body.command.toLowerCase();
-            const match = body.known_pixels.find(
-              (p) => p.name && lower.includes(p.name.toLowerCase()),
-            );
+            const match = body.known_pixels.find((p) => {
+              if (!p.name) return false;
+              const n = p.name.toLowerCase();
+              if (lower.includes(n)) return true;
+              return tokenize(n).some((tok) => lower.includes(tok));
+            });
             if (match) plan.pixel_id = match.pixel_id;
           }
-          // Resolve landing page by title if URL not directly in command
+          // Resolve landing page by title tokens if URL not directly in command
           if (!plan.landing_page_url && body.known_landing_pages?.length) {
-            const lower = body.command.toLowerCase();
-            const match = body.known_landing_pages.find(
-              (lp) => lp.title && lower.includes(lp.title.toLowerCase()),
-            );
+            const match = body.known_landing_pages.find((lp) => {
+              if (!lp.title) return false;
+              const t = lp.title.toLowerCase();
+              if (lower.includes(t)) return true;
+              return tokenize(t).some((tok) => lower.includes(tok));
+            });
             if (match) plan.landing_page_url = match.url;
           }
 
