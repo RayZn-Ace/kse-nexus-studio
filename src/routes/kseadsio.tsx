@@ -1154,15 +1154,7 @@ function SettingsPanel() {
       </GlassCard>
 
       <GlassCard className="p-5 space-y-3">
-        <SectionTitle icon={Database}>Weitere Ad Accounts &amp; Pixel</SectionTitle>
-        <Field
-          label="Weitere Ad Account IDs"
-          v={listToText(s.extra_ad_account_ids)}
-          onChange={(v) => setList("extra_ad_account_ids", v)}
-          multiline
-          hint="Eine pro Zeile (oder Komma-getrennt). Format 'act_...'. Business Settings → Konten → Werbekonten."
-          placeholder={"act_9876543210\nact_1122334455"}
-        />
+        <SectionTitle icon={Database}>Weitere Pixel</SectionTitle>
         <Field
           label="Weitere Pixel / Dataset IDs"
           v={listToText(s.extra_pixel_ids)}
@@ -1176,6 +1168,10 @@ function SettingsPanel() {
           Assets haben (Business Settings → Users → System User → Assets zuweisen).
         </p>
       </GlassCard>
+
+      <div className="xl:col-span-2">
+        <AdAccountsPanel systemToken={s.meta_access_token_encrypted ?? ""} />
+      </div>
 
       <GlassCard className="p-5 space-y-3">
         <SectionTitle icon={Sparkles}>KayI · Local AI (Ollama)</SectionTitle>
