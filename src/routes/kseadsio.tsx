@@ -755,7 +755,7 @@ function InsightsPanel() {
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <Field label="Ad Account">
+          <InsField label="Ad Account">
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
@@ -767,8 +767,8 @@ function InsightsPanel() {
                 </option>
               ))}
             </select>
-          </Field>
-          <Field label="Ebene">
+          </InsField>
+          <InsField label="Ebene">
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value as InsightsLevel)}
@@ -779,8 +779,8 @@ function InsightsPanel() {
               <option value="adset">Adset(s)</option>
               <option value="ad">Ad(s)</option>
             </select>
-          </Field>
-          <Field label="Zeitraum">
+          </InsField>
+          <InsField label="Zeitraum">
             <select
               value={datePreset}
               onChange={(e) => setDatePreset(e.target.value)}
@@ -792,8 +792,8 @@ function InsightsPanel() {
                 </option>
               ))}
             </select>
-          </Field>
-          <Field label="Ansicht">
+          </InsField>
+          <InsField label="Ansicht">
             <select
               value={scopeChildren ? "children" : "self"}
               onChange={(e) => setScopeChildren(e.target.value === "children")}
@@ -802,7 +802,7 @@ function InsightsPanel() {
               <option value="children">Aufgliedern (jede Zeile einzeln)</option>
               <option value="self">Zusammengefasst</option>
             </select>
-          </Field>
+          </InsField>
           <div className="flex items-end">
             <button
               onClick={query}
@@ -817,7 +817,7 @@ function InsightsPanel() {
 
         {(level === "campaign" || level === "adset" || level === "ad") && (
           <div className="grid gap-3 md:grid-cols-3 mt-3">
-            <Field label="Kampagne (leer = alle)">
+            <InsField label="Kampagne (leer = alle)">
               <select
                 value={selectedCampaign}
                 onChange={(e) => setSelectedCampaign(e.target.value)}
@@ -830,9 +830,9 @@ function InsightsPanel() {
                   </option>
                 ))}
               </select>
-            </Field>
+            </InsField>
             {(level === "adset" || level === "ad") && (
-              <Field label="Adset (leer = alle im Campaign)">
+              <InsField label="Adset (leer = alle im Campaign)">
                 <select
                   value={selectedAdset}
                   onChange={(e) => setSelectedAdset(e.target.value)}
@@ -846,10 +846,10 @@ function InsightsPanel() {
                     </option>
                   ))}
                 </select>
-              </Field>
+              </InsField>
             )}
             {level === "ad" && (
-              <Field label="Ad (leer = alle im Adset)">
+              <InsField label="Ad (leer = alle im Adset)">
                 <select
                   value={selectedAd}
                   onChange={(e) => setSelectedAd(e.target.value)}
@@ -863,7 +863,7 @@ function InsightsPanel() {
                     </option>
                   ))}
                 </select>
-              </Field>
+              </InsField>
             )}
           </div>
         )}
