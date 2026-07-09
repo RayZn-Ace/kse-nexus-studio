@@ -679,11 +679,12 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
         result.plan.source_campaign_id,
       );
       setExecuted(res);
+      const hasExecutionErrors = res.some((r) => !r.ok);
       if (commandId) {
         await (supabase as any)
           .from("kseadsio_commands")
           .update({
-            status: "executed",
+            status: hasExecutionErrors ? "error" : "executed",
             approved_at: new Date().toISOString(),
             executed_at: new Date().toISOString(),
           })
@@ -922,6 +923,11 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
                         <pre className="text-[10px] text-white/40 overflow-x-auto">
                           {JSON.stringify(r.response, null, 2)}
                         </pre>
+                        {r.error && (
+                          <div className="mt-1 font-mono text-[10px] text-red-300 break-words">
+                            {r.error}
+                          </div>
+                        )}
                       </div>
                     </li>
                   ))}

@@ -77,6 +77,23 @@ type GraphAd = {
   creative?: { id: string };
 };
 
+type GraphAdsetTemplate = {
+  id: string;
+  targeting?: Record<string, unknown>;
+  billing_event?: string;
+  optimization_goal?: string;
+  promoted_object?: Record<string, unknown>;
+  destination_type?: string;
+  bid_strategy?: string;
+};
+
+type GraphGeoSearch = {
+  key?: string;
+  name?: string;
+  type?: string;
+  country_code?: string;
+};
+
 type GraphCreative = {
   id: string;
   name?: string;
@@ -96,6 +113,107 @@ type GraphCreative = {
   };
   thumbnail_url?: string;
 };
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function asNumber(value: unknown): number | undefined {
+  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function cleanGeoLocations(value: unknown): Record<string, unknown> | null {
+  const geo = { ...asRecord(value) };
+  if (Array.isArray(geo.custom_locations)) {
+    const valid = geo.custom_locations
+      .map((raw) => {
+        const loc = asRecord(raw);
+        const latitude = asNumber(loc.latitude);
+        const longitude = asNumber(loc.longitude);
+        if (latitude === undefined || longitude === undefined) return null;
+        return { ...loc, latitude, longitude };
+      })
+      .filter(Boolean);
+    if (valid.length) geo.custom_locations = valid;
+    else delete geo.custom_locations;
+  }
+  const meaningfulKeys = ["countries", "cities", "regions", "zips", "geo_markets", "custom_locations"];
+  return meaningfulKeys.some((key) => Array.isArray(geo[key]) && (geo[key] as unknown[]).length > 0) ? geo : null;
+}
+
+async function resolveCityGeo(
+  token: string,
+  name: string | undefined,
+  radius: number | undefined,
+  distanceUnit: string | undefined,
+): Promise<Record<string, unknown> | null> {
+  const q = name?.trim();
+  if (!q) return null;
+  const search = await graphGet<{ data: GraphGeoSearch[] }>(
+    `/search?type=adgeolocation&location_types=${encodeURIComponent(JSON.stringify(["city"]))}&q=${encodeURIComponent(q)}&country_code=DE&limit=10`,
+    token,
+  );
+  const hit = search.data.find((x) => x.key && x.type?.toLowerCase() === "city") ?? search.data.find((x) => x.key);
+  if (!hit?.key) return null;
+  return {
+    cities: [
+      {
+        key: hit.key,
+        radius: radius ?? 25,
+        distance_unit: distanceUnit === "mile" ? "mile" : "kilometer",
+      },
+    ],
+  };
+}
+
+async function buildTargeting(
+  token: string,
+  templateTargeting: Record<string, unknown> | undefined,
+  plannedTargeting: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const merged: Record<string, unknown> = { ...(templateTargeting ?? {}) };
+  if (typeof plannedTargeting.age_min === "number") merged.age_min = plannedTargeting.age_min;
+  if (typeof plannedTargeting.age_max === "number") merged.age_max = plannedTargeting.age_max;
+  if (Array.isArray(plannedTargeting.publisher_platforms)) merged.publisher_platforms = plannedTargeting.publisher_platforms;
+
+  if (Array.isArray(plannedTargeting.placements)) {
+    const placements = new Set(plannedTargeting.placements.filter((x): x is string => typeof x === "string"));
+    const facebookPositions: string[] = [];
+    const instagramPositions: string[] = [];
+    if (placements.has("facebook_stories")) facebookPositions.push("story");
+    if (placements.has("facebook_reels")) facebookPositions.push("facebook_reels");
+    if (placements.has("facebook_feed")) facebookPositions.push("feed");
+    if (placements.has("instagram_stories")) instagramPositions.push("story");
+    if (placements.has("instagram_reels")) instagramPositions.push("reels");
+    if (placements.has("instagram_feed")) instagramPositions.push("stream");
+    if (facebookPositions.length) merged.facebook_positions = facebookPositions;
+    if (instagramPositions.length) merged.instagram_positions = instagramPositions;
+  }
+
+  const plannedGeo = asRecord(plannedTargeting.geo_locations);
+  const customLocations = Array.isArray(plannedGeo.custom_locations)
+    ? plannedGeo.custom_locations.map(asRecord)
+    : [];
+  const directGeo = cleanGeoLocations(plannedGeo);
+  if (directGeo) {
+    merged.geo_locations = directGeo;
+  } else if (customLocations.length) {
+    const first = customLocations[0];
+    const radius = asNumber(first.radius);
+    const resolved = await resolveCityGeo(
+      token,
+      typeof first.name === "string" ? first.name : undefined,
+      radius,
+      typeof first.distance_unit === "string" ? first.distance_unit : undefined,
+    );
+    merged.geo_locations = resolved ?? cleanGeoLocations(merged.geo_locations) ?? { countries: ["DE"] };
+  } else {
+    merged.geo_locations = cleanGeoLocations(merged.geo_locations) ?? { countries: ["DE"] };
+  }
+
+  return merged;
+}
 
 async function opListCreatives(campaignId: string): Promise<MetaCreative[]> {
   const token = await pickToken();
@@ -177,23 +295,28 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const sourceId = ctx.source_campaign_id;
       if (!sourceId) throw new Error("source_campaign_id fehlt");
 
-      // Fetch source campaign budget mode + a template adset for defaults.
-      const camp = await graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
-        `/${ctx.new_campaign_id}?fields=daily_budget,lifetime_budget`,
-        ctx.token,
+      // Fetch budget mode + a template adset for defaults. Prefer template
+      // optimization/promoted_object over KayI guesses, because Meta rejects
+      // incompatible combinations with a generic "Invalid parameter".
+      const [newCamp, sourceCamp] = await Promise.all([
+        graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
+          `/${ctx.new_campaign_id}?fields=daily_budget,lifetime_budget`,
+          ctx.token,
+        ),
+        graphGet<{ daily_budget?: string; lifetime_budget?: string }>(
+          `/${sourceId}?fields=daily_budget,lifetime_budget`,
+          ctx.token,
+        ),
+      ]);
+      const cboEnabled = Boolean(
+        newCamp.daily_budget ||
+          newCamp.lifetime_budget ||
+          sourceCamp.daily_budget ||
+          sourceCamp.lifetime_budget,
       );
-      const cboEnabled = Boolean(camp.daily_budget || camp.lifetime_budget);
 
       const tmplRes = await graphGet<{
-        data: Array<{
-          id: string;
-          targeting?: Record<string, unknown>;
-          billing_event?: string;
-          optimization_goal?: string;
-          promoted_object?: Record<string, unknown>;
-          destination_type?: string;
-          bid_strategy?: string;
-        }>;
+        data: GraphAdsetTemplate[];
       }>(
         `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy&limit=1`,
         ctx.token,
@@ -201,38 +324,42 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const tmpl = tmplRes.data[0];
 
       const planned = (p.targeting ?? {}) as Record<string, unknown>;
-      const baseTargeting = (tmpl?.targeting ?? {}) as Record<string, unknown>;
-      const merged: Record<string, unknown> = { ...baseTargeting };
-      if (typeof planned.age_min === "number") merged.age_min = planned.age_min;
-      if (typeof planned.age_max === "number") merged.age_max = planned.age_max;
-      if (Array.isArray(planned.publisher_platforms))
-        merged.publisher_platforms = planned.publisher_platforms;
+      const targeting = await buildTargeting(ctx.token, tmpl?.targeting, planned);
 
-      const geo = (planned.geo_locations ?? {}) as { custom_locations?: Array<Record<string, unknown>> };
-      const validCustom = (geo.custom_locations ?? []).filter(
-        (l) => typeof l.latitude === "number" && typeof l.longitude === "number",
-      );
-      if (validCustom.length) {
-        merged.geo_locations = { custom_locations: validCustom };
-      } else if (!merged.geo_locations) {
-        merged.geo_locations = { countries: ["DE"] };
+      if (tmpl?.id) {
+        const copy = await graphPost<{ copied_adset_id?: string; adset_id?: string; id?: string }>(
+          `/${tmpl.id}/copies`,
+          ctx.token,
+          {
+            campaign_id: ctx.new_campaign_id,
+            status_option: p.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
+            rename_options: JSON.stringify({ rename_suffix: " · KayI Adset" }),
+          },
+        );
+        const newAdsetId = copy.copied_adset_id ?? copy.adset_id ?? copy.id;
+        if (!newAdsetId) throw new Error("Meta hat keine neue Adset-ID zurückgegeben");
+        await graphPost(`/${newAdsetId}`, ctx.token, {
+          targeting,
+          status: p.status ?? "PAUSED",
+        });
+        ctx.new_adset_id = newAdsetId;
+        return { new_adset_id: newAdsetId, copied_from_adset_id: tmpl.id };
       }
 
       const body: Record<string, unknown> = {
         name: `KayI Adset · ${new Date().toISOString().slice(0, 16)}`,
         campaign_id: ctx.new_campaign_id,
-        billing_event: p.billing_event ?? tmpl?.billing_event ?? "IMPRESSIONS",
-        optimization_goal: p.optimization_goal ?? tmpl?.optimization_goal ?? "LINK_CLICKS",
-        targeting: merged,
+        billing_event: tmpl?.billing_event ?? p.billing_event ?? "IMPRESSIONS",
+        optimization_goal: tmpl?.optimization_goal ?? p.optimization_goal ?? "LINK_CLICKS",
+        targeting,
         status: p.status ?? "PAUSED",
       };
-      const promoted = (p.promoted_object as Record<string, unknown> | undefined) ?? tmpl?.promoted_object;
+      const promoted = tmpl?.promoted_object ?? (p.promoted_object as Record<string, unknown> | undefined);
       if (promoted) body.promoted_object = promoted;
       if (tmpl?.destination_type) body.destination_type = tmpl.destination_type;
-      if (tmpl?.bid_strategy) body.bid_strategy = tmpl.bid_strategy;
       // Only set adset budget when the campaign does NOT use CBO.
       if (!cboEnabled) {
-        const budget = (p.daily_budget as number | undefined) ?? (tmpl && camp ? undefined : undefined);
+        const budget = p.daily_budget as number | undefined;
         if (budget) body.daily_budget = budget;
         else body.daily_budget = 500; // Meta minimum ~€5/day fallback
       }
