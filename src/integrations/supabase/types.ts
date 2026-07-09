@@ -98,6 +98,208 @@ export type Database = {
         }
         Relationships: []
       }
+      kseadsio_campaign_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          meta_campaign_id: string
+          snapshot_json: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta_campaign_id: string
+          snapshot_json: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta_campaign_id?: string
+          snapshot_json?: Json
+        }
+        Relationships: []
+      }
+      kseadsio_commands: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          executed_at: string | null
+          id: string
+          parsed_json: Json | null
+          raw_command: string
+          requires_approval: boolean
+          risk_level: string | null
+          risk_notes: Json | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          parsed_json?: Json | null
+          raw_command: string
+          requires_approval?: boolean
+          risk_level?: string | null
+          risk_notes?: Json | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          parsed_json?: Json | null
+          raw_command?: string
+          requires_approval?: boolean
+          risk_level?: string | null
+          risk_notes?: Json | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      kseadsio_creative_checks: {
+        Row: {
+          command_id: string | null
+          created_at: string
+          creative_id: string | null
+          id: string
+          status: string | null
+          text_content: string | null
+          warnings: Json | null
+        }
+        Insert: {
+          command_id?: string | null
+          created_at?: string
+          creative_id?: string | null
+          id?: string
+          status?: string | null
+          text_content?: string | null
+          warnings?: Json | null
+        }
+        Update: {
+          command_id?: string | null
+          created_at?: string
+          creative_id?: string | null
+          id?: string
+          status?: string | null
+          text_content?: string | null
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kseadsio_creative_checks_command_id_fkey"
+            columns: ["command_id"]
+            isOneToOne: false
+            referencedRelation: "kseadsio_commands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kseadsio_execution_logs: {
+        Row: {
+          action_type: string
+          command_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string
+        }
+        Insert: {
+          action_type: string
+          command_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Update: {
+          action_type?: string
+          command_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kseadsio_execution_logs_command_id_fkey"
+            columns: ["command_id"]
+            isOneToOne: false
+            referencedRelation: "kseadsio_commands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kseadsio_settings: {
+        Row: {
+          created_at: string
+          default_age_max: number | null
+          default_age_min: number | null
+          default_daily_budget_eur: number | null
+          default_landing_page: string | null
+          default_pixel_id: string | null
+          default_placements: Json | null
+          id: string
+          max_campaign_budget: number | null
+          max_daily_budget_increase_percent: number | null
+          meta_access_token_encrypted: string | null
+          meta_ad_account_id: string | null
+          meta_business_id: string | null
+          ollama_api_url: string | null
+          ollama_model: string | null
+          safe_mode: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_age_max?: number | null
+          default_age_min?: number | null
+          default_daily_budget_eur?: number | null
+          default_landing_page?: string | null
+          default_pixel_id?: string | null
+          default_placements?: Json | null
+          id?: string
+          max_campaign_budget?: number | null
+          max_daily_budget_increase_percent?: number | null
+          meta_access_token_encrypted?: string | null
+          meta_ad_account_id?: string | null
+          meta_business_id?: string | null
+          ollama_api_url?: string | null
+          ollama_model?: string | null
+          safe_mode?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_age_max?: number | null
+          default_age_min?: number | null
+          default_daily_budget_eur?: number | null
+          default_landing_page?: string | null
+          default_pixel_id?: string | null
+          default_placements?: Json | null
+          id?: string
+          max_campaign_budget?: number | null
+          max_daily_budget_increase_percent?: number | null
+          meta_access_token_encrypted?: string | null
+          meta_ad_account_id?: string | null
+          meta_business_id?: string | null
+          ollama_api_url?: string | null
+          ollama_model?: string | null
+          safe_mode?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages_log: {
         Row: {
           created_at: string

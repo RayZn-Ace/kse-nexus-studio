@@ -38,6 +38,7 @@ import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMissionsRouteImport } from './routes/admin/missions'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
+import { Route as AdminKseadsioRouteImport } from './routes/admin/kseadsio'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
@@ -47,6 +48,7 @@ import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
+import { Route as ApiKayiParseCommandRouteImport } from './routes/api/kayi/parse-command'
 import { Route as AdminMissionsTokenRouteImport } from './routes/admin/missions.$token'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
@@ -195,6 +197,11 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminKseadsioRoute = AdminKseadsioRouteImport.update({
+  id: '/kseadsio',
+  path: '/kseadsio',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminJourneyRoute = AdminJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -240,6 +247,11 @@ const AdminAbtestRoute = AdminAbtestRouteImport.update({
   path: '/abtest',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiKayiParseCommandRoute = ApiKayiParseCommandRouteImport.update({
+  id: '/api/kayi/parse-command',
+  path: '/api/kayi/parse-command',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMissionsTokenRoute = AdminMissionsTokenRouteImport.update({
   id: '/$token',
   path: '/$token',
@@ -274,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -291,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
+  '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
@@ -315,6 +329,7 @@ export interface FileRoutesByTo {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -332,6 +347,7 @@ export interface FileRoutesByTo {
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
+  '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
@@ -358,6 +374,7 @@ export interface FileRoutesById {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
+  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -375,6 +392,7 @@ export interface FileRoutesById {
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
+  '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
@@ -402,6 +420,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -419,6 +438,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/admin/'
     | '/admin/missions/$token'
+    | '/api/kayi/parse-command'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -443,6 +463,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -460,6 +481,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/admin'
     | '/admin/missions/$token'
+    | '/api/kayi/parse-command'
     | '/api/public/media/$'
   id:
     | '__root__'
@@ -485,6 +507,7 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
+    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -502,6 +525,7 @@ export interface FileRouteTypes {
     | '/share/$token'
     | '/admin/'
     | '/admin/missions/$token'
+    | '/api/kayi/parse-command'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
@@ -526,6 +550,7 @@ export interface RootRouteChildren {
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
 
@@ -734,6 +759,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/kseadsio': {
+      id: '/admin/kseadsio'
+      path: '/kseadsio'
+      fullPath: '/admin/kseadsio'
+      preLoaderRoute: typeof AdminKseadsioRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/journey': {
       id: '/admin/journey'
       path: '/journey'
@@ -797,6 +829,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAbtestRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/kayi/parse-command': {
+      id: '/api/kayi/parse-command'
+      path: '/api/kayi/parse-command'
+      fullPath: '/api/kayi/parse-command'
+      preLoaderRoute: typeof ApiKayiParseCommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/missions/$token': {
       id: '/admin/missions/$token'
       path: '/$token'
@@ -836,6 +875,7 @@ interface AdminRouteChildren {
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
+  AdminKseadsioRoute: typeof AdminKseadsioRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
@@ -857,6 +897,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
+  AdminKseadsioRoute: AdminKseadsioRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminMissionsRoute: AdminMissionsRouteWithChildren,
@@ -891,6 +932,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
+  ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
 export const routeTree = rootRouteImport
