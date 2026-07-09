@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Bug, Check, Copy, KeyRound, PlugZap, ShieldCheck } from "lucide-react";
+import { Bug, Check, Copy, Download, KeyRound, Loader2, PlugZap, ShieldCheck } from "lucide-react";
+import { ksepiExport } from "@/lib/kseadsio/ksepiExport.functions";
 
 export const Route = createFileRoute("/admin/debug")({
   head: () => ({ meta: [{ title: "Debug API — KSE Group" }, { name: "robots", content: "noindex" }] }),
@@ -10,6 +12,12 @@ export const Route = createFileRoute("/admin/debug")({
 function DebugApiPage() {
   const [enabled, setEnabled] = useState(() => sessionStorage.getItem("ksepi-debug-enabled") === "1");
   const [copied, setCopied] = useState<string | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [lastExportAt, setLastExportAt] = useState<string | null>(null);
+  const [campaignId, setCampaignId] = useState("");
+  const [adAccountId, setAdAccountId] = useState("");
+  const runExport = useServerFn(ksepiExport);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://ksegroup.eu";
   const mcpUrl = `${origin}/mcp`;
   const claudeConfig = useMemo(
@@ -40,6 +48,34 @@ function DebugApiPage() {
     await navigator.clipboard.writeText(value);
     setCopied(label);
     setTimeout(() => setCopied(null), 1600);
+  }
+
+  async function downloadExport() {
+    setExportBusy(true);
+    setExportError(null);
+    try {
+      const payload = await runExport({
+        data: {
+          source_campaign_id: campaignId.trim() || undefined,
+          ad_account_id: adAccountId.trim() || undefined,
+        },
+      });
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ksepi-export-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setLastExportAt(new Date().toLocaleString());
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setExportBusy(false);
+    }
   }
 
   return (
@@ -78,6 +114,61 @@ function DebugApiPage() {
 
       {enabled ? (
         <section className="mt-6 grid gap-4 xl:grid-cols-2">
+          <div className="border-2 border-[#0a0a0a] bg-white p-5 xl:col-span-2" style={{ boxShadow: "5px 5px 0 0 #ff5722" }}>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-black uppercase">Export für ChatGPT / Claude</h2>
+                <p className="mt-1 max-w-xl text-xs text-[#0a0a0a]/65">
+                  Läd alle vier KSEPI-Ressourcen (overview, code_bundle, database_snapshot, meta_diagnostics)
+                  als ein einziges JSON herunter. Kein OAuth nötig — einfach in den Chat hochladen.
+                  Alle Tokens/Secrets werden serverseitig redigiert.
+                </p>
+              </div>
+              <button
+                onClick={downloadExport}
+                disabled={exportBusy}
+                className="inline-flex items-center gap-2 border-2 border-[#0a0a0a] bg-[#ff5722] px-5 py-3 text-xs font-black uppercase tracking-widest text-white transition-transform disabled:opacity-60"
+                style={{ boxShadow: "5px 5px 0 0 #0a0a0a" }}
+              >
+                {exportBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {exportBusy ? "Exportiere…" : "JSON exportieren"}
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#0a0a0a]/60">
+                  Source Campaign ID (optional)
+                </span>
+                <input
+                  value={campaignId}
+                  onChange={(e) => setCampaignId(e.target.value)}
+                  placeholder="z. B. 120212345678900000"
+                  className="mt-1 w-full border-2 border-[#0a0a0a] bg-[#f5f2ea] px-3 py-2 font-mono text-xs"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#0a0a0a]/60">
+                  Ad Account ID (optional)
+                </span>
+                <input
+                  value={adAccountId}
+                  onChange={(e) => setAdAccountId(e.target.value)}
+                  placeholder="act_1234567890"
+                  className="mt-1 w-full border-2 border-[#0a0a0a] bg-[#f5f2ea] px-3 py-2 font-mono text-xs"
+                />
+              </label>
+            </div>
+            {exportError && (
+              <p className="mt-3 border-2 border-red-600 bg-red-50 p-3 text-xs font-bold text-red-800">
+                {exportError}
+              </p>
+            )}
+            {lastExportAt && !exportError && (
+              <p className="mt-3 text-[11px] font-bold text-emerald-700">
+                Letzter Export: {lastExportAt}
+              </p>
+            )}
+          </div>
           <DebugBlock
             title="MCP Server URL"
             value={mcpUrl}
