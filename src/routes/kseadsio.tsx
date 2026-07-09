@@ -1206,24 +1206,16 @@ function SettingsPanel() {
       </div>
 
       <GlassCard className="p-5 space-y-3">
-        <SectionTitle icon={Sparkles}>KayI · Local AI (Ollama)</SectionTitle>
-        <Field
-          label="Ollama API URL"
-          v={s.ollama_api_url}
-          onChange={(v) => set("ollama_api_url", v)}
-          placeholder="http://localhost:11434"
-          hint="Adresse deiner lokalen Ollama-Instanz. Wenn Ollama auf demselben Rechner läuft: http://localhost:11434"
-        />
-        <Field
-          label="Modell"
-          v={s.ollama_model}
-          onChange={(v) => set("ollama_model", v)}
-          placeholder="llama3, qwen2, mistral…"
-          hint="Name des in Ollama installierten Modells (z.B. 'llama3'). Mit 'ollama list' im Terminal prüfbar."
-        />
-        <p className="text-[11px] text-white/40">
-          Wenn nicht erreichbar, nutzt KayI automatisch den regelbasierten Parser.
-        </p>
+        <SectionTitle icon={Sparkles}>KayI · Cloud AI</SectionTitle>
+        <div className="text-xs text-white/70 space-y-2">
+          <p>
+            KayI läuft komplett in der Cloud über das <span className="text-cyan-300">Lovable AI Gateway</span> (Gemini). Kein lokaler
+            Server, keine Konfiguration nötig — der API-Key ist serverseitig hinterlegt.
+          </p>
+          <p className="text-white/40 text-[11px]">
+            Fällt der Gateway aus, greift automatisch der regelbasierte Fallback-Parser.
+          </p>
+        </div>
       </GlassCard>
 
       <GlassCard className="p-5 space-y-3">
