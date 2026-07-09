@@ -7,6 +7,9 @@ type GraphErr = {
   code?: number;
   error_subcode?: number;
   error_data?: unknown;
+  error_user_title?: string;
+  error_user_msg?: string;
+  fbtrace_id?: string;
 };
 
 async function graph<T>(
@@ -31,6 +34,8 @@ async function graph<T>(
   if (!res.ok || json.error) {
     const err = json.error;
     const parts = [err?.message ?? `Graph HTTP ${res.status}`];
+    if (err?.error_user_title) parts.push(`title=${err.error_user_title}`);
+    if (err?.error_user_msg) parts.push(`hint=${err.error_user_msg}`);
     if (err?.type) parts.push(`type=${err.type}`);
     if (err?.code) parts.push(`code=${err.code}`);
     if (err?.error_subcode) parts.push(`subcode=${err.error_subcode}`);
