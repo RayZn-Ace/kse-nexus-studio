@@ -1,7 +1,13 @@
 // Server-only Meta Graph API v20 helpers. NEVER import from client code.
 const GRAPH = "https://graph.facebook.com/v20.0";
 
-type GraphErr = { message?: string; type?: string; code?: number };
+type GraphErr = {
+  message?: string;
+  type?: string;
+  code?: number;
+  error_subcode?: number;
+  error_data?: unknown;
+};
 
 async function graph<T>(
   path: string,
@@ -23,7 +29,13 @@ async function graph<T>(
   });
   const json = (await res.json()) as { error?: GraphErr } & Record<string, unknown>;
   if (!res.ok || json.error) {
-    throw new Error(json.error?.message ?? `Graph HTTP ${res.status}`);
+    const err = json.error;
+    const parts = [err?.message ?? `Graph HTTP ${res.status}`];
+    if (err?.type) parts.push(`type=${err.type}`);
+    if (err?.code) parts.push(`code=${err.code}`);
+    if (err?.error_subcode) parts.push(`subcode=${err.error_subcode}`);
+    if (err?.error_data) parts.push(`data=${JSON.stringify(err.error_data)}`);
+    throw new Error(parts.join(" · "));
   }
   return json as unknown as T;
 }
