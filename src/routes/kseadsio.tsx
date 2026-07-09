@@ -19,6 +19,9 @@ import {
   Database,
   LogOut,
   ArrowLeft,
+  Plus,
+  Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
