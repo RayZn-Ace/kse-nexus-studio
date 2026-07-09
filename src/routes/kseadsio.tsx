@@ -602,6 +602,11 @@ function CommandCenter() {
         .select("safe_mode, max_campaign_budget")
         .limit(1)
         .maybeSingle();
+      const [{ data: pixelsData }, { data: lpData }, { data: aaData }] = await Promise.all([
+        (supabase as any).from("kseadsio_pixels").select("pixel_id, name"),
+        (supabase as any).from("kseadsio_landing_pages").select("url, title"),
+        (supabase as any).from("kseadsio_ad_accounts").select("ad_account_id, name"),
+      ]);
       const r = await fetch("/api/kayi/parse-command", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -609,6 +614,9 @@ function CommandCenter() {
           command: cmd,
           safe_mode: s?.safe_mode ?? true,
           max_campaign_budget: s?.max_campaign_budget ?? 500,
+          known_pixels: pixelsData ?? [],
+          known_landing_pages: lpData ?? [],
+          known_ad_accounts: aaData ?? [],
         }),
       });
       const j = (await r.json()) as ParseResult | { error: string };
