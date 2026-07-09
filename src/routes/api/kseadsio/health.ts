@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 type CheckResult = {
   id: string;
   label: string;
-  kind: "token" | "ad_account" | "pixel" | "landing_page" | "ollama";
+  kind: "token" | "ad_account" | "pixel" | "landing_page" | "cloud_ai";
   ok: boolean;
   status: "ok" | "warn" | "error" | "skip";
   detail?: string;
@@ -76,13 +76,29 @@ async function checkLandingPage(row: { id: string; url: string; title: string | 
   }
 }
 
-async function checkOllama(url: string | null): Promise<CheckResult | null> {
-  if (!url) return null;
+async function checkCloudAI(): Promise<CheckResult> {
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) {
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "error", detail: "LOVABLE_API_KEY nicht gesetzt" };
+  }
   try {
-    const [res, ms] = await timed(() => fetch(`${url.replace(/\/$/, "")}/api/tags`, { signal: AbortSignal.timeout(3000) }));
-    return { id: "ollama", kind: "ollama", label: `Ollama · ${url}`, ok: res.ok, status: res.ok ? "ok" : "warn", detail: `HTTP ${res.status}`, latency_ms: ms };
+    const [res, ms] = await timed(() =>
+      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 5,
+        }),
+        signal: AbortSignal.timeout(6000),
+      }),
+    );
+    if (res.status === 429) return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "warn", detail: "Rate limit", latency_ms: ms };
+    if (res.status === 402) return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "warn", detail: "Kontingent aufgebraucht", latency_ms: ms };
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway (Gemini)", ok: res.ok, status: res.ok ? "ok" : "error", detail: res.ok ? undefined : `HTTP ${res.status}`, latency_ms: ms };
   } catch (e) {
-    return { id: "ollama", kind: "ollama", label: `Ollama · ${url}`, ok: false, status: "warn", detail: e instanceof Error ? e.message : String(e) };
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "error", detail: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -93,7 +109,7 @@ export const Route = createFileRoute("/api/kseadsio/health")({
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const [{ data: settings }, { data: accounts }, { data: pixels }, { data: pages }, { data: recentCmds }, { data: recentLogs }] = await Promise.all([
-            supabaseAdmin.from("kseadsio_settings").select("meta_access_token_encrypted, ollama_api_url, safe_mode").limit(1).maybeSingle(),
+            supabaseAdmin.from("kseadsio_settings").select("meta_access_token_encrypted, safe_mode").limit(1).maybeSingle(),
             supabaseAdmin.from("kseadsio_ad_accounts").select("id, ad_account_id, name, access_token_encrypted"),
             supabaseAdmin.from("kseadsio_pixels").select("id, pixel_id, name"),
             supabaseAdmin.from("kseadsio_landing_pages").select("id, url, title"),
@@ -107,7 +123,7 @@ export const Route = createFileRoute("/api/kseadsio/health")({
             ...(accounts ?? []).map((a) => checkAdAccount(a as any, token)),
             ...(pixels ?? []).map((p) => checkPixel(p as any, token)),
             ...(pages ?? []).map((p) => checkLandingPage(p as any)),
-            checkOllama(settings?.ollama_api_url ?? null),
+            checkCloudAI(),
           ]);
           const flat = checks.filter(Boolean) as CheckResult[];
 
