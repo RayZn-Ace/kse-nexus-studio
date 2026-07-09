@@ -925,8 +925,12 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
 
             {executed && (
               <GlassCard className="p-5">
-                <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-emerald-300 mb-3">
-                  / Ausführung (Mock)
+                <div
+                  className={`text-[10px] font-mono uppercase tracking-[0.3em] mb-3 ${
+                    liveMode ? "text-red-300" : "text-emerald-300"
+                  }`}
+                >
+                  / Ausführung ({liveMode ? "Live" : "Mock"})
                 </div>
                 <ul className="space-y-2">
                   {executed.map((r, i) => (
