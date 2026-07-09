@@ -1237,25 +1237,48 @@ function Field({
   onChange,
   type = "text",
   placeholder,
+  hint,
+  multiline,
 }: {
   label: string;
   v: any;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  hint?: string;
+  multiline?: boolean;
 }) {
   return (
     <label className="block">
-      <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
+      <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
         {label}
+        {hint && (
+          <span
+            title={hint}
+            className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-white/20 text-white/50 hover:text-cyan-300 hover:border-cyan-300/60 cursor-help text-[9px] normal-case tracking-normal"
+            aria-label={hint}
+          >
+            ?
+          </span>
+        )}
       </span>
-      <input
-        type={type}
-        value={v ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
-      />
+      {multiline ? (
+        <textarea
+          value={v ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={3}
+          className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono resize-y"
+        />
+      ) : (
+        <input
+          type={type}
+          value={v ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
+        />
+      )}
     </label>
   );
 }
