@@ -940,9 +940,38 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
 // ─────────────────────────────────────────────────────────────
 function CreativeCheck() {
   const [items, setItems] = useState<MetaCreative[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    getCampaignCreatives("120242692175120534").then(setItems);
+    (async () => {
+      try {
+        const camps = await listCampaigns();
+        const first = camps[0];
+        if (!first) {
+          setErr("Keine Kampagnen gefunden.");
+          return;
+        }
+        const creatives = await getCampaignCreatives(first.id);
+        setItems(creatives);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : String(e));
+      }
+    })();
   }, []);
+
+  if (err) {
+    return (
+      <GlassCard className="p-8 text-sm text-red-300">
+        Fehler beim Laden der Creatives: {err}
+      </GlassCard>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <GlassCard className="p-8 text-sm text-white/50">
+        Lade Creatives aus Meta …
+      </GlassCard>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
