@@ -1484,6 +1484,232 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
   );
 }
 
+type PixelRow = {
+  id: string;
+  pixel_id: string;
+  name: string | null;
+  last_fired_time: string | null;
+  verification_status: string;
+  verification_error: string | null;
+  last_verified_at: string | null;
+};
+
+function PixelsPanel({ systemToken }: { systemToken: string }) {
+  const [rows, setRows] = useState<PixelRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pxId, setPxId] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [addErr, setAddErr] = useState<string | null>(null);
+
+  const reload = async () => {
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("kseadsio_pixels")
+      .select("*")
+      .order("created_at", { ascending: true });
+    setRows((data ?? []) as PixelRow[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void reload();
+  }, []);
+
+  const verify = async (row: {
+    pixel_id: string;
+  }): Promise<{ ok: boolean; error?: string; pixel?: any }> => {
+    if (!systemToken) {
+      return { ok: false, error: "System User Access Token oben fehlt." };
+    }
+    try {
+      const res = await fetch("/api/kseadsio/verify-pixel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pixel_id: row.pixel_id,
+          access_token: systemToken,
+        }),
+      });
+      return (await res.json()) as any;
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  };
+
+  const addPixel = async () => {
+    setAddErr(null);
+    if (!pxId.trim()) return;
+    const id = pxId.trim();
+    setBusy("add");
+    const v = await verify({ pixel_id: id });
+    const payload: any = {
+      pixel_id: id,
+      verification_status: v.ok ? "verified" : "error",
+      verification_error: v.ok ? null : v.error ?? "Unbekannter Fehler",
+      last_verified_at: new Date().toISOString(),
+    };
+    if (v.ok && v.pixel) {
+      payload.name = v.pixel.name;
+      payload.last_fired_time = v.pixel.last_fired_time;
+    }
+    const { error } = await (supabase as any)
+      .from("kseadsio_pixels")
+      .upsert(payload, { onConflict: "pixel_id" });
+    setBusy(null);
+    if (error) {
+      setAddErr(error.message);
+      return;
+    }
+    setPxId("");
+    void reload();
+  };
+
+  const revalidate = async (row: PixelRow) => {
+    setBusy(row.id);
+    const v = await verify(row);
+    const patch: any = {
+      verification_status: v.ok ? "verified" : "error",
+      verification_error: v.ok ? null : v.error ?? "Unbekannter Fehler",
+      last_verified_at: new Date().toISOString(),
+    };
+    if (v.ok && v.pixel) {
+      patch.name = v.pixel.name;
+      patch.last_fired_time = v.pixel.last_fired_time;
+    }
+    await (supabase as any)
+      .from("kseadsio_pixels")
+      .update(patch)
+      .eq("id", row.id);
+    setBusy(null);
+    void reload();
+  };
+
+  const remove = async (row: PixelRow) => {
+    if (!confirm(`Pixel ${row.name ?? row.pixel_id} entfernen?`)) return;
+    setBusy(row.id);
+    await (supabase as any).from("kseadsio_pixels").delete().eq("id", row.id);
+    setBusy(null);
+    void reload();
+  };
+
+  return (
+    <GlassCard className="p-5 space-y-4">
+      <SectionTitle icon={Database}>Meta Pixel · Verbindungen</SectionTitle>
+
+      <div className="grid md:grid-cols-[1fr_auto] gap-2 items-end">
+        <label className="block">
+          <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
+            Pixel / Dataset ID
+          </span>
+          <input
+            value={pxId}
+            onChange={(e) => setPxId(e.target.value)}
+            placeholder="926446183790326"
+            className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
+          />
+        </label>
+        <button
+          onClick={addPixel}
+          disabled={busy === "add" || !pxId.trim() || !systemToken}
+          className="flex items-center gap-2 bg-cyan-400 text-black font-black uppercase tracking-widest text-xs px-4 py-2 rounded hover:bg-cyan-300 disabled:opacity-40 h-[38px]"
+        >
+          {busy === "add" ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          Verbinden
+        </button>
+      </div>
+      {!systemToken && (
+        <p className="text-[11px] text-amber-300/80">
+          Bitte zuerst den System User Access Token oben eintragen und speichern.
+        </p>
+      )}
+      {addErr && <p className="text-[11px] text-red-300">{addErr}</p>}
+
+      <div className="mt-3 border-t border-white/10 pt-3">
+        {loading ? (
+          <div className="text-white/40 text-sm">Lade…</div>
+        ) : rows.length === 0 ? (
+          <div className="text-white/40 text-sm font-mono">
+            Noch keine Pixel verbunden.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {rows.map((r) => {
+              const ok = r.verification_status === "verified";
+              return (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-3 border border-white/10 hover:border-white/20 rounded px-3 py-2.5 bg-black/30"
+                >
+                  <span
+                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 ${
+                      ok
+                        ? "bg-emerald-400/15 text-emerald-300"
+                        : "bg-red-400/15 text-red-300"
+                    }`}
+                    title={
+                      ok
+                        ? `Verifiziert${r.last_verified_at ? " · " + new Date(r.last_verified_at).toLocaleString("de-DE") : ""}`
+                        : (r.verification_error ?? "Nicht verifiziert")
+                    }
+                  >
+                    {ok ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-white truncate">
+                      {r.name ?? r.pixel_id}
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-white/50 font-mono mt-0.5 flex-wrap">
+                      <span>{r.pixel_id}</span>
+                      {r.last_fired_time && (
+                        <span className="text-emerald-300/70">
+                          · zuletzt gefeuert{" "}
+                          {new Date(r.last_fired_time).toLocaleString("de-DE")}
+                        </span>
+                      )}
+                    </div>
+                    {!ok && r.verification_error && (
+                      <div className="text-[11px] text-red-300/90 mt-1">
+                        {r.verification_error}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => revalidate(r)}
+                    disabled={busy === r.id || !systemToken}
+                    className="p-2 rounded hover:bg-white/10 text-white/70 hover:text-cyan-300 disabled:opacity-30"
+                    title="Erneut verifizieren"
+                  >
+                    {busy === r.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => remove(r)}
+                    className="p-2 rounded hover:bg-red-500/20 text-white/60 hover:text-red-300"
+                    title="Entfernen"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </GlassCard>
+  );
+}
+
 function SectionTitle({
   children,
   icon: Icon,
