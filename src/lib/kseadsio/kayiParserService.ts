@@ -1,7 +1,7 @@
 import type { KayIPlan, Placement } from "./types";
 
 // Rule-based fallback parser. Extracts common patterns from German ad commands.
-// Later this will be replaced by Ollama, but the shape stays identical.
+// Used as fallback when Cloudflare Workers AI is not reachable.
 export function parseCommandLocal(raw: string): KayIPlan {
   const t = raw.toLowerCase();
 
@@ -57,15 +57,16 @@ export function parseCommandLocal(raw: string): KayIPlan {
     landing_page_url: urlMatch?.[0],
     pixel_id: pixelMatch?.[1],
     requires_approval: true,
-    notes: "Rule-based Fallback-Parser (Ollama nicht verbunden).",
+    notes: "Rule-based Fallback-Parser (Cloudflare Workers AI nicht verbunden).",
   };
 }
 
-// Server-side Lovable AI Gateway bridge. Runs in the Cloud, no local setup.
-export async function parseCommandViaLovableAI(
+// Cloudflare Workers AI bridge. Serverless, läuft auf Cloudflares Edge.
+export async function parseCommandViaCloudflareAI(
   raw: string,
-  apiKey: string,
-  model = "google/gemini-3-flash-preview",
+  accountId: string,
+  apiToken: string,
+  model = "@cf/meta/llama-3.1-8b-instruct",
 ): Promise<KayIPlan> {
   const system = `Du bist KayI, ein Meta-Ads-Assistent. Extrahiere aus dem folgenden Befehl ein JSON gemäß diesem Schema:
 {
@@ -86,14 +87,14 @@ export async function parseCommandViaLovableAI(
   "notes": string?
 }
 Antworte NUR mit gültigem JSON, keine Erklärung, kein Markdown.`;
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${model}`;
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": apiKey,
+      Authorization: `Bearer ${apiToken}`,
     },
     body: JSON.stringify({
-      model,
       messages: [
         { role: "system", content: system },
         { role: "user", content: raw },
@@ -101,10 +102,17 @@ Antworte NUR mit gültigem JSON, keine Erklärung, kein Markdown.`;
       response_format: { type: "json_object" },
     }),
   });
-  if (!res.ok) throw new Error(`Lovable AI ${res.status}`);
-  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const content = j.choices?.[0]?.message?.content ?? "{}";
+  if (!res.ok) throw new Error(`Cloudflare AI ${res.status}`);
+  const j = (await res.json()) as {
+    success?: boolean;
+    result?: { response?: string; output?: string };
+    errors?: Array<{ message?: string }>;
+  };
+  if (!j.success) throw new Error(j.errors?.[0]?.message ?? "Cloudflare AI error");
+  const content = j.result?.response ?? j.result?.output ?? "{}";
   const cleaned = content.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  const parsed = JSON.parse(cleaned) as Partial<KayIPlan>;
+  // Some models wrap extra text — extract first {...} block
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  const parsed = JSON.parse(match ? match[0] : cleaned) as Partial<KayIPlan>;
   return { intent: "unknown", requires_approval: true, ...parsed } as KayIPlan;
 }
