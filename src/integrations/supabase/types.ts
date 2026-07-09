@@ -291,6 +291,51 @@ export type Database = {
           },
         ]
       }
+      kseadsio_landing_pages: {
+        Row: {
+          created_at: string
+          description: string | null
+          favicon_url: string | null
+          final_url: string | null
+          id: string
+          last_verified_at: string | null
+          status_code: number | null
+          title: string | null
+          updated_at: string
+          url: string
+          verification_error: string | null
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          favicon_url?: string | null
+          final_url?: string | null
+          id?: string
+          last_verified_at?: string | null
+          status_code?: number | null
+          title?: string | null
+          updated_at?: string
+          url: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          favicon_url?: string | null
+          final_url?: string | null
+          id?: string
+          last_verified_at?: string | null
+          status_code?: number | null
+          title?: string | null
+          updated_at?: string
+          url?: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Relationships: []
+      }
       kseadsio_pixels: {
         Row: {
           created_at: string

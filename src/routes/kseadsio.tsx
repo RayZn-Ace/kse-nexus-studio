@@ -1122,12 +1122,6 @@ function SettingsPanel() {
           hint="Business Settings → Users → System Users → in der URL oder Detailansicht sichtbar. Für Audit-Logs."
           placeholder="123456789012345"
         />
-        <Field
-          label="Default Landingpage"
-          v={s.default_landing_page}
-          onChange={(v) => set("default_landing_page", v)}
-          hint="Die URL, auf die Ads standardmäßig verlinken, wenn im KayI-Befehl keine explizit angegeben wird."
-        />
       </GlassCard>
 
       <div className="xl:col-span-2">
@@ -1136,6 +1130,10 @@ function SettingsPanel() {
 
       <div className="xl:col-span-2">
         <PixelsPanel systemToken={s.meta_access_token_encrypted ?? ""} />
+      </div>
+
+      <div className="xl:col-span-2">
+        <LandingPagesPanel />
       </div>
 
       <GlassCard className="p-5 space-y-3">
@@ -1784,5 +1782,252 @@ function Field({
         />
       )}
     </label>
+  );
+}
+type LandingPageRow = {
+  id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  favicon_url: string | null;
+  final_url: string | null;
+  status_code: number | null;
+  verification_status: string;
+  verification_error: string | null;
+  last_verified_at: string | null;
+};
+
+function LandingPagesPanel() {
+  const [rows, setRows] = useState<LandingPageRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [addErr, setAddErr] = useState<string | null>(null);
+
+  const reload = async () => {
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("kseadsio_landing_pages")
+      .select("*")
+      .order("created_at", { ascending: true });
+    setRows((data ?? []) as LandingPageRow[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void reload();
+  }, []);
+
+  const verify = async (u: string): Promise<{ ok: boolean; error?: string; page?: any }> => {
+    try {
+      const res = await fetch("/api/kseadsio/verify-landing-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: u }),
+      });
+      return (await res.json()) as any;
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  };
+
+  const addPage = async () => {
+    setAddErr(null);
+    if (!url.trim()) return;
+    setBusy("add");
+    const v = await verify(url.trim());
+    const normalized = v.page?.final_url ?? (url.trim().startsWith("http") ? url.trim() : "https://" + url.trim());
+    const payload: any = {
+      url: normalized,
+      verification_status: v.ok ? "verified" : "error",
+      verification_error: v.ok ? null : v.error ?? "Unbekannter Fehler",
+      last_verified_at: new Date().toISOString(),
+    };
+    if (v.page) {
+      payload.title = v.page.title ?? null;
+      payload.description = v.page.description ?? null;
+      payload.favicon_url = v.page.favicon_url ?? null;
+      payload.final_url = v.page.final_url ?? null;
+      payload.status_code = v.page.status_code ?? null;
+    }
+    const { error } = await (supabase as any)
+      .from("kseadsio_landing_pages")
+      .upsert(payload, { onConflict: "url" });
+    setBusy(null);
+    if (error) {
+      setAddErr(error.message);
+      return;
+    }
+    setUrl("");
+    void reload();
+  };
+
+  const revalidate = async (row: LandingPageRow) => {
+    setBusy(row.id);
+    const v = await verify(row.url);
+    const patch: any = {
+      verification_status: v.ok ? "verified" : "error",
+      verification_error: v.ok ? null : v.error ?? "Unbekannter Fehler",
+      last_verified_at: new Date().toISOString(),
+    };
+    if (v.page) {
+      patch.title = v.page.title ?? null;
+      patch.description = v.page.description ?? null;
+      patch.favicon_url = v.page.favicon_url ?? null;
+      patch.final_url = v.page.final_url ?? null;
+      patch.status_code = v.page.status_code ?? null;
+    }
+    await (supabase as any)
+      .from("kseadsio_landing_pages")
+      .update(patch)
+      .eq("id", row.id);
+    setBusy(null);
+    void reload();
+  };
+
+  const remove = async (row: LandingPageRow) => {
+    if (!confirm(`Landing Page ${row.title ?? row.url} entfernen?`)) return;
+    setBusy(row.id);
+    await (supabase as any).from("kseadsio_landing_pages").delete().eq("id", row.id);
+    setBusy(null);
+    void reload();
+  };
+
+  return (
+    <GlassCard className="p-5 space-y-4">
+      <SectionTitle icon={Database}>Landing Pages · Verbindungen</SectionTitle>
+
+      <div className="grid md:grid-cols-[1fr_auto] gap-2 items-end">
+        <label className="block">
+          <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
+            Landing Page URL
+          </span>
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void addPage();
+            }}
+            placeholder="https://ksegroup.eu/angebot"
+            className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
+          />
+        </label>
+        <button
+          onClick={addPage}
+          disabled={busy === "add" || !url.trim()}
+          className="flex items-center gap-2 bg-cyan-400 text-black font-black uppercase tracking-widest text-xs px-4 py-2 rounded hover:bg-cyan-300 disabled:opacity-40 h-[38px]"
+        >
+          {busy === "add" ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          Verbinden
+        </button>
+      </div>
+      {addErr && <p className="text-[11px] text-red-300">{addErr}</p>}
+
+      <div className="mt-3 border-t border-white/10 pt-3">
+        {loading ? (
+          <div className="text-white/40 text-sm">Lade…</div>
+        ) : rows.length === 0 ? (
+          <div className="text-white/40 text-sm font-mono">
+            Noch keine Landing Pages verbunden. Ads verlinken jeweils individuell — es gibt keine feste Haupt-Landing-Page.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {rows.map((r) => {
+              const ok = r.verification_status === "verified";
+              let host = r.url;
+              try {
+                host = new URL(r.url).host;
+              } catch {}
+              return (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-3 border border-white/10 hover:border-white/20 rounded px-3 py-2.5 bg-black/30"
+                >
+                  <span
+                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 ${
+                      ok
+                        ? "bg-emerald-400/15 text-emerald-300"
+                        : "bg-red-400/15 text-red-300"
+                    }`}
+                    title={
+                      ok
+                        ? `Verifiziert${r.last_verified_at ? " · " + new Date(r.last_verified_at).toLocaleString("de-DE") : ""}`
+                        : (r.verification_error ?? "Nicht verifiziert")
+                    }
+                  >
+                    {ok ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                  </span>
+                  {r.favicon_url ? (
+                    <img
+                      src={r.favicon_url}
+                      alt=""
+                      className="w-5 h-5 rounded-sm shrink-0 bg-white/5"
+                      onError={(e) => ((e.currentTarget.style.display = "none"))}
+                    />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-white truncate">
+                      {r.title ?? host}
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-white/50 font-mono mt-0.5 flex-wrap">
+                      <a
+                        href={r.final_url ?? r.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-cyan-300 truncate max-w-[420px]"
+                      >
+                        {r.final_url ?? r.url}
+                      </a>
+                      {typeof r.status_code === "number" && (
+                        <span className={r.status_code < 400 ? "text-emerald-300/70" : "text-red-300/70"}>
+                          · HTTP {r.status_code}
+                        </span>
+                      )}
+                    </div>
+                    {r.description && (
+                      <div className="text-[11px] text-white/50 mt-1 line-clamp-2">
+                        {r.description}
+                      </div>
+                    )}
+                    {!ok && r.verification_error && (
+                      <div className="text-[11px] text-red-300/90 mt-1">
+                        {r.verification_error}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => revalidate(r)}
+                    disabled={busy === r.id}
+                    className="p-2 rounded hover:bg-white/10 text-white/70 hover:text-cyan-300 disabled:opacity-30"
+                    title="Erneut verifizieren"
+                  >
+                    {busy === r.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => remove(r)}
+                    className="p-2 rounded hover:bg-red-500/20 text-white/60 hover:text-red-300"
+                    title="Entfernen"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </GlassCard>
   );
 }
