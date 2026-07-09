@@ -77,28 +77,26 @@ async function checkLandingPage(row: { id: string; url: string; title: string | 
 }
 
 async function checkCloudAI(): Promise<CheckResult> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) {
-    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "error", detail: "LOVABLE_API_KEY nicht gesetzt" };
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  if (!accountId || !token) {
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Cloudflare Workers AI", ok: false, status: "error", detail: "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN nicht gesetzt" };
   }
   try {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/@cf/meta/llama-3.1-8b-instruct`;
     const [res, ms] = await timed(() =>
-      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [{ role: "user", content: "ping" }],
-          max_tokens: 5,
-        }),
-        signal: AbortSignal.timeout(6000),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ messages: [{ role: "user", content: "ping" }], max_tokens: 5 }),
+        signal: AbortSignal.timeout(8000),
       }),
     );
-    if (res.status === 429) return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "warn", detail: "Rate limit", latency_ms: ms };
-    if (res.status === 402) return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "warn", detail: "Kontingent aufgebraucht", latency_ms: ms };
-    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway (Gemini)", ok: res.ok, status: res.ok ? "ok" : "error", detail: res.ok ? undefined : `HTTP ${res.status}`, latency_ms: ms };
+    if (res.status === 429) return { id: "cloud_ai", kind: "cloud_ai", label: "Cloudflare Workers AI", ok: false, status: "warn", detail: "Rate limit", latency_ms: ms };
+    if (res.status === 401 || res.status === 403) return { id: "cloud_ai", kind: "cloud_ai", label: "Cloudflare Workers AI", ok: false, status: "error", detail: `Auth fehlgeschlagen (HTTP ${res.status})`, latency_ms: ms };
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Cloudflare Workers AI (Llama 3.1)", ok: res.ok, status: res.ok ? "ok" : "error", detail: res.ok ? undefined : `HTTP ${res.status}`, latency_ms: ms };
   } catch (e) {
-    return { id: "cloud_ai", kind: "cloud_ai", label: "Lovable AI Gateway", ok: false, status: "error", detail: e instanceof Error ? e.message : String(e) };
+    return { id: "cloud_ai", kind: "cloud_ai", label: "Cloudflare Workers AI", ok: false, status: "error", detail: e instanceof Error ? e.message : String(e) };
   }
 }
 
