@@ -30,6 +30,7 @@ import {
   Rocket,
   Sparkles,
   Bug,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -105,6 +106,7 @@ function AdminLayout() {
       items: [
         { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
         { to: "/kseadsio", label: "KSEAdsio", icon: Sparkles },
+        { to: "/admin/shop", label: "Shop & Tickets", icon: ShoppingBag },
         { to: "/admin/warroom", label: "War Room", icon: Radio },
         { to: "/admin/alarm", label: "Alarm", icon: Siren },
       ],
