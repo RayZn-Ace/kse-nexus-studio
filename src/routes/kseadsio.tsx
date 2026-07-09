@@ -162,17 +162,7 @@ function KseAdsioShell() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [liveMode] = useState<boolean>(true);
   const toggleLiveMode = () => {
-    // Live is the only mode — no simulation anywhere.
-  };
-  // Suppress unused-warning artefact from previous toggle logic.
-  void (() => {
-    try {
-      /* noop */
-    } catch {
-        /* ignore */
-      }
-      return next;
-    });
+    // Live ist der einzige Modus — es gibt keine Simulation mehr.
   };
 
   useEffect(() => {
