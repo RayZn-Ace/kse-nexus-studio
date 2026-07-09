@@ -152,6 +152,49 @@ function sanitizeAdsetCreateBody(body: Record<string, unknown>): Record<string, 
   return clean;
 }
 
+// Meta subcode 2446063 "Set ad scheduling" is triggered by any dayparting /
+// scheduling field on a daily-budget adset that should run continuously.
+// Strip them defensively when the caller asked for "always run".
+function stripScheduling(body: Record<string, unknown>): Record<string, unknown> {
+  const clean = { ...body };
+  delete clean.ad_schedule;
+  delete clean.adset_schedule;
+  delete clean.time_start;
+  delete clean.time_stop;
+  delete clean.start_time;
+  delete clean.end_time;
+  if (Array.isArray(clean.pacing_type)) {
+    const filtered = (clean.pacing_type as unknown[]).filter(
+      (x) => typeof x === "string" && !/day_?parting/i.test(x),
+    );
+    if (filtered.length) clean.pacing_type = filtered;
+    else delete clean.pacing_type;
+  }
+  return clean;
+}
+
+// Try to find which connected ad account owns a given campaign.
+async function resolveAdAccountForCampaign(
+  campaignId: string,
+  systemToken: string,
+  accounts: Array<{ ad_account_id: string; access_token_encrypted: string | null }>,
+): Promise<string | null> {
+  for (const a of accounts) {
+    const token = a.access_token_encrypted || systemToken;
+    if (!token) continue;
+    try {
+      const j = await graphGet<{ data: Array<{ id: string }> }>(
+        `/${actId(a.ad_account_id)}/campaigns?fields=id&limit=500`,
+        token,
+      );
+      if (j.data?.some((c) => c.id === campaignId)) return actId(a.ad_account_id);
+    } catch {
+      /* skip inaccessible account */
+    }
+  }
+  return null;
+}
+
 function cleanGeoLocations(value: unknown): Record<string, unknown> | null {
   const geo = { ...asRecord(value) };
   if (Array.isArray(geo.custom_locations)) {
@@ -294,12 +337,30 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
     case "duplicate_campaign": {
       const sourceId = (p.source_campaign_id as string) ?? ctx.source_campaign_id;
       if (!sourceId) throw new Error("source_campaign_id fehlt");
-      const src = await graphGet<{ account_id: string; name: string }>(
-        `/${sourceId}?fields=account_id,name`,
+      // NOTE: Meta rejects `account_id` on the Campaign node (#100 nonexisting
+      // field). Fetch only id/name and resolve the ad account from our own
+      // connected accounts (payload → plan → search).
+      await graphGet<{ id: string; name: string }>(
+        `/${sourceId}?fields=id,name`,
         ctx.token,
       );
-      ctx.ad_account_id = actId(src.account_id);
       ctx.source_campaign_id = sourceId;
+
+      let adAccountId =
+        (p.ad_account_id as string | undefined) ??
+        ctx.ad_account_id ??
+        undefined;
+      if (!adAccountId) {
+        const { systemToken, accounts } = await loadTokens();
+        if (accounts.length === 1) {
+          adAccountId = actId(accounts[0].ad_account_id);
+        } else {
+          const found = await resolveAdAccountForCampaign(sourceId, systemToken, accounts);
+          if (found) adAccountId = found;
+        }
+      }
+      if (!adAccountId) throw new Error("Ad Account konnte nicht ermittelt werden (kein verbundenes Konto enthält diese Kampagne)");
+      ctx.ad_account_id = actId(adAccountId);
       const copy = await graphPost<{ copied_campaign_id: string; ad_object_ids?: unknown }>(
         `/${sourceId}/copies`,
         ctx.token,
@@ -403,24 +464,38 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       // EU DSA: required in EEA. Copy from template when present.
       if (tmpl?.dsa_beneficiary) body.dsa_beneficiary = tmpl.dsa_beneficiary;
       if (tmpl?.dsa_payor) body.dsa_payor = tmpl.dsa_payor;
+      // Budget mode: user daily_budget in plan overrides template lifetime_budget.
+      const plannedDaily = asNumber(p.daily_budget);
+      const alwaysRun = p.always_run !== false; // default true for KayI plans
       const startTime = futureIso(p.start_time) ?? futureIso(tmpl?.start_time);
       const endTime = futureIso(p.end_time) ?? futureIso(p.time_stop) ?? futureIso(tmpl?.end_time);
-      const needsEndTime = Boolean(newCamp.lifetime_budget || sourceCamp.lifetime_budget || tmpl?.lifetime_budget);
-      if (startTime) body.start_time = startTime;
-      if (endTime) body.end_time = endTime;
-      else if (needsEndTime) body.end_time = defaultFutureEndIso();
-      // Only set adset budget when the campaign does NOT use CBO.
+      const needsEndTime = Boolean(newCamp.lifetime_budget || sourceCamp.lifetime_budget);
+
       if (!cboEnabled) {
-        const budget = p.daily_budget as number | undefined;
-        const lifetimeBudget = asNumber(p.lifetime_budget) ?? asNumber(tmpl?.lifetime_budget);
-        if (lifetimeBudget) {
+        const lifetimeBudget = plannedDaily ? undefined : asNumber(p.lifetime_budget) ?? asNumber(tmpl?.lifetime_budget);
+        if (plannedDaily) {
+          body.daily_budget = plannedDaily;
+        } else if (lifetimeBudget) {
           body.lifetime_budget = lifetimeBudget;
-          body.end_time = (body.end_time as string | undefined) ?? defaultFutureEndIso();
-        } else if (budget) body.daily_budget = budget;
-        else body.daily_budget = asNumber(tmpl?.daily_budget) ?? 500; // Meta minimum ~€5/day fallback
+        } else {
+          body.daily_budget = asNumber(tmpl?.daily_budget) ?? 500;
+        }
       }
 
-      const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, sanitizeAdsetCreateBody(body));
+      // Scheduling: only attach start/end when it makes sense. If the user
+      // wants "always run" with a daily_budget, drop every scheduling field —
+      // Meta returns subcode 2446063 "Set ad scheduling" otherwise.
+      const hasLifetime = Boolean(body.lifetime_budget);
+      if (!alwaysRun || hasLifetime) {
+        if (startTime) body.start_time = startTime;
+        if (endTime) body.end_time = endTime;
+        else if (needsEndTime || hasLifetime) body.end_time = defaultFutureEndIso();
+      }
+
+      let outgoing = sanitizeAdsetCreateBody(body);
+      if (alwaysRun && !hasLifetime) outgoing = stripScheduling(outgoing);
+
+      const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, outgoing);
       ctx.new_adset_id = r.id;
       return { new_adset_id: r.id, fallback: "native_create" };
     }
@@ -507,13 +582,27 @@ async function opExecute(actions: ExecutionAction[], sourceCampaignId?: string) 
   const token = await pickToken();
   if (!token) throw new Error("Kein Meta Access Token in den Einstellungen hinterlegt.");
   const ctx: ExecCtx = { token, source_campaign_id: sourceCampaignId };
-  const results: Array<{ action: ExecutionAction; ok: boolean; response: unknown; error?: string }> = [];
+  const results: Array<{ action: ExecutionAction; ok: boolean; response: unknown; error?: string; skipped?: boolean }> = [];
+  const dependsOnAdset = new Set(["copy_ads", "set_landing_page"]);
+  let adsetFailed = false;
   for (const a of actions) {
+    if (dependsOnAdset.has(a.type) && (adsetFailed || !ctx.new_adset_id)) {
+      results.push({
+        action: a,
+        ok: false,
+        response: null,
+        skipped: true,
+        error: "skipped: create_adset war nicht erfolgreich",
+      });
+      continue;
+    }
     try {
       const response = await runAction(a, ctx);
       results.push({ action: a, ok: true, response });
     } catch (e) {
-      results.push({ action: a, ok: false, response: null, error: e instanceof Error ? e.message : String(e) });
+      const msg = e instanceof Error ? e.message : String(e);
+      results.push({ action: a, ok: false, response: null, error: msg });
+      if (a.type === "create_adset") adsetFailed = true;
     }
   }
   return results;
