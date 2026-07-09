@@ -1095,16 +1095,6 @@ function SettingsPanel() {
 
   if (!s) return <div className="text-white/40 text-sm">Lade…</div>;
   const set = (k: string, v: any) => setS({ ...s, [k]: v });
-  const setList = (k: string, v: string) =>
-    setS({
-      ...s,
-      [k]: v
-        .split(/[\n,]/)
-        .map((x) => x.trim())
-        .filter(Boolean),
-    });
-  const listToText = (arr: string[] | null | undefined) =>
-    Array.isArray(arr) ? arr.join("\n") : "";
 
   return (
     <div className="grid xl:grid-cols-2 gap-6 max-w-6xl">
@@ -1116,13 +1106,6 @@ function SettingsPanel() {
           onChange={(v) => set("meta_business_id", v)}
           hint="Business Manager → Einstellungen → Unternehmensinfo. Die numerische ID oben unter dem Firmennamen."
           placeholder="z.B. 1029384756123456"
-        />
-        <Field
-          label="Haupt-Ad-Account ID"
-          v={s.meta_ad_account_id}
-          onChange={(v) => set("meta_ad_account_id", v)}
-          placeholder="act_1234567890"
-          hint="Ads Manager oben links → das Konto auswählen. Die ID beginnt mit 'act_' und steht in der URL nach 'act='."
         />
         <Field
           label="System User Access Token"
@@ -1140,12 +1123,6 @@ function SettingsPanel() {
           placeholder="123456789012345"
         />
         <Field
-          label="Pixel / Dataset ID"
-          v={s.default_pixel_id}
-          onChange={(v) => set("default_pixel_id", v)}
-          hint="Events Manager → Datenquellen → Pixel auswählen → ID rechts oben. Das ist der Standard-Pixel; weitere unten."
-        />
-        <Field
           label="Default Landingpage"
           v={s.default_landing_page}
           onChange={(v) => set("default_landing_page", v)}
@@ -1153,24 +1130,12 @@ function SettingsPanel() {
         />
       </GlassCard>
 
-      <GlassCard className="p-5 space-y-3">
-        <SectionTitle icon={Database}>Weitere Pixel</SectionTitle>
-        <Field
-          label="Weitere Pixel / Dataset IDs"
-          v={listToText(s.extra_pixel_ids)}
-          onChange={(v) => setList("extra_pixel_ids", v)}
-          multiline
-          hint="Eine pro Zeile. Events Manager → alle Datenquellen. KayI kann Kampagnen dem passenden Pixel zuordnen."
-          placeholder={"926446183790326\n1029384756112233"}
-        />
-        <p className="text-[11px] text-white/40">
-          Der System-User-Token oben muss Zugriff auf alle hier gelisteten
-          Assets haben (Business Settings → Users → System User → Assets zuweisen).
-        </p>
-      </GlassCard>
-
       <div className="xl:col-span-2">
         <AdAccountsPanel systemToken={s.meta_access_token_encrypted ?? ""} />
+      </div>
+
+      <div className="xl:col-span-2">
+        <PixelsPanel systemToken={s.meta_access_token_encrypted ?? ""} />
       </div>
 
       <GlassCard className="p-5 space-y-3">
