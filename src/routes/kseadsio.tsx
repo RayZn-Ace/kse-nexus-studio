@@ -160,33 +160,9 @@ function KseAdsioShell() {
   const navigate = useNavigate();
   const [booted, setBooted] = useState(false);
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [liveMode, setLiveMode] = useState<boolean>(false);
-
-  useEffect(() => {
-    try {
-      setLiveMode(localStorage.getItem("kseadsio_live_mode") === "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
+  const [liveMode] = useState<boolean>(true);
   const toggleLiveMode = () => {
-    setLiveMode((prev) => {
-      const next = !prev;
-      if (next) {
-        const ok = confirm(
-          "LIVE-Modus aktivieren?\n\nAusführungen würden echte Änderungen an Meta Ads senden. " +
-            "Die Meta API ist aktuell noch nicht verbunden — Aktionen schlagen daher fehl statt still zu simulieren.",
-        );
-        if (!ok) return prev;
-      }
-      try {
-        localStorage.setItem("kseadsio_live_mode", next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+    // Live ist der einzige Modus — es gibt keine Simulation mehr.
   };
 
   useEffect(() => {
@@ -332,9 +308,7 @@ function KseAdsioShell() {
             <button
               onClick={toggleLiveMode}
               title={
-                liveMode
-                  ? "LIVE: Aktionen würden echt an Meta Ads gesendet. Klicken für Mock."
-                  : "MOCK: Aktionen werden nur simuliert. Klicken für Live."
+                "LIVE: Alle Aktionen werden echt an Meta Ads gesendet."
               }
               className={`flex items-center gap-2 px-3 py-1.5 rounded border transition-colors ${
                 liveMode
@@ -347,7 +321,7 @@ function KseAdsioShell() {
                   liveMode ? "bg-red-400 animate-pulse" : "bg-white/40"
                 }`}
               />
-              {liveMode ? "LIVE MODE" : "MOCK MODE"}
+              LIVE MODE
             </button>
             <span className="w-px h-4 bg-white/20" />
             <span className="text-cyan-300">SAFE ON</span>
@@ -518,8 +492,8 @@ function Dashboard() {
             </div>
             <h2 className="text-lg font-black">Aktive Übersicht</h2>
           </div>
-          <div className="text-xs text-white/40 font-mono">
-            Mock-Daten · Meta API nicht verbunden
+          <div className="text-xs text-emerald-300/70 font-mono">
+            LIVE · Meta Graph API v20
           </div>
         </div>
         <table className="w-full text-sm">
@@ -604,10 +578,6 @@ function Dashboard() {
             <li className="flex items-start gap-2 text-white/70">
               <AlertTriangle className="w-4 h-4 text-orange-300 mt-0.5 shrink-0" />{" "}
               Kampagne „MT — Purchase / DE South" liegt heute unter Ziel-ROAS.
-            </li>
-            <li className="flex items-start gap-2 text-white/70">
-              <AlertTriangle className="w-4 h-4 text-orange-300 mt-0.5 shrink-0" />{" "}
-              Meta Access Token noch nicht hinterlegt — nur Mock-Modus aktiv.
             </li>
           </ul>
         </GlassCard>
@@ -697,15 +667,17 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
     }
     if (
       !confirm(
-        liveMode
-          ? "LIVE-Modus: Aktionen werden echt an Meta Ads gesendet. Wirklich ausführen?"
-          : "Wirklich freigeben und (im Mock-Modus) ausführen?",
+        "LIVE: Aktionen werden echt an Meta Ads gesendet. Wirklich ausführen?",
       )
     )
       return;
     setExecuting(true);
     try {
-      const res = await executeActions(result.actions, liveMode);
+      const res = await executeActions(
+        result.actions,
+        true,
+        result.plan.source_campaign_id,
+      );
       setExecuted(res);
       if (commandId) {
         await (supabase as any)
@@ -927,10 +899,10 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
               <GlassCard className="p-5">
                 <div
                   className={`text-[10px] font-mono uppercase tracking-[0.3em] mb-3 ${
-                    liveMode ? "text-red-300" : "text-emerald-300"
+                  "text-red-300"
                   }`}
                 >
-                  / Ausführung ({liveMode ? "Live" : "Mock"})
+                  / Ausführung (Live)
                 </div>
                 <ul className="space-y-2">
                   {executed.map((r, i) => (
@@ -968,9 +940,38 @@ function CommandCenter({ liveMode = false }: { liveMode?: boolean }) {
 // ─────────────────────────────────────────────────────────────
 function CreativeCheck() {
   const [items, setItems] = useState<MetaCreative[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    getCampaignCreatives("120242692175120534").then(setItems);
+    (async () => {
+      try {
+        const camps = await listCampaigns();
+        const first = camps[0];
+        if (!first) {
+          setErr("Keine Kampagnen gefunden.");
+          return;
+        }
+        const creatives = await getCampaignCreatives(first.id);
+        setItems(creatives);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : String(e));
+      }
+    })();
   }, []);
+
+  if (err) {
+    return (
+      <GlassCard className="p-8 text-sm text-red-300">
+        Fehler beim Laden der Creatives: {err}
+      </GlassCard>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <GlassCard className="p-8 text-sm text-white/50">
+        Lade Creatives aus Meta …
+      </GlassCard>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
