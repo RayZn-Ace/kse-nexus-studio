@@ -1253,7 +1253,6 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
   const [rows, setRows] = useState<AdAccountRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [adId, setAdId] = useState("");
-  const [label, setLabel] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [addErr, setAddErr] = useState<string | null>(null);
 
@@ -1301,7 +1300,6 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
     const v = await verify({ ad_account_id: id });
     const payload: any = {
       ad_account_id: id,
-      label: label.trim() || null,
       verification_status: v.ok ? "verified" : "error",
       verification_error: v.ok ? null : v.error ?? "Unbekannter Fehler",
       last_verified_at: new Date().toISOString(),
@@ -1322,7 +1320,6 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
       return;
     }
     setAdId("");
-    setLabel("");
     void reload();
   };
 
@@ -1367,7 +1364,7 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
       </SectionTitle>
 
       {/* Add form */}
-      <div className="grid md:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+      <div className="grid md:grid-cols-[1fr_auto] gap-2 items-end">
         <label className="block">
           <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
             Ad Account ID
@@ -1377,17 +1374,6 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
             onChange={(e) => setAdId(e.target.value)}
             placeholder="act_1234567890"
             className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none font-mono"
-          />
-        </label>
-        <label className="block">
-          <span className="block text-[10px] uppercase tracking-widest text-white/40 font-mono mb-1">
-            Interner Name (optional)
-          </span>
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="z.B. Mallorca Total"
-            className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 rounded px-3 py-2 text-sm text-white outline-none"
           />
         </label>
         <button
@@ -1400,7 +1386,7 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
           ) : (
             <Plus className="w-4 h-4" />
           )}
-          Hinzufügen &amp; Verifizieren
+          Verbinden
         </button>
       </div>
       {!systemToken && (
@@ -1450,13 +1436,8 @@ function AdAccountsPanel({ systemToken }: { systemToken: string }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-white truncate">
-                        {r.name ?? r.label ?? r.ad_account_id}
+                        {r.name ?? r.ad_account_id}
                       </span>
-                      {r.label && r.name && (
-                        <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest">
-                          · {r.label}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 text-[11px] text-white/50 font-mono mt-0.5 flex-wrap">
                       <span>{r.ad_account_id}</span>
