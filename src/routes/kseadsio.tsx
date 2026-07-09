@@ -1164,6 +1164,9 @@ function SettingsPanel() {
 
   return (
     <div className="grid xl:grid-cols-2 gap-6 max-w-6xl">
+      <div className="xl:col-span-2">
+        <HealthPanel />
+      </div>
       <GlassCard className="p-5 space-y-3">
         <SectionTitle icon={Database}>Meta Business</SectionTitle>
         <Field
@@ -1312,6 +1315,222 @@ type AdAccountRow = {
   verification_error: string | null;
   last_verified_at: string | null;
 };
+
+// ─────────────────────────────────────────────────────────────
+// Health / Live-Verbindungscheck
+// ─────────────────────────────────────────────────────────────
+type HealthCheck = {
+  id: string;
+  label: string;
+  kind: "token" | "ad_account" | "pixel" | "landing_page" | "ollama";
+  ok: boolean;
+  status: "ok" | "warn" | "error" | "skip";
+  detail?: string;
+  latency_ms?: number;
+};
+type HealthResponse = {
+  summary: { total: number; ok: number; warn: number; error: number; safe_mode: boolean; checked_at: string };
+  checks: HealthCheck[];
+  recent_commands: Array<{ id: string; raw_command: string; status: string; risk_level: string | null; created_at: string; executed_at: string | null }>;
+  recent_logs: Array<{ id: string; action_type: string; status: string; error_message: string | null; created_at: string }>;
+};
+
+function HealthPanel() {
+  const [data, setData] = useState<HealthResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [auto, setAuto] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancel = false;
+    const run = async () => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const res = await fetch("/api/kseadsio/health");
+        const j = (await res.json()) as HealthResponse & { error?: string };
+        if (cancel) return;
+        if (j.error) setErr(j.error);
+        else setData(j);
+      } catch (e) {
+        if (!cancel) setErr(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancel = true;
+    };
+  }, [tick]);
+
+  useEffect(() => {
+    if (!auto) return;
+    const t = setInterval(() => setTick((n) => n + 1), 8000);
+    return () => clearInterval(t);
+  }, [auto]);
+
+  const dot = (s: HealthCheck["status"]) =>
+    s === "ok" ? "bg-emerald-400" : s === "warn" ? "bg-amber-400" : s === "error" ? "bg-rose-500" : "bg-white/30";
+  const kindLabel: Record<HealthCheck["kind"], string> = {
+    token: "Token",
+    ad_account: "Ad Account",
+    pixel: "Pixel",
+    landing_page: "Landing Page",
+    ollama: "Ollama",
+  };
+  const grouped = useMemo(() => {
+    const g: Record<string, HealthCheck[]> = { token: [], ad_account: [], pixel: [], landing_page: [], ollama: [] };
+    (data?.checks ?? []).forEach((c) => g[c.kind]?.push(c));
+    return g;
+  }, [data]);
+
+  return (
+    <GlassCard className="p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <SectionTitle icon={Activity}>Verbindungs-Check · Live</SectionTitle>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/60">
+            <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} className="w-3.5 h-3.5 accent-cyan-400" />
+            Auto-Refresh (8s)
+          </label>
+          <button
+            type="button"
+            onClick={() => setTick((n) => n + 1)}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 border border-white/20 hover:border-cyan-400 hover:text-cyan-300 transition-colors"
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Jetzt prüfen
+          </button>
+        </div>
+      </div>
+
+      {err && <div className="text-xs text-rose-400 border border-rose-500/40 bg-rose-500/10 px-3 py-2">{err}</div>}
+
+      {data && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="border border-white/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/50">Gesamt</div>
+              <div className="text-lg font-mono">{data.summary.total}</div>
+            </div>
+            <div className="border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-emerald-300/80">OK</div>
+              <div className="text-lg font-mono text-emerald-300">{data.summary.ok}</div>
+            </div>
+            <div className="border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-amber-300/80">Warn</div>
+              <div className="text-lg font-mono text-amber-300">{data.summary.warn}</div>
+            </div>
+            <div className="border border-rose-500/30 bg-rose-500/5 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-rose-300/80">Fehler</div>
+              <div className="text-lg font-mono text-rose-300">{data.summary.error}</div>
+            </div>
+            <div className="border border-white/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/50">Safe Mode</div>
+              <div className={`text-sm font-mono ${data.summary.safe_mode ? "text-emerald-300" : "text-amber-300"}`}>
+                {data.summary.safe_mode ? "AN" : "AUS"}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              {(["token", "ad_account", "pixel", "landing_page", "ollama"] as const).map((k) =>
+                grouped[k].length === 0 ? null : (
+                  <div key={k}>
+                    <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{kindLabel[k]}</div>
+                    <div className="space-y-1">
+                      {grouped[k].map((c) => (
+                        <div key={c.id} className="flex items-center gap-2 border border-white/10 px-2.5 py-1.5 text-xs">
+                          <span className={`h-2 w-2 rounded-full ${dot(c.status)} ${c.status === "ok" ? "animate-pulse" : ""}`} />
+                          <span className="flex-1 truncate">{c.label}</span>
+                          {c.detail && <span className="text-white/50 text-[11px] truncate max-w-[45%]">{c.detail}</span>}
+                          {c.latency_ms != null && <span className="font-mono text-white/40 text-[10px]">{c.latency_ms}ms</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1 flex items-center gap-2">
+                  <Zap className="h-3 w-3" /> Aktuelle Befehle
+                </div>
+                {data.recent_commands.length === 0 ? (
+                  <div className="text-[11px] text-white/40 border border-white/10 px-2.5 py-2">Noch keine Befehle.</div>
+                ) : (
+                  <div className="space-y-1">
+                    {data.recent_commands.map((c) => (
+                      <div key={c.id} className="border border-white/10 px-2.5 py-1.5 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              c.status === "executed"
+                                ? "bg-emerald-400"
+                                : c.status === "failed"
+                                  ? "bg-rose-500"
+                                  : c.status === "pending"
+                                    ? "bg-amber-400 animate-pulse"
+                                    : "bg-white/30"
+                            }`}
+                          />
+                          <span className="uppercase tracking-wider text-[9px] text-white/50">{c.status}</span>
+                          {c.risk_level && <span className="text-[9px] text-white/40">· {c.risk_level}</span>}
+                          <span className="ml-auto text-white/40 text-[10px] font-mono">
+                            {new Date(c.created_at).toLocaleTimeString("de-DE")}
+                          </span>
+                        </div>
+                        <div className="truncate text-white/70 mt-0.5">{c.raw_command}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1 flex items-center gap-2">
+                  <ScrollText className="h-3 w-3" /> Live Execution Log
+                </div>
+                {data.recent_logs.length === 0 ? (
+                  <div className="text-[11px] text-white/40 border border-white/10 px-2.5 py-2">Kein Log-Eintrag.</div>
+                ) : (
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {data.recent_logs.map((l) => (
+                      <div key={l.id} className="flex items-center gap-2 border border-white/10 px-2.5 py-1.5 text-[11px]">
+                        <span className={`h-1.5 w-1.5 rounded-full ${l.status === "success" ? "bg-emerald-400" : l.status === "error" ? "bg-rose-500" : "bg-amber-400"}`} />
+                        <span className="font-mono">{l.action_type}</span>
+                        {l.error_message && <span className="text-rose-300/70 truncate">{l.error_message}</span>}
+                        <span className="ml-auto text-white/40 text-[10px] font-mono">
+                          {new Date(l.created_at).toLocaleTimeString("de-DE")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-white/40 font-mono">
+            Letzter Check: {new Date(data.summary.checked_at).toLocaleString("de-DE")}
+          </div>
+        </>
+      )}
+
+      {!data && !err && (
+        <div className="text-xs text-white/40 flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verbindungen werden geprüft…
+        </div>
+      )}
+    </GlassCard>
+  );
+}
 
 function AdAccountsPanel({ systemToken }: { systemToken: string }) {
   const [rows, setRows] = useState<AdAccountRow[]>([]);

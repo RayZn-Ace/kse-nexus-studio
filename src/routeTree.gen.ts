@@ -51,6 +51,7 @@ import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
 import { Route as ApiKseadsioVerifyPixelRouteImport } from './routes/api/kseadsio/verify-pixel'
 import { Route as ApiKseadsioVerifyLandingPageRouteImport } from './routes/api/kseadsio/verify-landing-page'
 import { Route as ApiKseadsioVerifyAdAccountRouteImport } from './routes/api/kseadsio/verify-ad-account'
+import { Route as ApiKseadsioHealthRouteImport } from './routes/api/kseadsio/health'
 import { Route as ApiKayiParseCommandRouteImport } from './routes/api/kayi/parse-command'
 import { Route as AdminMissionsTokenRouteImport } from './routes/admin/missions.$token'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
@@ -267,6 +268,11 @@ const ApiKseadsioVerifyAdAccountRoute =
     path: '/api/kseadsio/verify-ad-account',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiKseadsioHealthRoute = ApiKseadsioHealthRouteImport.update({
+  id: '/api/kseadsio/health',
+  path: '/api/kseadsio/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiKayiParseCommandRoute = ApiKayiParseCommandRouteImport.update({
   id: '/api/kayi/parse-command',
   path: '/api/kayi/parse-command',
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
   '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/kseadsio/verify-landing-page': typeof ApiKseadsioVerifyLandingPageRoute
   '/api/kseadsio/verify-pixel': typeof ApiKseadsioVerifyPixelRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
   '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/kseadsio/verify-landing-page': typeof ApiKseadsioVerifyLandingPageRoute
   '/api/kseadsio/verify-pixel': typeof ApiKseadsioVerifyPixelRoute
@@ -419,6 +427,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
+  '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
   '/api/kseadsio/verify-ad-account': typeof ApiKseadsioVerifyAdAccountRoute
   '/api/kseadsio/verify-landing-page': typeof ApiKseadsioVerifyLandingPageRoute
   '/api/kseadsio/verify-pixel': typeof ApiKseadsioVerifyPixelRoute
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/health'
     | '/api/kseadsio/verify-ad-account'
     | '/api/kseadsio/verify-landing-page'
     | '/api/kseadsio/verify-pixel'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/health'
     | '/api/kseadsio/verify-ad-account'
     | '/api/kseadsio/verify-landing-page'
     | '/api/kseadsio/verify-pixel'
@@ -561,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
+    | '/api/kseadsio/health'
     | '/api/kseadsio/verify-ad-account'
     | '/api/kseadsio/verify-landing-page'
     | '/api/kseadsio/verify-pixel'
@@ -590,6 +602,7 @@ export interface RootRouteChildren {
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
   ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
+  ApiKseadsioHealthRoute: typeof ApiKseadsioHealthRoute
   ApiKseadsioVerifyAdAccountRoute: typeof ApiKseadsioVerifyAdAccountRoute
   ApiKseadsioVerifyLandingPageRoute: typeof ApiKseadsioVerifyLandingPageRoute
   ApiKseadsioVerifyPixelRoute: typeof ApiKseadsioVerifyPixelRoute
@@ -892,6 +905,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiKseadsioVerifyAdAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/kseadsio/health': {
+      id: '/api/kseadsio/health'
+      path: '/api/kseadsio/health'
+      fullPath: '/api/kseadsio/health'
+      preLoaderRoute: typeof ApiKseadsioHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/kayi/parse-command': {
       id: '/api/kayi/parse-command'
       path: '/api/kayi/parse-command'
@@ -995,6 +1015,7 @@ const rootRouteChildren: RootRouteChildren = {
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
   ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
+  ApiKseadsioHealthRoute: ApiKseadsioHealthRoute,
   ApiKseadsioVerifyAdAccountRoute: ApiKseadsioVerifyAdAccountRoute,
   ApiKseadsioVerifyLandingPageRoute: ApiKseadsioVerifyLandingPageRoute,
   ApiKseadsioVerifyPixelRoute: ApiKseadsioVerifyPixelRoute,
