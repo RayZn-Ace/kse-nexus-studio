@@ -1,27 +1,46 @@
 import type { ExecutionAction, KayIPlan, MetaCampaign, MetaCreative } from "./types";
-import { demoAdAccounts, demoCampaigns, demoCreatives } from "./demoData";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock Meta Marketing API. Real calls plug in later; the shape stays stable.
-const MOCK = true;
+// Client-side thin fetchers → hit the server route which talks to Meta Graph API.
+// No mocks anywhere; every call is real.
 
 export async function listAdAccounts() {
-  if (MOCK) return demoAdAccounts;
-  throw new Error("Meta API not connected");
+  const { data, error } = await (supabase as any)
+    .from("kseadsio_ad_accounts")
+    .select("ad_account_id, name, currency, timezone_name")
+    .order("name", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((a: any) => ({
+    id: a.ad_account_id,
+    name: a.name ?? a.ad_account_id,
+    currency: a.currency ?? "EUR",
+    timezone: a.timezone_name ?? "Europe/Berlin",
+  }));
 }
 
-export async function listCampaigns(): Promise<MetaCampaign[]> {
-  if (MOCK) return demoCampaigns;
-  throw new Error("Meta API not connected");
+export async function listCampaigns(adAccountId?: string): Promise<MetaCampaign[]> {
+  const url = new URL("/api/kseadsio/meta", window.location.origin);
+  url.searchParams.set("op", "campaigns");
+  if (adAccountId) url.searchParams.set("ad_account_id", adAccountId);
+  const r = await fetch(url.toString());
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+  return j.data as MetaCampaign[];
 }
 
 export async function getCampaign(id: string): Promise<MetaCampaign | null> {
-  if (MOCK) return demoCampaigns.find((c) => c.id === id) ?? null;
-  throw new Error("Meta API not connected");
+  const all = await listCampaigns();
+  return all.find((c) => c.id === id) ?? null;
 }
 
-export async function getCampaignCreatives(_campaignId: string): Promise<MetaCreative[]> {
-  if (MOCK) return demoCreatives;
-  return [];
+export async function getCampaignCreatives(campaignId: string): Promise<MetaCreative[]> {
+  const url = new URL("/api/kseadsio/meta", window.location.origin);
+  url.searchParams.set("op", "creatives");
+  url.searchParams.set("campaign_id", campaignId);
+  const r = await fetch(url.toString());
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+  return j.data as MetaCreative[];
 }
 
 // Turns a KayI plan into the ordered list of Meta API actions we WOULD execute.
@@ -78,27 +97,27 @@ export function buildExecutionActions(plan: KayIPlan, safeMode: boolean): Execut
   return actions;
 }
 
-// The gated "actually do it".
-// - Mock (default): returns simulated responses with mock_* IDs — nothing hits Meta.
-// - Live: would call the Meta Marketing API. Not wired yet, so it fails clearly
-//   instead of silently pretending success.
-export async function executeActions(actions: ExecutionAction[], live = false) {
-  const results = [] as Array<{ action: ExecutionAction; ok: boolean; response: unknown; error?: string }>;
-  for (const a of actions) {
-    if (!live) {
-      results.push({ action: a, ok: true, response: { id: "mock_" + Math.random().toString(36).slice(2, 10), ...a.payload } });
-      continue;
-    }
-    if (MOCK) {
-      results.push({
-        action: a,
-        ok: false,
-        response: null,
-        error: "Live-Modus benötigt Meta API Anbindung — noch nicht konfiguriert.",
-      });
-      continue;
-    }
-    results.push({ action: a, ok: false, response: null, error: "Meta API not connected" });
+// Real execution — every action hits Meta Graph API server-side.
+// The `_live` flag is kept for signature compatibility with existing callers,
+// but ignored: nothing simulates anymore.
+export async function executeActions(
+  actions: ExecutionAction[],
+  _live = true,
+  sourceCampaignId?: string,
+) {
+  const r = await fetch("/api/kseadsio/meta", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ op: "execute", actions, source_campaign_id: sourceCampaignId }),
+  });
+  const j = await r.json();
+  if (!r.ok) {
+    // Global failure → mark every action as errored so the UI can show it.
+    const msg = j.error ?? `HTTP ${r.status}`;
+    return actions.map((a) => ({ action: a, ok: false, response: null, error: msg }));
   }
-  return results;
+  return j.data as Array<{ action: ExecutionAction; ok: boolean; response: unknown; error?: string }>;
 }
+
+// Silence unused-import warning while keeping the KayIPlan type available.
+export type { KayIPlan };
