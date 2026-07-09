@@ -28,6 +28,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
+import { Route as ApiShopRouteImport } from './routes/api/shop'
 import { Route as ApiPilotGeneratorRouteImport } from './routes/api/pilot-generator'
 import { Route as ApiKseAgentRouteImport } from './routes/api/kse-agent'
 import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
@@ -35,6 +36,7 @@ import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
 import { Route as AdminSpyRouteImport } from './routes/admin/spy'
+import { Route as AdminShopRouteImport } from './routes/admin/shop'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMissionsRouteImport } from './routes/admin/missions'
@@ -158,6 +160,11 @@ const ApiWebsiteAuditRoute = ApiWebsiteAuditRouteImport.update({
   path: '/api/website-audit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiShopRoute = ApiShopRouteImport.update({
+  id: '/api/shop',
+  path: '/api/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPilotGeneratorRoute = ApiPilotGeneratorRouteImport.update({
   id: '/api/pilot-generator',
   path: '/api/pilot-generator',
@@ -191,6 +198,11 @@ const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
 const AdminSpyRoute = AdminSpyRouteImport.update({
   id: '/spy',
   path: '/spy',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminShopRoute = AdminShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminReportRoute = AdminReportRouteImport.update({
@@ -367,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -374,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -421,6 +435,7 @@ export interface FileRoutesByTo {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -428,6 +443,7 @@ export interface FileRoutesByTo {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -477,6 +493,7 @@ export interface FileRoutesById {
   '/admin/missions': typeof AdminMissionsRouteWithChildren
   '/admin/planner': typeof AdminPlannerRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
@@ -484,6 +501,7 @@ export interface FileRoutesById {
   '/api/agent-swarm': typeof ApiAgentSwarmRoute
   '/api/kse-agent': typeof ApiKseAgentRoute
   '/api/pilot-generator': typeof ApiPilotGeneratorRoute
+  '/api/shop': typeof ApiShopRoute
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
@@ -534,6 +552,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -541,6 +560,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -588,6 +608,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -595,6 +616,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -643,6 +665,7 @@ export interface FileRouteTypes {
     | '/admin/missions'
     | '/admin/planner'
     | '/admin/report'
+    | '/admin/shop'
     | '/admin/spy'
     | '/admin/tutorials'
     | '/admin/warroom'
@@ -650,6 +673,7 @@ export interface FileRouteTypes {
     | '/api/agent-swarm'
     | '/api/kse-agent'
     | '/api/pilot-generator'
+    | '/api/shop'
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
@@ -688,6 +712,7 @@ export interface RootRouteChildren {
   ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
   ApiPilotGeneratorRoute: typeof ApiPilotGeneratorRoute
+  ApiShopRoute: typeof ApiShopRoute
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
@@ -837,6 +862,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebsiteAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/shop': {
+      id: '/api/shop'
+      path: '/api/shop'
+      fullPath: '/api/shop'
+      preLoaderRoute: typeof ApiShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pilot-generator': {
       id: '/api/pilot-generator'
       path: '/api/pilot-generator'
@@ -884,6 +916,13 @@ declare module '@tanstack/react-router' {
       path: '/spy'
       fullPath: '/admin/spy'
       preLoaderRoute: typeof AdminSpyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/shop': {
+      id: '/admin/shop'
+      path: '/shop'
+      fullPath: '/admin/shop'
+      preLoaderRoute: typeof AdminShopRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/report': {
@@ -1106,6 +1145,7 @@ interface AdminRouteChildren {
   AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
   AdminPlannerRoute: typeof AdminPlannerRoute
   AdminReportRoute: typeof AdminReportRoute
+  AdminShopRoute: typeof AdminShopRoute
   AdminSpyRoute: typeof AdminSpyRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminWarroomRoute: typeof AdminWarroomRoute
@@ -1128,6 +1168,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMissionsRoute: AdminMissionsRouteWithChildren,
   AdminPlannerRoute: AdminPlannerRoute,
   AdminReportRoute: AdminReportRoute,
+  AdminShopRoute: AdminShopRoute,
   AdminSpyRoute: AdminSpyRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminWarroomRoute: AdminWarroomRoute,
@@ -1159,6 +1200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
   ApiPilotGeneratorRoute: ApiPilotGeneratorRoute,
+  ApiShopRoute: ApiShopRoute,
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
