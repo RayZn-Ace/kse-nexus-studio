@@ -89,6 +89,11 @@ type GraphAdsetTemplate = {
   end_time?: string;
   daily_budget?: string;
   lifetime_budget?: string;
+  bid_amount?: string | number;
+  pacing_type?: string[];
+  attribution_spec?: unknown;
+  dsa_beneficiary?: string;
+  dsa_payor?: string;
 };
 
 type GraphGeoSearch = {
