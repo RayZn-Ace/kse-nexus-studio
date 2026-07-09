@@ -1122,12 +1122,6 @@ function SettingsPanel() {
           hint="Business Settings → Users → System Users → in der URL oder Detailansicht sichtbar. Für Audit-Logs."
           placeholder="123456789012345"
         />
-        <Field
-          label="Default Landingpage"
-          v={s.default_landing_page}
-          onChange={(v) => set("default_landing_page", v)}
-          hint="Die URL, auf die Ads standardmäßig verlinken, wenn im KayI-Befehl keine explizit angegeben wird."
-        />
       </GlassCard>
 
       <div className="xl:col-span-2">
@@ -1136,6 +1130,10 @@ function SettingsPanel() {
 
       <div className="xl:col-span-2">
         <PixelsPanel systemToken={s.meta_access_token_encrypted ?? ""} />
+      </div>
+
+      <div className="xl:col-span-2">
+        <LandingPagesPanel />
       </div>
 
       <GlassCard className="p-5 space-y-3">
