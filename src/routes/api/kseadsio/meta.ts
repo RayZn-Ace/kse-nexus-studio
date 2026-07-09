@@ -824,6 +824,22 @@ export const Route = createFileRoute("/api/kseadsio/meta")({
             if (!cid) return Response.json({ error: "campaign_id fehlt" }, { status: 400 });
             return Response.json({ data: await opListCreatives(cid) });
           }
+          if (op === "insights") {
+            const level = (url.searchParams.get("level") ?? "account") as InsightsLevel;
+            const id = url.searchParams.get("id") ?? undefined;
+            const ad_account_id = url.searchParams.get("ad_account_id") ?? undefined;
+            const date_preset = url.searchParams.get("date_preset") ?? "last_7d";
+            const scope = (url.searchParams.get("scope") ?? "self") as InsightsScope;
+            return Response.json({
+              data: await opInsights({ level, id, ad_account_id, date_preset, scope }),
+            });
+          }
+          if (op === "entities") {
+            const level = (url.searchParams.get("level") ?? "campaign") as "campaign" | "adset" | "ad";
+            const parent_id = url.searchParams.get("parent_id") ?? undefined;
+            const ad_account_id = url.searchParams.get("ad_account_id") ?? undefined;
+            return Response.json({ data: await opListEntities(level, parent_id, ad_account_id) });
+          }
           return Response.json({ error: "unknown op" }, { status: 400 });
         } catch (e) {
           return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
