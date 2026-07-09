@@ -91,27 +91,63 @@ function AdminLayout() {
     );
   }
 
-  const nav = [
-    { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { to: "/admin/warroom", label: "War Room", icon: Radio },
-    { to: "/admin/alarm", label: "Alarm", icon: Siren },
-    { to: "/admin/leads", label: "Leads", icon: Target },
-    { to: "/admin/inbox", label: "Inbox", icon: Inbox },
-    { to: "/admin/chats", label: "Direktchats", icon: MessagesSquare },
-    { to: "/admin/missions", label: "Missionen", icon: Rocket },
-    { to: "/admin/journey", label: "Journey", icon: Activity },
-    { to: "/admin/planner", label: "Planner", icon: CalendarDays },
-    { to: "/admin/copilot", label: "Copilot", icon: Wand2 },
-    { to: "/admin/report", label: "Dossier", icon: FileText },
-    { to: "/admin/spy", label: "Spy Radar", icon: Eye },
-    { to: "/admin/abtest", label: "A/B Duelle", icon: FlaskConical },
-    { to: "/admin/tutorials", label: "Tutorials", icon: Video },
-    { to: "/admin/media", label: "Medien", icon: ImageIcon },
-    { to: "/admin/instagram", label: "Instagram", icon: Instagram },
-    { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
-    { to: "/admin/achievements", label: "Achievements", icon: Trophy },
-    { to: "/admin/debug", label: "Debug API", icon: Bug },
-    { to: "/kseadsio", label: "KSEAdsio", icon: Sparkles },
+  const navSections: {
+    title: string;
+    items: {
+      to: string;
+      label: string;
+      icon: typeof LayoutDashboard;
+      exact?: boolean;
+    }[];
+  }[] = [
+    {
+      title: "Kommando",
+      items: [
+        { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+        { to: "/kseadsio", label: "KSEAdsio", icon: Sparkles },
+        { to: "/admin/warroom", label: "War Room", icon: Radio },
+        { to: "/admin/alarm", label: "Alarm", icon: Siren },
+      ],
+    },
+    {
+      title: "Kontakt",
+      items: [
+        { to: "/admin/leads", label: "Leads", icon: Target },
+        { to: "/admin/inbox", label: "Inbox", icon: Inbox },
+        { to: "/admin/chats", label: "Direktchats", icon: MessagesSquare },
+        { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
+      ],
+    },
+    {
+      title: "Wachstum",
+      items: [
+        { to: "/admin/missions", label: "Missionen", icon: Rocket },
+        { to: "/admin/journey", label: "Journey", icon: Activity },
+        { to: "/admin/planner", label: "Planner", icon: CalendarDays },
+        { to: "/admin/copilot", label: "Copilot", icon: Wand2 },
+        { to: "/admin/abtest", label: "A/B Duelle", icon: FlaskConical },
+      ],
+    },
+    {
+      title: "Insights",
+      items: [
+        { to: "/admin/report", label: "Dossier", icon: FileText },
+        { to: "/admin/spy", label: "Spy Radar", icon: Eye },
+        { to: "/admin/achievements", label: "Achievements", icon: Trophy },
+      ],
+    },
+    {
+      title: "Content",
+      items: [
+        { to: "/admin/media", label: "Medien", icon: ImageIcon },
+        { to: "/admin/tutorials", label: "Tutorials", icon: Video },
+        { to: "/admin/instagram", label: "Instagram", icon: Instagram },
+      ],
+    },
+    {
+      title: "System",
+      items: [{ to: "/admin/debug", label: "Debug API", icon: Bug }],
+    },
   ];
 
   return (
@@ -135,32 +171,38 @@ function AdminLayout() {
           </div>
         </Link>
 
-        <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/40 px-1 mb-2">
-          / Navigation
-        </div>
-        <nav className="space-y-1 flex-1">
-          {nav.map((n) => {
-            const active = n.exact
-              ? pathname === n.to
-              : pathname.startsWith(n.to);
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`group relative flex items-center gap-2.5 px-3 py-2.5 text-sm font-bold uppercase tracking-wide border-2 transition-all ${
-                  active
-                    ? "bg-[#0a0a0a] text-white border-[#0a0a0a]"
-                    : "border-transparent hover:border-[#0a0a0a] hover:bg-[#f5f2ea]"
-                }`}
-              >
-                <n.icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{n.label}</span>
-                {active && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#ff5722]" />
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto -mx-1 px-1 space-y-4">
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/40 px-1 mb-1.5">
+                / {section.title}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map((n) => {
+                  const active = n.exact
+                    ? pathname === n.to
+                    : pathname.startsWith(n.to);
+                  return (
+                    <Link
+                      key={n.to}
+                      to={n.to}
+                      className={`group relative flex items-center gap-2.5 px-3 py-2 text-[13px] font-bold uppercase tracking-wide border-l-2 transition-all ${
+                        active
+                          ? "bg-[#0a0a0a] text-white border-[#ff5722]"
+                          : "border-transparent hover:border-[#ff5722] hover:bg-[#f5f2ea]"
+                      }`}
+                    >
+                      <n.icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{n.label}</span>
+                      {active && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#ff5722]" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="border-t-2 border-[#0a0a0a] pt-3 mt-3 space-y-1">
