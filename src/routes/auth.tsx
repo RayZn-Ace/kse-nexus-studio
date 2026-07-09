@@ -8,8 +8,21 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Login — KSE Group" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    next: sanitizeNext(typeof search.next === "string" ? search.next : undefined),
+  }),
   component: AuthPage,
 });
+
+function sanitizeNext(next?: string) {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/admin";
+  try {
+    const url = new URL(next, "https://kse.local");
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/admin";
+  }
+}
 
 const schema = z.object({
   email: z.string().trim().email("Ungültige E-Mail").max(255),
@@ -18,15 +31,16 @@ const schema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate({ to: "/admin" });
+      if (session) window.location.href = next;
     });
-  }, [navigate]);
+  }, [next]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +54,12 @@ function AuthPage() {
       const { error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
-        options: { emailRedirectTo: `${window.location.origin}/admin` },
+        options: { emailRedirectTo: `${window.location.origin}${next}` },
       });
       setLoading(false);
       if (error) return toast.error(error.message);
       toast.success("Account erstellt — du wirst weitergeleitet.");
-      navigate({ to: "/admin" });
+      window.location.href = next;
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email: parsed.data.email,
@@ -53,7 +67,7 @@ function AuthPage() {
       });
       setLoading(false);
       if (error) return toast.error(error.message);
-      navigate({ to: "/admin" });
+      window.location.href = next;
     }
   };
 

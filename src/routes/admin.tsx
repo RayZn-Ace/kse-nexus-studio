@@ -29,6 +29,7 @@ import {
   MessagesSquare,
   Rocket,
   Sparkles,
+  Bug,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -109,6 +110,7 @@ function AdminLayout() {
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
     { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
     { to: "/admin/achievements", label: "Achievements", icon: Trophy },
+    { to: "/admin/debug", label: "Debug API", icon: Bug },
     { to: "/kseadsio", label: "KSEAdsio", icon: Sparkles },
   ];
 

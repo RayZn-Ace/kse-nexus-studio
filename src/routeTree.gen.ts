@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as KseadsioRouteImport } from './routes/kseadsio'
@@ -42,12 +43,15 @@ import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
+import { Route as AdminDebugRouteImport } from './routes/admin/debug'
 import { Route as AdminCopilotRouteImport } from './routes/admin/copilot'
 import { Route as AdminChatsRouteImport } from './routes/admin/chats'
 import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as AdminAlarmRouteImport } from './routes/admin/alarm'
 import { Route as AdminAchievementsRouteImport } from './routes/admin/achievements'
 import { Route as AdminAbtestRouteImport } from './routes/admin/abtest'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiKseadsioVerifyPixelRouteImport } from './routes/api/kseadsio/verify-pixel'
 import { Route as ApiKseadsioVerifyLandingPageRouteImport } from './routes/api/kseadsio/verify-landing-page'
 import { Route as ApiKseadsioVerifyAdAccountRouteImport } from './routes/api/kseadsio/verify-ad-account'
@@ -55,11 +59,18 @@ import { Route as ApiKseadsioMetaRouteImport } from './routes/api/kseadsio/meta'
 import { Route as ApiKseadsioHealthRouteImport } from './routes/api/kseadsio/health'
 import { Route as ApiKayiParseCommandRouteImport } from './routes/api/kayi/parse-command'
 import { Route as AdminMissionsTokenRouteImport } from './routes/admin/missions.$token'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeistungenRoute = LeistungenRouteImport.update({
@@ -222,6 +233,11 @@ const AdminInboxRoute = AdminInboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDebugRoute = AdminDebugRouteImport.update({
+  id: '/debug',
+  path: '/debug',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCopilotRoute = AdminCopilotRouteImport.update({
   id: '/copilot',
   path: '/copilot',
@@ -252,6 +268,18 @@ const AdminAbtestRoute = AdminAbtestRouteImport.update({
   path: '/abtest',
   getParentRoute: () => AdminRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiKseadsioVerifyPixelRoute = ApiKseadsioVerifyPixelRouteImport.update({
   id: '/api/kseadsio/verify-pixel',
   path: '/api/kseadsio/verify-pixel',
@@ -289,6 +317,17 @@ const AdminMissionsTokenRoute = AdminMissionsTokenRouteImport.update({
   path: '/$token',
   getParentRoute: () => AdminMissionsRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   id: '/api/public/media/$',
   path: '/api/public/media/$',
@@ -309,13 +348,17 @@ export interface FileRoutesByFullPath {
   '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
+  '/mcp': typeof McpRoute
   '/team': typeof TeamRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/abtest': typeof AdminAbtestRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
+  '/admin/debug': typeof AdminDebugRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -335,6 +378,8 @@ export interface FileRoutesByFullPath {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
@@ -357,13 +402,17 @@ export interface FileRoutesByTo {
   '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
+  '/mcp': typeof McpRoute
   '/team': typeof TeamRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/abtest': typeof AdminAbtestRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
+  '/admin/debug': typeof AdminDebugRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -383,6 +432,8 @@ export interface FileRoutesByTo {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin': typeof AdminIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
@@ -407,13 +458,17 @@ export interface FileRoutesById {
   '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
+  '/mcp': typeof McpRoute
   '/team': typeof TeamRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/abtest': typeof AdminAbtestRoute
   '/admin/achievements': typeof AdminAchievementsRoute
   '/admin/alarm': typeof AdminAlarmRoute
   '/admin/chatbot': typeof AdminChatbotRoute
   '/admin/chats': typeof AdminChatsRoute
   '/admin/copilot': typeof AdminCopilotRoute
+  '/admin/debug': typeof AdminDebugRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
@@ -433,6 +488,8 @@ export interface FileRoutesById {
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/missions/$token': typeof AdminMissionsTokenRoute
   '/api/kayi/parse-command': typeof ApiKayiParseCommandRoute
   '/api/kseadsio/health': typeof ApiKseadsioHealthRoute
@@ -458,13 +515,17 @@ export interface FileRouteTypes {
     | '/kseadsio'
     | '/lab'
     | '/leistungen'
+    | '/mcp'
     | '/team'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin/abtest'
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/chats'
     | '/admin/copilot'
+    | '/admin/debug'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -484,6 +545,8 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
     | '/api/kseadsio/health'
@@ -506,13 +569,17 @@ export interface FileRouteTypes {
     | '/kseadsio'
     | '/lab'
     | '/leistungen'
+    | '/mcp'
     | '/team'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin/abtest'
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/chats'
     | '/admin/copilot'
+    | '/admin/debug'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -532,6 +599,8 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
     | '/api/kseadsio/health'
@@ -555,13 +624,17 @@ export interface FileRouteTypes {
     | '/kseadsio'
     | '/lab'
     | '/leistungen'
+    | '/mcp'
     | '/team'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin/abtest'
     | '/admin/achievements'
     | '/admin/alarm'
     | '/admin/chatbot'
     | '/admin/chats'
     | '/admin/copilot'
+    | '/admin/debug'
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
@@ -581,6 +654,8 @@ export interface FileRouteTypes {
     | '/mission/$token'
     | '/share/$token'
     | '/admin/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/missions/$token'
     | '/api/kayi/parse-command'
     | '/api/kseadsio/health'
@@ -605,7 +680,10 @@ export interface RootRouteChildren {
   KseadsioRoute: typeof KseadsioRoute
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
+  McpRoute: typeof McpRoute
   TeamRoute: typeof TeamRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiAdminAiRoute: typeof ApiAdminAiRoute
   ApiAgentSwarmRoute: typeof ApiAgentSwarmRoute
   ApiKseAgentRoute: typeof ApiKseAgentRoute
@@ -613,6 +691,8 @@ export interface RootRouteChildren {
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
   ApiKseadsioHealthRoute: typeof ApiKseadsioHealthRoute
   ApiKseadsioMetaRoute: typeof ApiKseadsioMetaRoute
@@ -629,6 +709,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leistungen': {
@@ -855,6 +942,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInboxRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/debug': {
+      id: '/admin/debug'
+      path: '/debug'
+      fullPath: '/admin/debug'
+      preLoaderRoute: typeof AdminDebugRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/copilot': {
       id: '/admin/copilot'
       path: '/copilot'
@@ -896,6 +990,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/abtest'
       preLoaderRoute: typeof AdminAbtestRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/kseadsio/verify-pixel': {
       id: '/api/kseadsio/verify-pixel'
@@ -946,6 +1054,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMissionsTokenRouteImport
       parentRoute: typeof AdminMissionsRoute
     }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/media/$': {
       id: '/api/public/media/$'
       path: '/api/public/media/$'
@@ -975,6 +1097,7 @@ interface AdminRouteChildren {
   AdminChatbotRoute: typeof AdminChatbotRoute
   AdminChatsRoute: typeof AdminChatsRoute
   AdminCopilotRoute: typeof AdminCopilotRoute
+  AdminDebugRoute: typeof AdminDebugRoute
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
@@ -996,6 +1119,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminChatbotRoute: AdminChatbotRoute,
   AdminChatsRoute: AdminChatsRoute,
   AdminCopilotRoute: AdminCopilotRoute,
+  AdminDebugRoute: AdminDebugRoute,
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
@@ -1026,7 +1150,11 @@ const rootRouteChildren: RootRouteChildren = {
   KseadsioRoute: KseadsioRoute,
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
+  McpRoute: McpRoute,
   TeamRoute: TeamRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiAdminAiRoute: ApiAdminAiRoute,
   ApiAgentSwarmRoute: ApiAgentSwarmRoute,
   ApiKseAgentRoute: ApiKseAgentRoute,
@@ -1034,6 +1162,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
   ApiKseadsioHealthRoute: ApiKseadsioHealthRoute,
   ApiKseadsioMetaRoute: ApiKseadsioMetaRoute,
