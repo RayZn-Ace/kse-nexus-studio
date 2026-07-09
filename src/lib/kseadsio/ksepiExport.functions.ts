@@ -21,17 +21,22 @@ const codeFiles = {
 
 const SECRET_KEY_RE = /token|secret|password|authorization|api[_-]?key|encrypted|jwks/i;
 
-function redact(value: unknown): unknown {
+type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
+function redact(value: unknown): Json {
+  if (value === null) return null;
   if (Array.isArray(value)) return value.map(redact);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).map(([k, v]) => [
-        k,
-        SECRET_KEY_RE.test(k) ? "[REDACTED]" : redact(v),
-      ]),
-    );
+  if (typeof value === "object") {
+    const out: { [key: string]: Json } = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = SECRET_KEY_RE.test(k) ? "[REDACTED]" : redact(v);
+    }
+    return out;
   }
-  return value;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  return String(value);
 }
 
 const InputSchema = z
@@ -116,7 +121,7 @@ export const ksepiExport = createServerFn({ method: "POST" })
     });
 
     // 4) meta diagnostics (best effort — never let it break the export)
-    let meta_diagnostics: unknown;
+    let meta_diagnostics: Json;
     try {
       const { pickToken, graphGet, actId } = await import("@/lib/kseadsio/metaGraph.server");
       const token = await pickToken(data.ad_account_id);
