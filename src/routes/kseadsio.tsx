@@ -22,6 +22,7 @@ import {
   Plus,
   Trash2,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,10 @@ import {
   listCampaigns,
   getCampaignCreatives,
   executeActions,
+  getInsights,
+  listEntities,
+  type InsightsLevel,
+  type InsightsRowShaped,
 } from "@/lib/kseadsio/metaAdsService";
 import { demoCommand } from "@/lib/kseadsio/demoData";
 import type {
@@ -50,7 +55,7 @@ export const Route = createFileRoute("/kseadsio")({
   component: KseAdsioShell,
 });
 
-type Tab = "dashboard" | "command" | "creatives" | "logs" | "settings";
+type Tab = "dashboard" | "insights" | "command" | "creatives" | "logs" | "settings";
 
 // ─────────────────────────────────────────────────────────────
 // Boot animation
@@ -197,6 +202,7 @@ function KseAdsioShell() {
 
   const nav: Array<{ id: Tab; label: string; icon: typeof Activity; hint: string }> = [
     { id: "dashboard", label: "Dashboard", icon: Activity, hint: "Overview" },
+    { id: "insights", label: "Insights", icon: BarChart3, hint: "Analytics live" },
     { id: "command", label: "Command", icon: Terminal, hint: "KayI Terminal" },
     { id: "creatives", label: "Creatives", icon: Zap, hint: "Ads & Texte" },
     { id: "logs", label: "Audit Logs", icon: ScrollText, hint: "History" },
@@ -298,6 +304,7 @@ function KseAdsioShell() {
             </div>
             <h1 className="text-2xl font-black tracking-tight">
               {tab === "dashboard" && "Ads Command Overview"}
+              {tab === "insights" && "Ads Insights & Analytics"}
               {tab === "command" && "KayI Terminal"}
               {tab === "creatives" && "Creative & Text Check"}
               {tab === "logs" && "Audit Trail"}
@@ -329,6 +336,7 @@ function KseAdsioShell() {
         </header>
         <main className="flex-1 p-8 overflow-y-auto">
           {tab === "dashboard" && <Dashboard />}
+          {tab === "insights" && <InsightsPanel />}
           {tab === "command" && <CommandCenter liveMode={liveMode} />}
           {tab === "creatives" && <CreativeCheck />}
           {tab === "logs" && <AuditLogs />}
@@ -589,6 +597,373 @@ function Dashboard() {
 // ─────────────────────────────────────────────────────────────
 // Command Center
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Insights Panel — Live-Analytics für Account / Kampagne / Adset / Ad
+// ─────────────────────────────────────────────────────────────
+const DATE_PRESETS: Array<{ id: string; label: string }> = [
+  { id: "today", label: "Heute" },
+  { id: "yesterday", label: "Gestern" },
+  { id: "last_3d", label: "Letzte 3 Tage" },
+  { id: "last_7d", label: "Letzte 7 Tage" },
+  { id: "last_14d", label: "Letzte 14 Tage" },
+  { id: "last_30d", label: "Letzte 30 Tage" },
+  { id: "this_month", label: "Diesen Monat" },
+  { id: "last_month", label: "Letzten Monat" },
+  { id: "maximum", label: "Gesamt" },
+];
+
+type EntityRow = { id: string; name: string; status?: string; parent_id?: string };
+
+function InsightsPanel() {
+  const [accounts, setAccounts] = useState<Awaited<ReturnType<typeof listAdAccounts>>>([]);
+  const [accountId, setAccountId] = useState<string>("");
+  const [level, setLevel] = useState<InsightsLevel>("campaign");
+  const [datePreset, setDatePreset] = useState<string>("last_7d");
+  const [scopeChildren, setScopeChildren] = useState(true); // "Alle X" (children) vs. selected entity summary
+
+  const [campaigns, setCampaigns] = useState<EntityRow[]>([]);
+  const [adsets, setAdsets] = useState<EntityRow[]>([]);
+  const [ads, setAds] = useState<EntityRow[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<string>("");
+  const [selectedAdset, setSelectedAdset] = useState<string>("");
+  const [selectedAd, setSelectedAd] = useState<string>("");
+
+  const [rows, setRows] = useState<InsightsRowShaped[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    listAdAccounts().then((a) => {
+      setAccounts(a);
+      if (a.length && !accountId) setAccountId(a[0].id);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load campaigns when account changes
+  useEffect(() => {
+    if (!accountId) return;
+    setCampaigns([]);
+    setAdsets([]);
+    setAds([]);
+    setSelectedCampaign("");
+    setSelectedAdset("");
+    setSelectedAd("");
+    listEntities("campaign", { ad_account_id: accountId })
+      .then(setCampaigns)
+      .catch(() => setCampaigns([]));
+  }, [accountId]);
+
+  useEffect(() => {
+    if (!selectedCampaign) {
+      setAdsets([]);
+      setSelectedAdset("");
+      return;
+    }
+    listEntities("adset", { parent_id: selectedCampaign, ad_account_id: accountId })
+      .then(setAdsets)
+      .catch(() => setAdsets([]));
+  }, [selectedCampaign, accountId]);
+
+  useEffect(() => {
+    if (!selectedAdset) {
+      setAds([]);
+      setSelectedAd("");
+      return;
+    }
+    listEntities("ad", { parent_id: selectedAdset, ad_account_id: accountId })
+      .then(setAds)
+      .catch(() => setAds([]));
+  }, [selectedAdset, accountId]);
+
+  const query = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      let id: string | undefined;
+      if (level === "account") id = accountId || undefined;
+      if (level === "campaign") id = selectedCampaign || accountId;
+      if (level === "adset") id = selectedAdset;
+      if (level === "ad") id = selectedAd;
+
+      // If nothing selected at a lower level, fall back to children of the parent above.
+      let effectiveLevel: InsightsLevel = level;
+      let effectiveScope: "self" | "children" = scopeChildren ? "children" : "self";
+
+      if (level === "campaign" && !selectedCampaign) {
+        // "Alle Kampagnen" → account level with children
+        effectiveLevel = "account";
+        effectiveScope = "children";
+        id = accountId;
+      } else if (level === "adset" && !selectedAdset && selectedCampaign) {
+        effectiveLevel = "campaign";
+        effectiveScope = "children";
+        id = selectedCampaign;
+      } else if (level === "ad" && !selectedAd && selectedAdset) {
+        effectiveLevel = "adset";
+        effectiveScope = "children";
+        id = selectedAdset;
+      }
+
+      if (!id && effectiveLevel !== "account") {
+        throw new Error("Bitte Auswahl treffen");
+      }
+      const data = await getInsights({
+        level: effectiveLevel,
+        id,
+        ad_account_id: accountId || undefined,
+        date_preset: datePreset,
+        scope: effectiveScope,
+      });
+      setRows(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setRows([]);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Totals across current rows
+  const totals = useMemo(() => {
+    const sum = rows.reduce(
+      (acc, r) => {
+        acc.impressions += r.impressions;
+        acc.reach += r.reach;
+        acc.clicks += r.clicks;
+        acc.spend += r.spend;
+        acc.purchases += r.purchases;
+        return acc;
+      },
+      { impressions: 0, reach: 0, clicks: 0, spend: 0, purchases: 0 },
+    );
+    const ctr = sum.impressions ? (sum.clicks / sum.impressions) * 100 : 0;
+    const cpc = sum.clicks ? sum.spend / sum.clicks : 0;
+    const cpm = sum.impressions ? (sum.spend / sum.impressions) * 1000 : 0;
+    const frequency = sum.reach ? sum.impressions / sum.reach : 0;
+    const cpa = sum.purchases ? sum.spend / sum.purchases : 0;
+    return { ...sum, ctr, cpc, cpm, frequency, cpa };
+  }, [rows]);
+
+  return (
+    <div className="space-y-6">
+      <GlassCard className="p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-4 h-4 text-cyan-300" />
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
+            / Insights Query
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <InsField label="Ad Account">
+            <select
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
+            >
+              {accounts.map((a: { id: string; name: string }) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} · {a.id}
+                </option>
+              ))}
+            </select>
+          </InsField>
+          <InsField label="Ebene">
+            <select
+              value={level}
+              onChange={(e) => setLevel(e.target.value as InsightsLevel)}
+              className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
+            >
+              <option value="account">Account (Gesamt)</option>
+              <option value="campaign">Kampagne(n)</option>
+              <option value="adset">Adset(s)</option>
+              <option value="ad">Ad(s)</option>
+            </select>
+          </InsField>
+          <InsField label="Zeitraum">
+            <select
+              value={datePreset}
+              onChange={(e) => setDatePreset(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
+            >
+              {DATE_PRESETS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </InsField>
+          <InsField label="Ansicht">
+            <select
+              value={scopeChildren ? "children" : "self"}
+              onChange={(e) => setScopeChildren(e.target.value === "children")}
+              className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
+            >
+              <option value="children">Aufgliedern (jede Zeile einzeln)</option>
+              <option value="self">Zusammengefasst</option>
+            </select>
+          </InsField>
+          <div className="flex items-end">
+            <button
+              onClick={query}
+              disabled={busy}
+              className="w-full inline-flex items-center justify-center gap-2 bg-cyan-400 text-black font-black uppercase tracking-widest text-xs py-2.5 rounded hover:bg-cyan-300 disabled:opacity-40"
+            >
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              Abfragen
+            </button>
+          </div>
+        </div>
+
+        {(level === "campaign" || level === "adset" || level === "ad") && (
+          <div className="grid gap-3 md:grid-cols-3 mt-3">
+            <InsField label="Kampagne (leer = alle)">
+              <select
+                value={selectedCampaign}
+                onChange={(e) => setSelectedCampaign(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm"
+              >
+                <option value="">— Alle Kampagnen —</option>
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} · {c.status}
+                  </option>
+                ))}
+              </select>
+            </InsField>
+            {(level === "adset" || level === "ad") && (
+              <InsField label="Adset (leer = alle im Campaign)">
+                <select
+                  value={selectedAdset}
+                  onChange={(e) => setSelectedAdset(e.target.value)}
+                  disabled={!selectedCampaign}
+                  className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm disabled:opacity-40"
+                >
+                  <option value="">— Alle Adsets —</option>
+                  {adsets.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · {a.status}
+                    </option>
+                  ))}
+                </select>
+              </InsField>
+            )}
+            {level === "ad" && (
+              <InsField label="Ad (leer = alle im Adset)">
+                <select
+                  value={selectedAd}
+                  onChange={(e) => setSelectedAd(e.target.value)}
+                  disabled={!selectedAdset}
+                  className="w-full bg-black/40 border border-white/10 rounded px-2 py-2 text-sm disabled:opacity-40"
+                >
+                  <option value="">— Alle Ads —</option>
+                  {ads.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} · {a.status}
+                    </option>
+                  ))}
+                </select>
+              </InsField>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 text-sm text-red-300 border border-red-400/30 bg-red-400/5 rounded px-3 py-2">
+            {error}
+          </div>
+        )}
+      </GlassCard>
+
+      {rows.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
+          <Kpi label="Ausgaben" value={`${totals.spend.toFixed(2)}€`} tone="violet" />
+          <Kpi label="Impressionen" value={totals.impressions.toLocaleString("de-DE")} />
+          <Kpi label="Reichweite" value={totals.reach.toLocaleString("de-DE")} />
+          <Kpi label="Frequenz" value={totals.frequency.toFixed(2)} />
+          <Kpi label="Klicks" value={totals.clicks.toLocaleString("de-DE")} />
+          <Kpi label="CTR" value={`${totals.ctr.toFixed(2)}%`} tone="emerald" />
+          <Kpi label="CPC" value={`${totals.cpc.toFixed(2)}€`} tone="orange" />
+          <Kpi label="CPM" value={`${totals.cpm.toFixed(2)}€`} tone="orange" />
+        </div>
+      )}
+
+      <GlassCard>
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/40">
+              / Ergebnis
+            </div>
+            <h2 className="text-lg font-black">
+              {rows.length} {rows.length === 1 ? "Zeile" : "Zeilen"} · {datePreset}
+            </h2>
+          </div>
+          <div className="text-xs text-emerald-300/70 font-mono">LIVE · Meta Graph v20</div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[10px] uppercase tracking-widest text-white/40 border-b border-white/5">
+                <th className="px-5 py-3">Name</th>
+                <th className="py-3">Ebene</th>
+                <th className="py-3 text-right">Spend</th>
+                <th className="py-3 text-right">Impr.</th>
+                <th className="py-3 text-right">Reach</th>
+                <th className="py-3 text-right">Freq.</th>
+                <th className="py-3 text-right">Klicks</th>
+                <th className="py-3 text-right">CTR</th>
+                <th className="py-3 text-right">CPC</th>
+                <th className="py-3 text-right">CPM</th>
+                <th className="py-3 text-right">Käufe</th>
+                <th className="py-3 text-right">CPA</th>
+                <th className="py-3 text-right pr-5">ROAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={13} className="px-5 py-8 text-center text-white/40 text-sm">
+                    Keine Daten. Wähle Ebene + Zeitraum und drücke „Abfragen".
+                  </td>
+                </tr>
+              )}
+              {rows.map((r) => (
+                <tr key={`${r.entity_level}-${r.entity_id}`} className="border-b border-white/5 hover:bg-white/5">
+                  <td className="px-5 py-3">
+                    <div className="font-semibold truncate max-w-[280px]">{r.entity_name ?? r.entity_id}</div>
+                    <div className="text-[10px] font-mono text-white/40">{r.entity_id}</div>
+                  </td>
+                  <td className="text-white/70 text-xs uppercase tracking-widest">{r.entity_level}</td>
+                  <td className="text-right tabular-nums text-violet-300">{r.spend.toFixed(2)}€</td>
+                  <td className="text-right tabular-nums">{r.impressions.toLocaleString("de-DE")}</td>
+                  <td className="text-right tabular-nums">{r.reach.toLocaleString("de-DE")}</td>
+                  <td className="text-right tabular-nums">{r.frequency.toFixed(2)}</td>
+                  <td className="text-right tabular-nums">{r.clicks.toLocaleString("de-DE")}</td>
+                  <td className="text-right tabular-nums">{r.ctr.toFixed(2)}%</td>
+                  <td className="text-right tabular-nums">{r.cpc.toFixed(2)}€</td>
+                  <td className="text-right tabular-nums">{r.cpm.toFixed(2)}€</td>
+                  <td className="text-right tabular-nums">{r.purchases || "—"}</td>
+                  <td className="text-right tabular-nums">{r.cpa ? `${r.cpa.toFixed(2)}€` : "—"}</td>
+                  <td className="text-right tabular-nums pr-5">{r.roas ? r.roas.toFixed(2) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+    </div>
+  );
+}
+
+function InsField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-widest text-white/40 font-mono">{label}</span>
+      <div className="mt-1">{children}</div>
+    </label>
+  );
+}
+
 type ParseResult = {
   plan: KayIPlan;
   risk: { level: string; findings: RiskFinding[] };

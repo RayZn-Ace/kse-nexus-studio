@@ -43,6 +43,64 @@ export async function getCampaignCreatives(campaignId: string): Promise<MetaCrea
   return j.data as MetaCreative[];
 }
 
+// ─── Insights / Analytics ────────────────────────────────────
+export type InsightsLevel = "account" | "campaign" | "adset" | "ad";
+export type InsightsScope = "self" | "children";
+export type InsightsRowShaped = {
+  entity_level: InsightsLevel;
+  entity_id: string;
+  entity_name?: string;
+  date_start?: string;
+  date_stop?: string;
+  impressions: number;
+  reach: number;
+  frequency: number;
+  clicks: number;
+  unique_clicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  spend: number;
+  purchases: number;
+  cpa: number;
+  roas: number;
+};
+
+export async function getInsights(params: {
+  level: InsightsLevel;
+  id?: string;
+  ad_account_id?: string;
+  date_preset?: string;
+  scope?: InsightsScope;
+}): Promise<InsightsRowShaped[]> {
+  const url = new URL("/api/kseadsio/meta", window.location.origin);
+  url.searchParams.set("op", "insights");
+  url.searchParams.set("level", params.level);
+  if (params.id) url.searchParams.set("id", params.id);
+  if (params.ad_account_id) url.searchParams.set("ad_account_id", params.ad_account_id);
+  if (params.date_preset) url.searchParams.set("date_preset", params.date_preset);
+  if (params.scope) url.searchParams.set("scope", params.scope);
+  const r = await fetch(url.toString());
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+  return j.data as InsightsRowShaped[];
+}
+
+export async function listEntities(
+  level: "campaign" | "adset" | "ad",
+  opts?: { parent_id?: string; ad_account_id?: string },
+): Promise<Array<{ id: string; name: string; status?: string; parent_id?: string }>> {
+  const url = new URL("/api/kseadsio/meta", window.location.origin);
+  url.searchParams.set("op", "entities");
+  url.searchParams.set("level", level);
+  if (opts?.parent_id) url.searchParams.set("parent_id", opts.parent_id);
+  if (opts?.ad_account_id) url.searchParams.set("ad_account_id", opts.ad_account_id);
+  const r = await fetch(url.toString());
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
+  return j.data;
+}
+
 // Turns a KayI plan into the ordered list of Meta API actions we WOULD execute.
 // Nothing is sent unless the admin approves.
 export function buildExecutionActions(plan: KayIPlan, safeMode: boolean): ExecutionAction[] {

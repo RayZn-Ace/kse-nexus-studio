@@ -18,6 +18,206 @@ type InsightsRow = {
   purchase_roas?: Array<{ action_type?: string; value: string }>;
 };
 
+// ─────────────────────────────────────────────────────────────
+// Insights (analytics)
+// ─────────────────────────────────────────────────────────────
+type FullInsightsRow = InsightsRow & {
+  impressions?: string;
+  reach?: string;
+  clicks?: string;
+  unique_clicks?: string;
+  cpc?: string;
+  frequency?: string;
+  date_start?: string;
+  date_stop?: string;
+  campaign_id?: string;
+  campaign_name?: string;
+  adset_id?: string;
+  adset_name?: string;
+  ad_id?: string;
+  ad_name?: string;
+};
+
+export type ShapedInsights = {
+  entity_level: "account" | "campaign" | "adset" | "ad";
+  entity_id: string;
+  entity_name?: string;
+  date_start?: string;
+  date_stop?: string;
+  impressions: number;
+  reach: number;
+  frequency: number;
+  clicks: number;
+  unique_clicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  spend: number;
+  purchases: number;
+  cpa: number;
+  roas: number;
+};
+
+const INSIGHTS_FIELDS =
+  "impressions,reach,frequency,clicks,unique_clicks,ctr,cpc,cpm,spend,actions,cost_per_action_type,purchase_roas,date_start,date_stop,campaign_id,campaign_name,adset_id,adset_name,ad_id,ad_name";
+
+function shapeInsightsRow(
+  row: FullInsightsRow,
+  level: ShapedInsights["entity_level"],
+  fallbackId: string,
+  fallbackName?: string,
+): ShapedInsights {
+  const purchases =
+    extractActionValue(row.actions, "purchase") ||
+    extractActionValue(row.actions, "offsite_conversion.fb_pixel_purchase");
+  const cpa = row.cost_per_action_type?.find((x) => x.action_type === "purchase")?.value;
+  const roas = row.purchase_roas?.[0]?.value;
+  const id =
+    level === "ad"
+      ? row.ad_id ?? fallbackId
+      : level === "adset"
+        ? row.adset_id ?? fallbackId
+        : level === "campaign"
+          ? row.campaign_id ?? fallbackId
+          : fallbackId;
+  const name =
+    level === "ad"
+      ? row.ad_name ?? fallbackName
+      : level === "adset"
+        ? row.adset_name ?? fallbackName
+        : level === "campaign"
+          ? row.campaign_name ?? fallbackName
+          : fallbackName;
+  return {
+    entity_level: level,
+    entity_id: id,
+    entity_name: name,
+    date_start: row.date_start,
+    date_stop: row.date_stop,
+    impressions: Number(row.impressions ?? 0),
+    reach: Number(row.reach ?? 0),
+    frequency: Number(row.frequency ?? 0),
+    clicks: Number(row.clicks ?? 0),
+    unique_clicks: Number(row.unique_clicks ?? 0),
+    ctr: Number(row.ctr ?? 0),
+    cpc: Number(row.cpc ?? 0),
+    cpm: Number(row.cpm ?? 0),
+    spend: Number(row.spend ?? 0),
+    purchases,
+    cpa: cpa ? Number(cpa) : 0,
+    roas: roas ? Number(roas) : 0,
+  };
+}
+
+type InsightsLevel = "account" | "campaign" | "adset" | "ad";
+type InsightsScope = "self" | "children";
+
+async function opInsights(params: {
+  level: InsightsLevel;
+  id?: string;
+  ad_account_id?: string;
+  date_preset?: string;
+  scope?: InsightsScope; // children = breakdown into sublevel rows
+}): Promise<ShapedInsights[]> {
+  const datePreset = params.date_preset ?? "last_7d";
+  const scope = params.scope ?? "self";
+
+  // Account-level: aggregate across all connected accounts if no id.
+  if (params.level === "account") {
+    const { systemToken, accounts } = await loadTokens();
+    const targets = params.id
+      ? [{ ad_account_id: params.id, access_token_encrypted: null as string | null, name: null as string | null }]
+      : accounts;
+    const out: ShapedInsights[] = [];
+    for (const a of targets) {
+      const token = a.access_token_encrypted || systemToken;
+      if (!token) continue;
+      const accId = actId(a.ad_account_id);
+      if (scope === "children") {
+        // Return each campaign as a row.
+        try {
+          const j = await graphGet<{ data: FullInsightsRow[] }>(
+            `/${accId}/insights?level=campaign&date_preset=${encodeURIComponent(datePreset)}&fields=${encodeURIComponent(INSIGHTS_FIELDS)}&limit=200`,
+            token,
+          );
+          for (const row of j.data ?? []) out.push(shapeInsightsRow(row, "campaign", row.campaign_id ?? accId, row.campaign_name));
+        } catch {
+          /* skip */
+        }
+      } else {
+        try {
+          const j = await graphGet<{ data: FullInsightsRow[] }>(
+            `/${accId}/insights?level=account&date_preset=${encodeURIComponent(datePreset)}&fields=${encodeURIComponent(INSIGHTS_FIELDS)}`,
+            token,
+          );
+          const row = j.data?.[0];
+          if (row) out.push(shapeInsightsRow(row, "account", accId, a.name ?? accId));
+        } catch {
+          /* skip */
+        }
+      }
+    }
+    return out;
+  }
+
+  if (!params.id) throw new Error(`id fehlt für level=${params.level}`);
+  const token = await pickToken(params.ad_account_id);
+  if (!token) throw new Error("Kein Meta Token verfügbar");
+  const level = params.level;
+  const readLevel: InsightsLevel =
+    scope === "children"
+      ? level === "campaign"
+        ? "adset"
+        : level === "adset"
+          ? "ad"
+          : level
+      : level;
+  const j = await graphGet<{ data: FullInsightsRow[] }>(
+    `/${params.id}/insights?level=${readLevel}&date_preset=${encodeURIComponent(datePreset)}&fields=${encodeURIComponent(INSIGHTS_FIELDS)}&limit=200`,
+    token,
+  );
+  const rows = j.data ?? [];
+  return rows.map((row) => shapeInsightsRow(row, readLevel, params.id!, undefined));
+}
+
+// Convenience: list entities of a given level so the UI can pick one.
+async function opListEntities(
+  level: "campaign" | "adset" | "ad",
+  parentId?: string,
+  adAccountId?: string,
+): Promise<Array<{ id: string; name: string; status?: string; parent_id?: string }>> {
+  if (level === "campaign") {
+    const { systemToken, accounts } = await loadTokens();
+    const targets = adAccountId
+      ? [{ ad_account_id: adAccountId, access_token_encrypted: null as string | null }]
+      : accounts;
+    const out: Array<{ id: string; name: string; status?: string; parent_id?: string }> = [];
+    for (const a of targets) {
+      const token = a.access_token_encrypted || systemToken;
+      if (!token) continue;
+      try {
+        const j = await graphGet<{ data: Array<{ id: string; name: string; status?: string }> }>(
+          `/${actId(a.ad_account_id)}/campaigns?fields=id,name,status&limit=200`,
+          token,
+        );
+        for (const c of j.data ?? []) out.push({ ...c, parent_id: actId(a.ad_account_id) });
+      } catch {
+        /* skip */
+      }
+    }
+    return out;
+  }
+  if (!parentId) throw new Error(`parent_id fehlt für level=${level}`);
+  const token = await pickToken(adAccountId);
+  if (!token) throw new Error("Kein Meta Token verfügbar");
+  const path = level === "adset" ? "adsets" : "ads";
+  const j = await graphGet<{ data: Array<{ id: string; name: string; status?: string }> }>(
+    `/${parentId}/${path}?fields=id,name,status&limit=200`,
+    token,
+  );
+  return (j.data ?? []).map((x) => ({ ...x, parent_id: parentId }));
+}
+
 type GraphCampaign = {
   id: string;
   name: string;
@@ -623,6 +823,22 @@ export const Route = createFileRoute("/api/kseadsio/meta")({
             const cid = url.searchParams.get("campaign_id");
             if (!cid) return Response.json({ error: "campaign_id fehlt" }, { status: 400 });
             return Response.json({ data: await opListCreatives(cid) });
+          }
+          if (op === "insights") {
+            const level = (url.searchParams.get("level") ?? "account") as InsightsLevel;
+            const id = url.searchParams.get("id") ?? undefined;
+            const ad_account_id = url.searchParams.get("ad_account_id") ?? undefined;
+            const date_preset = url.searchParams.get("date_preset") ?? "last_7d";
+            const scope = (url.searchParams.get("scope") ?? "self") as InsightsScope;
+            return Response.json({
+              data: await opInsights({ level, id, ad_account_id, date_preset, scope }),
+            });
+          }
+          if (op === "entities") {
+            const level = (url.searchParams.get("level") ?? "campaign") as "campaign" | "adset" | "ad";
+            const parent_id = url.searchParams.get("parent_id") ?? undefined;
+            const ad_account_id = url.searchParams.get("ad_account_id") ?? undefined;
+            return Response.json({ data: await opListEntities(level, parent_id, ad_account_id) });
           }
           return Response.json({ error: "unknown op" }, { status: 400 });
         } catch (e) {
