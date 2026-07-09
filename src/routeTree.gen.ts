@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as LabRouteImport } from './routes/lab'
+import { Route as KseadsioRouteImport } from './routes/kseadsio'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
@@ -38,7 +39,6 @@ import { Route as AdminPlannerRouteImport } from './routes/admin/planner'
 import { Route as AdminMissionsRouteImport } from './routes/admin/missions'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
-import { Route as AdminKseadsioRouteImport } from './routes/admin/kseadsio'
 import { Route as AdminJourneyRouteImport } from './routes/admin/journey'
 import { Route as AdminInstagramRouteImport } from './routes/admin/instagram'
 import { Route as AdminInboxRouteImport } from './routes/admin/inbox'
@@ -65,6 +65,11 @@ const LeistungenRoute = LeistungenRouteImport.update({
 const LabRoute = LabRouteImport.update({
   id: '/lab',
   path: '/lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KseadsioRoute = KseadsioRouteImport.update({
+  id: '/kseadsio',
+  path: '/kseadsio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KonfiguratorRoute = KonfiguratorRouteImport.update({
@@ -197,11 +202,6 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminKseadsioRoute = AdminKseadsioRouteImport.update({
-  id: '/kseadsio',
-  path: '/kseadsio',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminJourneyRoute = AdminJourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
@@ -274,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -286,7 +287,6 @@ export interface FileRoutesByFullPath {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -317,6 +317,7 @@ export interface FileRoutesByTo {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -329,7 +330,6 @@ export interface FileRoutesByTo {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -362,6 +362,7 @@ export interface FileRoutesById {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -374,7 +375,6 @@ export interface FileRoutesById {
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/instagram': typeof AdminInstagramRoute
   '/admin/journey': typeof AdminJourneyRoute
-  '/admin/kseadsio': typeof AdminKseadsioRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/missions': typeof AdminMissionsRouteWithChildren
@@ -408,6 +408,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -420,7 +421,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -451,6 +451,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -463,7 +464,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -495,6 +495,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -507,7 +508,6 @@ export interface FileRouteTypes {
     | '/admin/inbox'
     | '/admin/instagram'
     | '/admin/journey'
-    | '/admin/kseadsio'
     | '/admin/leads'
     | '/admin/media'
     | '/admin/missions'
@@ -540,6 +540,7 @@ export interface RootRouteChildren {
   HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
+  KseadsioRoute: typeof KseadsioRoute
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
@@ -575,6 +576,13 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab'
       preLoaderRoute: typeof LabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kseadsio': {
+      id: '/kseadsio'
+      path: '/kseadsio'
+      fullPath: '/kseadsio'
+      preLoaderRoute: typeof KseadsioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konfigurator': {
@@ -759,13 +767,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/kseadsio': {
-      id: '/admin/kseadsio'
-      path: '/kseadsio'
-      fullPath: '/admin/kseadsio'
-      preLoaderRoute: typeof AdminKseadsioRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/journey': {
       id: '/admin/journey'
       path: '/journey'
@@ -875,7 +876,6 @@ interface AdminRouteChildren {
   AdminInboxRoute: typeof AdminInboxRoute
   AdminInstagramRoute: typeof AdminInstagramRoute
   AdminJourneyRoute: typeof AdminJourneyRoute
-  AdminKseadsioRoute: typeof AdminKseadsioRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminMissionsRoute: typeof AdminMissionsRouteWithChildren
@@ -897,7 +897,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminInboxRoute: AdminInboxRoute,
   AdminInstagramRoute: AdminInstagramRoute,
   AdminJourneyRoute: AdminJourneyRoute,
-  AdminKseadsioRoute: AdminKseadsioRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminMissionsRoute: AdminMissionsRouteWithChildren,
@@ -922,6 +921,7 @@ const rootRouteChildren: RootRouteChildren = {
   HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
+  KseadsioRoute: KseadsioRoute,
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,

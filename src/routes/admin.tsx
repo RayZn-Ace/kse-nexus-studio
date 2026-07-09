@@ -109,7 +109,7 @@ function AdminLayout() {
     { to: "/admin/instagram", label: "Instagram", icon: Instagram },
     { to: "/admin/chatbot", label: "Chatbot", icon: MessageCircle },
     { to: "/admin/achievements", label: "Achievements", icon: Trophy },
-    { to: "/admin/kseadsio", label: "KSEAdsio", icon: Sparkles },
+    { to: "/kseadsio", label: "KSEAdsio", icon: Sparkles },
   ];
 
   return (
