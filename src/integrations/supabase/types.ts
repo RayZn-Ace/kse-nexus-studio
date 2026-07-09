@@ -606,6 +606,39 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_config: {
+        Row: {
+          id: string
+          lovable_shop_orders_url: string | null
+          lovable_shop_tickets_url: string | null
+          notes: string | null
+          support_tickets_url: string | null
+          tio_sheet_gid: string | null
+          tio_sheet_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lovable_shop_orders_url?: string | null
+          lovable_shop_tickets_url?: string | null
+          notes?: string | null
+          support_tickets_url?: string | null
+          tio_sheet_gid?: string | null
+          tio_sheet_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lovable_shop_orders_url?: string | null
+          lovable_shop_tickets_url?: string | null
+          notes?: string | null
+          support_tickets_url?: string | null
+          tio_sheet_gid?: string | null
+          tio_sheet_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tutorial_shares: {
         Row: {
           created_at: string
