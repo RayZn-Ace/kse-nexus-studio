@@ -1206,14 +1206,14 @@ function SettingsPanel() {
       </div>
 
       <GlassCard className="p-5 space-y-3">
-        <SectionTitle icon={Sparkles}>KayI · Cloud AI</SectionTitle>
+        <SectionTitle icon={Sparkles}>KayI · Cloudflare Workers AI</SectionTitle>
         <div className="text-xs text-white/70 space-y-2">
           <p>
-            KayI läuft komplett in der Cloud über das <span className="text-cyan-300">Lovable AI Gateway</span> (Gemini). Kein lokaler
-            Server, keine Konfiguration nötig — der API-Key ist serverseitig hinterlegt.
+            KayI läuft über <span className="text-cyan-300">Cloudflare Workers AI</span> (Llama 3.1) direkt auf Cloudflares Edge.
+            Account ID und API Token sind serverseitig als Secrets hinterlegt.
           </p>
           <p className="text-white/40 text-[11px]">
-            Fällt der Gateway aus, greift automatisch der regelbasierte Fallback-Parser.
+            Fällt Cloudflare aus, greift automatisch der regelbasierte Fallback-Parser.
           </p>
         </div>
       </GlassCard>
