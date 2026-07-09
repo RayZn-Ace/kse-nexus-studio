@@ -1314,7 +1314,7 @@ type AdAccountRow = {
 type HealthCheck = {
   id: string;
   label: string;
-  kind: "token" | "ad_account" | "pixel" | "landing_page" | "ollama";
+  kind: "token" | "ad_account" | "pixel" | "landing_page" | "cloud_ai";
   ok: boolean;
   status: "ok" | "warn" | "error" | "skip";
   detail?: string;
@@ -1370,10 +1370,10 @@ function HealthPanel() {
     ad_account: "Ad Account",
     pixel: "Pixel",
     landing_page: "Landing Page",
-    ollama: "Ollama",
+    cloud_ai: "Cloud AI",
   };
   const grouped = useMemo(() => {
-    const g: Record<string, HealthCheck[]> = { token: [], ad_account: [], pixel: [], landing_page: [], ollama: [] };
+    const g: Record<string, HealthCheck[]> = { token: [], ad_account: [], pixel: [], landing_page: [], cloud_ai: [] };
     (data?.checks ?? []).forEach((c) => g[c.kind]?.push(c));
     return g;
   }, [data]);
@@ -1430,7 +1430,7 @@ function HealthPanel() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-3">
-              {(["token", "ad_account", "pixel", "landing_page", "ollama"] as const).map((k) =>
+              {(["token", "ad_account", "pixel", "landing_page", "cloud_ai"] as const).map((k) =>
                 grouped[k].length === 0 ? null : (
                   <div key={k}>
                     <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{kindLabel[k]}</div>
