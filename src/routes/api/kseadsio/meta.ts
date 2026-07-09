@@ -85,6 +85,10 @@ type GraphAdsetTemplate = {
   promoted_object?: Record<string, unknown>;
   destination_type?: string;
   bid_strategy?: string;
+  start_time?: string;
+  end_time?: string;
+  daily_budget?: string;
+  lifetime_budget?: string;
 };
 
 type GraphGeoSearch = {
@@ -121,6 +125,26 @@ function asRecord(value: unknown): Record<string, unknown> {
 function asNumber(value: unknown): number | undefined {
   const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
   return Number.isFinite(n) ? n : undefined;
+}
+
+function futureIso(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  const time = Date.parse(value);
+  return Number.isFinite(time) && time > Date.now() + 60_000 ? new Date(time).toISOString() : undefined;
+}
+
+function defaultFutureEndIso(): string {
+  return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function sanitizeAdsetCreateBody(body: Record<string, unknown>): Record<string, unknown> {
+  const clean = { ...body };
+  // Meta rejects copied/internal schedule aliases on native adset creation.
+  delete clean.time_start;
+  delete clean.time_stop;
+  if (!futureIso(clean.start_time)) delete clean.start_time;
+  if (!futureIso(clean.end_time)) delete clean.end_time;
+  return clean;
 }
 
 function cleanGeoLocations(value: unknown): Record<string, unknown> | null {
@@ -318,7 +342,7 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const tmplRes = await graphGet<{
         data: GraphAdsetTemplate[];
       }>(
-        `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy&limit=1`,
+        `/${sourceId}/adsets?fields=targeting,billing_event,optimization_goal,promoted_object,destination_type,bid_strategy,start_time,end_time,daily_budget,lifetime_budget&limit=1`,
         ctx.token,
       );
       const tmpl = tmplRes.data[0];
@@ -367,14 +391,24 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
       const promoted = tmpl?.promoted_object ?? (p.promoted_object as Record<string, unknown> | undefined);
       if (promoted) body.promoted_object = promoted;
       if (tmpl?.destination_type) body.destination_type = tmpl.destination_type;
+      const startTime = futureIso(p.start_time) ?? futureIso(tmpl?.start_time);
+      const endTime = futureIso(p.end_time) ?? futureIso(p.time_stop) ?? futureIso(tmpl?.end_time);
+      const needsEndTime = Boolean(newCamp.lifetime_budget || sourceCamp.lifetime_budget || tmpl?.lifetime_budget);
+      if (startTime) body.start_time = startTime;
+      if (endTime) body.end_time = endTime;
+      else if (needsEndTime) body.end_time = defaultFutureEndIso();
       // Only set adset budget when the campaign does NOT use CBO.
       if (!cboEnabled) {
         const budget = p.daily_budget as number | undefined;
-        if (budget) body.daily_budget = budget;
-        else body.daily_budget = 500; // Meta minimum ~€5/day fallback
+        const lifetimeBudget = asNumber(p.lifetime_budget) ?? asNumber(tmpl?.lifetime_budget);
+        if (lifetimeBudget) {
+          body.lifetime_budget = lifetimeBudget;
+          body.end_time = (body.end_time as string | undefined) ?? defaultFutureEndIso();
+        } else if (budget) body.daily_budget = budget;
+        else body.daily_budget = asNumber(tmpl?.daily_budget) ?? 500; // Meta minimum ~€5/day fallback
       }
 
-      const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, body);
+      const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, sanitizeAdsetCreateBody(body));
       ctx.new_adset_id = r.id;
       return { new_adset_id: r.id, fallback: "native_create" };
     }
