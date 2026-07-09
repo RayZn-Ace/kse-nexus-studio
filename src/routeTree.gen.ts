@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as LeistungenRouteImport } from './routes/leistungen'
 import { Route as LabRouteImport } from './routes/lab'
+import { Route as KseadsioRouteImport } from './routes/kseadsio'
 import { Route as KonfiguratorRouteImport } from './routes/konfigurator'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as HeldentatenRouteImport } from './routes/heldentaten'
@@ -64,6 +65,11 @@ const LeistungenRoute = LeistungenRouteImport.update({
 const LabRoute = LabRouteImport.update({
   id: '/lab',
   path: '/lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KseadsioRoute = KseadsioRouteImport.update({
+  id: '/kseadsio',
+  path: '/kseadsio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KonfiguratorRoute = KonfiguratorRouteImport.update({
@@ -268,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -310,6 +317,7 @@ export interface FileRoutesByTo {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -354,6 +362,7 @@ export interface FileRoutesById {
   '/heldentaten': typeof HeldentatenRoute
   '/impressum': typeof ImpressumRoute
   '/konfigurator': typeof KonfiguratorRoute
+  '/kseadsio': typeof KseadsioRoute
   '/lab': typeof LabRoute
   '/leistungen': typeof LeistungenRoute
   '/team': typeof TeamRoute
@@ -399,6 +408,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -441,6 +451,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -484,6 +495,7 @@ export interface FileRouteTypes {
     | '/heldentaten'
     | '/impressum'
     | '/konfigurator'
+    | '/kseadsio'
     | '/lab'
     | '/leistungen'
     | '/team'
@@ -528,6 +540,7 @@ export interface RootRouteChildren {
   HeldentatenRoute: typeof HeldentatenRoute
   ImpressumRoute: typeof ImpressumRoute
   KonfiguratorRoute: typeof KonfiguratorRoute
+  KseadsioRoute: typeof KseadsioRoute
   LabRoute: typeof LabRoute
   LeistungenRoute: typeof LeistungenRoute
   TeamRoute: typeof TeamRoute
@@ -563,6 +576,13 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab'
       preLoaderRoute: typeof LabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kseadsio': {
+      id: '/kseadsio'
+      path: '/kseadsio'
+      fullPath: '/kseadsio'
+      preLoaderRoute: typeof KseadsioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konfigurator': {
@@ -901,6 +921,7 @@ const rootRouteChildren: RootRouteChildren = {
   HeldentatenRoute: HeldentatenRoute,
   ImpressumRoute: ImpressumRoute,
   KonfiguratorRoute: KonfiguratorRoute,
+  KseadsioRoute: KseadsioRoute,
   LabRoute: LabRoute,
   LeistungenRoute: LeistungenRoute,
   TeamRoute: TeamRoute,
