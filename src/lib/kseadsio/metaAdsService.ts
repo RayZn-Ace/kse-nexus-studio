@@ -78,12 +78,24 @@ export function buildExecutionActions(plan: KayIPlan, safeMode: boolean): Execut
   return actions;
 }
 
-// The gated "actually do it" — currently returns mocked responses.
-export async function executeActions(actions: ExecutionAction[]) {
+// The gated "actually do it".
+// - Mock (default): returns simulated responses with mock_* IDs — nothing hits Meta.
+// - Live: would call the Meta Marketing API. Not wired yet, so it fails clearly
+//   instead of silently pretending success.
+export async function executeActions(actions: ExecutionAction[], live = false) {
   const results = [] as Array<{ action: ExecutionAction; ok: boolean; response: unknown; error?: string }>;
   for (const a of actions) {
-    if (MOCK) {
+    if (!live) {
       results.push({ action: a, ok: true, response: { id: "mock_" + Math.random().toString(36).slice(2, 10), ...a.payload } });
+      continue;
+    }
+    if (MOCK) {
+      results.push({
+        action: a,
+        ok: false,
+        response: null,
+        error: "Live-Modus benötigt Meta API Anbindung — noch nicht konfiguriert.",
+      });
       continue;
     }
     results.push({ action: a, ok: false, response: null, error: "Meta API not connected" });
