@@ -14,6 +14,9 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
             ollama_model?: string;
             safe_mode?: boolean;
             max_campaign_budget?: number;
+            known_pixels?: Array<{ pixel_id: string; name?: string | null }>;
+            known_landing_pages?: Array<{ url: string; title?: string | null }>;
+            known_ad_accounts?: Array<{ ad_account_id: string; name?: string | null }>;
           };
           if (!body.command) return Response.json({ error: "command required" }, { status: 400 });
 
@@ -26,6 +29,23 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
             } catch {
               // Fall back silently to local parser
             }
+          }
+
+          // Resolve pixel by name from connected pixels if not detected as ID
+          if (!plan.pixel_id && body.known_pixels?.length) {
+            const lower = body.command.toLowerCase();
+            const match = body.known_pixels.find(
+              (p) => p.name && lower.includes(p.name.toLowerCase()),
+            );
+            if (match) plan.pixel_id = match.pixel_id;
+          }
+          // Resolve landing page by title if URL not directly in command
+          if (!plan.landing_page_url && body.known_landing_pages?.length) {
+            const lower = body.command.toLowerCase();
+            const match = body.known_landing_pages.find(
+              (lp) => lp.title && lower.includes(lp.title.toLowerCase()),
+            );
+            if (match) plan.landing_page_url = match.url;
           }
 
           const risk = evaluateRisk(plan, {
