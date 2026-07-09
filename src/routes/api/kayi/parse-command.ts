@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { parseCommandLocal, parseCommandViaOllama } from "@/lib/kseadsio/kayiParserService";
+import { parseCommandLocal, parseCommandViaLovableAI } from "@/lib/kseadsio/kayiParserService";
 import { evaluateRisk } from "@/lib/kseadsio/riskEngineService";
 import { buildExecutionActions } from "@/lib/kseadsio/metaAdsService";
 
@@ -10,8 +10,6 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
         try {
           const body = (await request.json()) as {
             command: string;
-            ollama_url?: string;
-            ollama_model?: string;
             safe_mode?: boolean;
             max_campaign_budget?: number;
             known_pixels?: Array<{ pixel_id: string; name?: string | null }>;
@@ -21,13 +19,14 @@ export const Route = createFileRoute("/api/kayi/parse-command")({
           if (!body.command) return Response.json({ error: "command required" }, { status: 400 });
 
           let plan = parseCommandLocal(body.command);
-          let source: "local" | "ollama" = "local";
-          if (body.ollama_url && body.ollama_model) {
+          let source: "local" | "cloud" = "local";
+          const apiKey = process.env.LOVABLE_API_KEY;
+          if (apiKey) {
             try {
-              plan = await parseCommandViaOllama(body.command, body.ollama_url, body.ollama_model);
-              source = "ollama";
+              plan = await parseCommandViaLovableAI(body.command, apiKey);
+              source = "cloud";
             } catch {
-              // Fall back silently to local parser
+              // Fall back silently to local rule-based parser
             }
           }
 

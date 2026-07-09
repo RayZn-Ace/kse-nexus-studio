@@ -61,29 +61,50 @@ export function parseCommandLocal(raw: string): KayIPlan {
   };
 }
 
-// Server-side Ollama bridge. Not called from client bundles.
-export async function parseCommandViaOllama(
+// Server-side Lovable AI Gateway bridge. Runs in the Cloud, no local setup.
+export async function parseCommandViaLovableAI(
   raw: string,
-  ollamaUrl: string,
-  model: string,
+  apiKey: string,
+  model = "google/gemini-3-flash-preview",
 ): Promise<KayIPlan> {
-  const system = `Du bist KayI, ein Meta-Ads-Assistent. Extrahiere aus dem folgenden Befehl ein JSON gemäß dem Schema. Antworte NUR mit JSON, keine Erklärung.`;
-  const res = await fetch(`${ollamaUrl.replace(/\/$/, "")}/api/chat`, {
+  const system = `Du bist KayI, ein Meta-Ads-Assistent. Extrahiere aus dem folgenden Befehl ein JSON gemäß diesem Schema:
+{
+  "intent": "duplicate_campaign" | "analyze_campaign" | "pause_campaign" | "create_adset" | "unknown",
+  "source_campaign_id": string?,
+  "objective": string?,
+  "conversion_event": string?,
+  "location": string?,
+  "radius_km": number?,
+  "age_min": number?,
+  "age_max": number?,
+  "daily_budget_eur": number?,
+  "placements": string[]?,
+  "creative_source": "source_campaign" | "manual" | "library" ?,
+  "landing_page_url": string?,
+  "pixel_id": string?,
+  "requires_approval": true,
+  "notes": string?
+}
+Antworte NUR mit gültigem JSON, keine Erklärung, kein Markdown.`;
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": apiKey,
+    },
     body: JSON.stringify({
       model,
-      stream: false,
-      format: "json",
       messages: [
         { role: "system", content: system },
         { role: "user", content: raw },
       ],
+      response_format: { type: "json_object" },
     }),
   });
-  if (!res.ok) throw new Error(`Ollama ${res.status}`);
-  const j = (await res.json()) as { message?: { content?: string } };
-  const content = j.message?.content ?? "{}";
-  const parsed = JSON.parse(content) as Partial<KayIPlan>;
+  if (!res.ok) throw new Error(`Lovable AI ${res.status}`);
+  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = j.choices?.[0]?.message?.content ?? "{}";
+  const cleaned = content.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  const parsed = JSON.parse(cleaned) as Partial<KayIPlan>;
   return { intent: "unknown", requires_approval: true, ...parsed } as KayIPlan;
 }
