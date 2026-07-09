@@ -98,6 +98,57 @@ export type Database = {
         }
         Relationships: []
       }
+      kseadsio_ad_accounts: {
+        Row: {
+          access_token_encrypted: string | null
+          ad_account_id: string
+          business_id: string | null
+          business_name: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          label: string | null
+          last_verified_at: string | null
+          name: string | null
+          timezone_name: string | null
+          updated_at: string
+          verification_error: string | null
+          verification_status: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          ad_account_id: string
+          business_id?: string | null
+          business_name?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          label?: string | null
+          last_verified_at?: string | null
+          name?: string | null
+          timezone_name?: string | null
+          updated_at?: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          ad_account_id?: string
+          business_id?: string | null
+          business_name?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          label?: string | null
+          last_verified_at?: string | null
+          name?: string | null
+          timezone_name?: string | null
+          updated_at?: string
+          verification_error?: string | null
+          verification_status?: string
+        }
+        Relationships: []
+      }
       kseadsio_campaign_snapshots: {
         Row: {
           created_at: string
