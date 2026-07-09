@@ -1715,7 +1715,6 @@ function SectionTitle({
   children: React.ReactNode;
   icon: typeof Sparkles;
 }) {
-  void 0;
   return (
     <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
       <Icon className="w-4 h-4 text-cyan-300" />
