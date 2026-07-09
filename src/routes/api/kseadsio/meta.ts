@@ -157,7 +157,7 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
         `/${sourceId}/copies`,
         ctx.token,
         {
-          deep_copy: false,
+          deep_copy: true,
           status_option: p.status === "ACTIVE" ? "ACTIVE" : "PAUSED",
           rename_options: JSON.stringify({ rename_suffix: " · KayI Copy" }),
         },
@@ -167,52 +167,61 @@ async function runAction(action: ExecutionAction, ctx: ExecCtx): Promise<unknown
     }
 
     case "create_adset": {
+      // deep_copy already produced adsets on the new campaign. We UPDATE the
+      // first copied adset's targeting/budget with what KayI planned, instead
+      // of creating a brand-new one (which fails without geo lat/lng, budget
+      // mode matching campaign, etc.).
       if (!ctx.new_campaign_id) throw new Error("Kein neues Kampagnen-ID Kontext (duplicate_campaign zuerst)");
-      if (!ctx.ad_account_id) throw new Error("Ad Account Kontext fehlt");
-      const targeting = p.targeting as Record<string, unknown>;
-      const body: Record<string, unknown> = {
-        name: `KayI Adset · ${new Date().toISOString().slice(0, 16)}`,
-        campaign_id: ctx.new_campaign_id,
-        billing_event: p.billing_event ?? "IMPRESSIONS",
-        optimization_goal: p.optimization_goal ?? "LINK_CLICKS",
-        targeting,
-        status: p.status ?? "PAUSED",
-      };
+      const adsets = await graphGet<{ data: Array<{ id: string; targeting?: Record<string, unknown> }> }>(
+        `/${ctx.new_campaign_id}/adsets?fields=id,targeting&limit=25`,
+        ctx.token,
+      );
+      const first = adsets.data[0];
+      if (!first) throw new Error("Kein Adset in kopierter Kampagne gefunden");
+      ctx.new_adset_id = first.id;
+
+      const planned = (p.targeting ?? {}) as Record<string, unknown>;
+      const baseTargeting = (first.targeting ?? {}) as Record<string, unknown>;
+      const merged: Record<string, unknown> = { ...baseTargeting };
+      // Only merge fields Meta reliably accepts without extra lookups.
+      if (typeof planned.age_min === "number") merged.age_min = planned.age_min;
+      if (typeof planned.age_max === "number") merged.age_max = planned.age_max;
+      if (Array.isArray(planned.publisher_platforms))
+        merged.publisher_platforms = planned.publisher_platforms;
+      // Skip custom_locations without lat/lng (Meta rejects with Invalid parameter).
+      const geo = (planned.geo_locations ?? {}) as { custom_locations?: Array<Record<string, unknown>> };
+      if (geo.custom_locations?.length) {
+        const valid = geo.custom_locations.filter(
+          (l) => typeof l.latitude === "number" && typeof l.longitude === "number",
+        );
+        if (valid.length) {
+          merged.geo_locations = { ...(baseTargeting.geo_locations as object ?? {}), custom_locations: valid };
+        }
+      }
+
+      const body: Record<string, unknown> = { targeting: merged };
       if (p.daily_budget) body.daily_budget = p.daily_budget;
-      if (p.promoted_object) body.promoted_object = p.promoted_object;
-      const r = await graphPost<{ id: string }>(`/${ctx.ad_account_id}/adsets`, ctx.token, body);
-      ctx.new_adset_id = r.id;
-      return { new_adset_id: r.id };
+      await graphPost(`/${first.id}`, ctx.token, body);
+      return { updated_adset_id: first.id };
     }
 
     case "copy_ads": {
-      if (!ctx.new_adset_id) throw new Error("Kein neues Adset Kontext (create_adset zuerst)");
-      const sourceId = (p.source_campaign_id as string) ?? ctx.source_campaign_id;
-      if (!sourceId) throw new Error("source_campaign_id fehlt");
+      // deep_copy already brought over ads + creatives. Just report them.
+      if (!ctx.new_campaign_id) throw new Error("Kein neues Kampagnen Kontext");
       const ads = await graphGet<{ data: GraphAd[] }>(
-        `/${sourceId}/ads?fields=id,name&limit=25`,
+        `/${ctx.new_campaign_id}/ads?fields=id,name&limit=50`,
         ctx.token,
       );
-      const copies: string[] = [];
-      for (const ad of ads.data) {
-        const r = await graphPost<{ copied_ad_id?: string; ad_id?: string; id?: string }>(
-          `/${ad.id}/copies`,
-          ctx.token,
-          { adset_id: ctx.new_adset_id, status_option: "PAUSED" },
-        );
-        const nid = r.copied_ad_id ?? r.ad_id ?? r.id;
-        if (nid) copies.push(nid);
-      }
-      return { copied_ad_ids: copies };
+      return { copied_ad_ids: ads.data.map((a) => a.id) };
     }
 
     case "set_landing_page": {
       const url = p.url as string;
       if (!url) throw new Error("landing_page_url fehlt");
-      if (!ctx.new_adset_id || !ctx.ad_account_id)
-        throw new Error("Adset/Account Kontext fehlt");
+      if (!ctx.new_campaign_id || !ctx.ad_account_id)
+        throw new Error("Kampagne/Account Kontext fehlt");
       const ads = await graphGet<{ data: Array<GraphAd & { creative: { id: string } }> }>(
-        `/${ctx.new_adset_id}/ads?fields=id,name,creative{id}&limit=25`,
+        `/${ctx.new_campaign_id}/ads?fields=id,name,creative{id}&limit=50`,
         ctx.token,
       );
       const updated: string[] = [];
