@@ -16,8 +16,6 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { CustomCursor } from "@/components/site/CustomCursor";
 import { CookieConsent } from "@/components/site/CookieConsent";
 import { KseAgent } from "@/components/site/KseAgent";
-import { SocialProof } from "@/components/site/SocialProof";
-import { LiveVisitors } from "@/components/site/LiveVisitors";
 import { EasterEggProvider } from "@/components/site/EasterEggHunt";
 import { trackEvent } from "@/lib/tracking";
 
@@ -157,8 +155,6 @@ function RootComponent() {
             <KseAgent />
             <CustomCursor />
             <CookieConsent />
-            <SocialProof />
-            <LiveVisitors />
           </>
         )}
         <Toaster theme="dark" position="bottom-right" />
