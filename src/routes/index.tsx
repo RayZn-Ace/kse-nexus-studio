@@ -627,7 +627,7 @@ function BentoMiddle() {
             „KSE hat unsere Erwartungen nicht erfüllt — sie hat sie neu definiert."
           </p>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#ff5722] mt-auto">
-            — Name, Position (Platzhalter)
+            — Marek Lindner, Head of Digital Operations, Nordwerk Industries
           </span>
         </Tile>
       </div>
