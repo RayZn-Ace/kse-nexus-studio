@@ -9,6 +9,7 @@ export type GameProgress = {
   total_score: number;
   endless_best: number;
   endless_unlocked: boolean;
+  display_name?: string | null;
 };
 
 export const EMPTY_PROGRESS: GameProgress = {
@@ -18,7 +19,34 @@ export const EMPTY_PROGRESS: GameProgress = {
   total_score: 0,
   endless_best: 0,
   endless_unlocked: false,
+  display_name: null,
 };
+
+export type LeaderboardEntry = {
+  player_key: string;
+  display_name: string | null;
+  best_score: number;
+  endless_best: number;
+  total_score: number;
+};
+
+const COLS =
+  "level,unlocked_level,best_score,total_score,endless_best,endless_unlocked,display_name";
+
+/** Server-side highscore list (top players). */
+export async function loadLeaderboard(
+  mode: "best" | "endless" = "best",
+  limit = 10,
+): Promise<LeaderboardEntry[]> {
+  const column = mode === "endless" ? "endless_best" : "best_score";
+  const { data } = await supabase
+    .from("game_progress")
+    .select("player_key,display_name,best_score,endless_best,total_score")
+    .gt(column, 0)
+    .order(column, { ascending: false })
+    .limit(limit);
+  return (data ?? []) as LeaderboardEntry[];
+}
 
 export function getPlayerKey(): string {
   if (typeof window === "undefined") return "ssr";
@@ -38,7 +66,7 @@ export async function loadProgress(): Promise<GameProgress> {
   if (userId) {
     const { data: byUser } = await supabase
       .from("game_progress")
-      .select("level,unlocked_level,best_score,total_score,endless_best,endless_unlocked")
+      .select(COLS)
       .eq("user_id", userId)
       .maybeSingle();
     if (byUser) return byUser as GameProgress;
@@ -46,7 +74,7 @@ export async function loadProgress(): Promise<GameProgress> {
 
   const { data } = await supabase
     .from("game_progress")
-    .select("level,unlocked_level,best_score,total_score,endless_best,endless_unlocked")
+    .select(COLS)
     .eq("player_key", player_key)
     .maybeSingle();
 

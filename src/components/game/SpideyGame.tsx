@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Lock, Play, Infinity as InfinityIcon, Loader2 } from "lucide-react";
+import { X, Lock, Play, Infinity as InfinityIcon, Loader2, Trophy } from "lucide-react";
 import {
   LEVELS,
   ENDLESS_LEVEL,
@@ -9,7 +9,91 @@ import {
   type Level,
   type VillainKind,
 } from "@/lib/game/levels";
-import { loadProgress, saveProgress, EMPTY_PROGRESS, type GameProgress } from "@/lib/game/progress";
+import {
+  loadProgress,
+  saveProgress,
+  loadLeaderboard,
+  EMPTY_PROGRESS,
+  getPlayerKey,
+  type GameProgress,
+  type LeaderboardEntry,
+} from "@/lib/game/progress";
+
+function Leaderboard({
+  mode,
+  refreshKey,
+  compact = false,
+}: {
+  mode: "best" | "endless";
+  refreshKey: number;
+  compact?: boolean;
+}) {
+  const [rows, setRows] = useState<LeaderboardEntry[] | null>(null);
+  const [tab, setTab] = useState<"best" | "endless">(mode);
+  const me = typeof window !== "undefined" ? getPlayerKey() : "";
+
+  useEffect(() => {
+    let cancelled = false;
+    setRows(null);
+    loadLeaderboard(tab, compact ? 5 : 10)
+      .then((r) => !cancelled && setRows(r))
+      .catch(() => !cancelled && setRows([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, refreshKey, compact]);
+
+  return (
+    <div className="border-2 border-white/15 rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Trophy className="w-3.5 h-3.5 text-orange-400" />
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-400">
+          Highscores
+        </span>
+        <div className="ml-auto flex gap-1">
+          {(["best", "endless"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                tab === t ? "bg-orange-500 text-black" : "text-white/50 hover:text-white"
+              }`}
+            >
+              {t === "best" ? "Story" : "Endlos"}
+            </button>
+          ))}
+        </div>
+      </div>
+      {rows === null ? (
+        <div className="text-white/40 text-[11px] flex items-center gap-2">
+          <Loader2 className="w-3 h-3 animate-spin" /> Lade Rangliste…
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-white/40 text-[11px]">Noch keine Einträge — sei der Erste!</div>
+      ) : (
+        <ol className="space-y-1">
+          {rows.map((r, i) => (
+            <li
+              key={r.player_key}
+              className={`flex items-center gap-2 text-[12px] ${
+                r.player_key === me ? "text-orange-300 font-bold" : "text-white/70"
+              }`}
+            >
+              <span className="w-5 tabular-nums text-white/40">{i + 1}.</span>
+              <span className="truncate flex-1">
+                {r.display_name?.trim() || "Anonymer Held"}
+                {r.player_key === me && " (du)"}
+              </span>
+              <span className="tabular-nums font-mono text-orange-400">
+                {tab === "endless" ? r.endless_best : r.best_score}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
 
 type Villain = {
   id: number;
@@ -37,6 +121,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const [screen, setScreen] = useState<Screen>("menu");
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<GameProgress>(EMPTY_PROGRESS);
+  const [boardKey, setBoardKey] = useState(0);
   const [levelIndex, setLevelIndex] = useState(0);
   const [endless, setEndless] = useState(false);
   const [speedInfo, setSpeedInfo] = useState(1);
@@ -84,7 +169,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const persist = useCallback((patch: Partial<GameProgress>) => {
     setProgress((prev) => {
       const next = { ...prev, ...patch };
-      void saveProgress(next);
+      void saveProgress(next).then(() => setBoardKey((k) => k + 1));
       return next;
     });
   }, []);
@@ -640,6 +725,26 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                       </p>
                     ))}
                   </div>
+                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                    <div className="border-2 border-white/15 rounded-lg p-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-400 block mb-2">
+                        Heldenname für die Rangliste
+                      </label>
+                      <input
+                        value={progress.display_name ?? ""}
+                        onChange={(e) =>
+                          setProgress((p) => ({ ...p, display_name: e.target.value.slice(0, 24) }))
+                        }
+                        onBlur={() => persist({ display_name: progress.display_name ?? null })}
+                        placeholder="Anonymer Held"
+                        className="w-full bg-black/60 border-2 border-white/20 focus:border-orange-500 outline-none rounded px-2 py-1.5 text-sm"
+                      />
+                      <p className="text-white/40 text-[10px] mt-2">
+                        Highscores werden serverseitig gespeichert.
+                      </p>
+                    </div>
+                    <Leaderboard mode="best" refreshKey={boardKey} />
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-2">
                     <button
                       onClick={() => {
@@ -780,6 +885,9 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                     Score {score} · Bestscore {progress.best_score}
                     {endless && ` · Endlos-Best ${progress.endless_best}`}
                   </p>
+                  <div className="mb-5">
+                    <Leaderboard mode={endless ? "endless" : "best"} refreshKey={boardKey} compact />
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => startLevel(levelIndex, endless)}
