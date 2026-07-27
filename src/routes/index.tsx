@@ -622,12 +622,12 @@ function BentoMiddle() {
 
         {/* TESTIMONIAL */}
         <Tile className="md:col-span-4 p-6 flex flex-col gap-4 min-h-[260px]">
-          <Label className="opacity-40">/ 03 — Stimme</Label>
+          <Label className="opacity-40">/ 03 — STIMME</Label>
           <p className="text-base leading-relaxed italic font-medium">
             „KSE hat unsere Erwartungen nicht erfüllt — sie hat sie neu definiert."
           </p>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#ff5722] mt-auto">
-            — Marek Lindner, Head of Digital Operations, Nordwerk Industries
+            — ANDREAS SCHIMANSKI, HEAD OF DIGITAL OPERATIONS, NORDWERK VERPACKUNGEN
           </span>
         </Tile>
       </div>
