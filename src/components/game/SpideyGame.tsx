@@ -9,7 +9,91 @@ import {
   type Level,
   type VillainKind,
 } from "@/lib/game/levels";
-import { loadProgress, saveProgress, EMPTY_PROGRESS, type GameProgress } from "@/lib/game/progress";
+import {
+  loadProgress,
+  saveProgress,
+  loadLeaderboard,
+  EMPTY_PROGRESS,
+  getPlayerKey,
+  type GameProgress,
+  type LeaderboardEntry,
+} from "@/lib/game/progress";
+
+function Leaderboard({
+  mode,
+  refreshKey,
+  compact = false,
+}: {
+  mode: "best" | "endless";
+  refreshKey: number;
+  compact?: boolean;
+}) {
+  const [rows, setRows] = useState<LeaderboardEntry[] | null>(null);
+  const [tab, setTab] = useState<"best" | "endless">(mode);
+  const me = typeof window !== "undefined" ? getPlayerKey() : "";
+
+  useEffect(() => {
+    let cancelled = false;
+    setRows(null);
+    loadLeaderboard(tab, compact ? 5 : 10)
+      .then((r) => !cancelled && setRows(r))
+      .catch(() => !cancelled && setRows([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, refreshKey, compact]);
+
+  return (
+    <div className="border-2 border-white/15 rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Trophy className="w-3.5 h-3.5 text-orange-400" />
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-400">
+          Highscores
+        </span>
+        <div className="ml-auto flex gap-1">
+          {(["best", "endless"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                tab === t ? "bg-orange-500 text-black" : "text-white/50 hover:text-white"
+              }`}
+            >
+              {t === "best" ? "Story" : "Endlos"}
+            </button>
+          ))}
+        </div>
+      </div>
+      {rows === null ? (
+        <div className="text-white/40 text-[11px] flex items-center gap-2">
+          <Loader2 className="w-3 h-3 animate-spin" /> Lade Rangliste…
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-white/40 text-[11px]">Noch keine Einträge — sei der Erste!</div>
+      ) : (
+        <ol className="space-y-1">
+          {rows.map((r, i) => (
+            <li
+              key={r.player_key}
+              className={`flex items-center gap-2 text-[12px] ${
+                r.player_key === me ? "text-orange-300 font-bold" : "text-white/70"
+              }`}
+            >
+              <span className="w-5 tabular-nums text-white/40">{i + 1}.</span>
+              <span className="truncate flex-1">
+                {r.display_name?.trim() || "Anonymer Held"}
+                {r.player_key === me && " (du)"}
+              </span>
+              <span className="tabular-nums font-mono text-orange-400">
+                {tab === "endless" ? r.endless_best : r.best_score}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
 
 type Villain = {
   id: number;
