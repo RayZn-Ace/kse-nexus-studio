@@ -16,6 +16,7 @@ import { WhatsAppButton } from "@/components/site/WhatsAppButton";
 import { CustomCursor } from "@/components/site/CustomCursor";
 import { CookieConsent } from "@/components/site/CookieConsent";
 import { KseAgent } from "@/components/site/KseAgent";
+import { LiveVisitors } from "@/components/site/LiveVisitors";
 import { EasterEggProvider } from "@/components/site/EasterEggHunt";
 import { trackEvent } from "@/lib/tracking";
 
