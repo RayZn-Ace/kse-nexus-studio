@@ -442,10 +442,37 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     setScreen("over");
   };
 
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const p = toGame(e.clientX, e.clientY);
+    if (!p) return;
+    const s = stateRef.current;
+    s.aim.x = p.x;
+    s.aim.y = p.y;
+    s.aim.active = true;
+  };
+
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
+    (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
     if (screen !== "play") return;
-    shoot(e.clientX, e.clientY);
+    const p = toGame(e.clientX, e.clientY);
+    if (!p) return;
+    const s = stateRef.current;
+    s.aim.x = p.x;
+    s.aim.y = p.y;
+    s.aim.active = true;
+    s.firing = true;
+    s.cooldown = 8;
+    shootAt(p.x, p.y);
+  };
+
+  const stopFiring = () => {
+    stateRef.current.firing = false;
+  };
+
+  const onPointerLeave = () => {
+    stateRef.current.firing = false;
+    stateRef.current.aim.active = false;
   };
 
   // lock body scroll while open (mobile UX)
