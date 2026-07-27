@@ -169,7 +169,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const persist = useCallback((patch: Partial<GameProgress>) => {
     setProgress((prev) => {
       const next = { ...prev, ...patch };
-      void saveProgress(next);
+      void saveProgress(next).then(() => setBoardKey((k) => k + 1));
       return next;
     });
   }, []);
