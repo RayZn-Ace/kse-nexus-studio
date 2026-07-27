@@ -54,7 +54,10 @@ export async function loadProgress(): Promise<GameProgress> {
 
   await supabase
     .from("game_progress")
-    .insert({ player_key, user_id: userId, ...EMPTY_PROGRESS });
+    .upsert({ player_key, user_id: userId, ...EMPTY_PROGRESS }, {
+      onConflict: "player_key",
+      ignoreDuplicates: true,
+    });
   return { ...EMPTY_PROGRESS };
 }
 
