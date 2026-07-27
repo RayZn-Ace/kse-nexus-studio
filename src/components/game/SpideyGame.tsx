@@ -534,7 +534,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in overscroll-contain"
+      className="kse-game-modal fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in overscroll-contain"
       onClick={onClose}
     >
       <div
@@ -582,7 +582,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
             onPointerCancel={stopFiring}
             onPointerLeave={onPointerLeave}
             onContextMenu={(e) => e.preventDefault()}
-            className="w-full h-auto max-h-full rounded-lg cursor-crosshair touch-none select-none"
+            className="kse-game-canvas w-full h-auto max-h-full rounded-lg cursor-crosshair touch-none select-none"
             style={{ aspectRatio: `${GAME_W} / ${GAME_H}` }}
           />
 
@@ -641,6 +641,22 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setEndless(true);
+                        setScreen("story");
+                      }}
+                      className="text-left border-2 rounded-lg p-3 transition-colors border-cyan-400/70 hover:bg-cyan-400/15 sm:col-span-2"
+                    >
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-300">
+                        <InfinityIcon className="w-3 h-3" />
+                        Endlos · sofort spielbar
+                      </div>
+                      <div className="font-black text-sm mt-1">Endlosmodus</div>
+                      <div className="text-[11px] text-white/50 mt-0.5">
+                        Immer offen · Gegner werden pausenlos schneller · kein Ende
+                      </div>
+                    </button>
                     {LEVELS.map((l, i) => {
                       const locked = l.id > progress.unlocked_level;
                       return (
@@ -670,22 +686,6 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                         </button>
                       );
                     })}
-                    <button
-                      onClick={() => {
-                        setEndless(true);
-                        setScreen("story");
-                      }}
-                      className="text-left border-2 rounded-lg p-3 transition-colors border-cyan-400/70 hover:bg-cyan-400/15"
-                    >
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-300">
-                        <InfinityIcon className="w-3 h-3" />
-                        Endlos
-                      </div>
-                      <div className="font-black text-sm mt-1">Endlosmodus</div>
-                      <div className="text-[11px] text-white/50 mt-0.5">
-                        Immer offen · immer schneller · kein Ende
-                      </div>
-                    </button>
                   </div>
                 </div>
               ) : screen === "story" ? (
