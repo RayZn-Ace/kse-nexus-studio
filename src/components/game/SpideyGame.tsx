@@ -316,6 +316,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
         if (s.tick % 30 === 0) setSpeedInfo(Math.round(s.ramp * 100) / 100);
       }
 
+      // hold-to-fire
+      if (s.cooldown > 0) s.cooldown--;
+      if (s.running && s.firing && s.cooldown === 0) {
+        s.cooldown = 9;
+        shootRef.current(s.aim.x, s.aim.y);
+      }
+
       // spawn villains
       if (s.running) {
         const lvl = s.level;
@@ -380,6 +387,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
           s.running = false;
           onClearRef.current();
         }
+        // story beats
+        for (const b of s.level.beats) {
+          if (s.kills >= b.at && !s.beatsDone.has(b.at)) {
+            s.beatsDone.add(b.at);
+            beatRef.current(b);
+          }
+        }
       }
       // cleanup
       s.villains = s.villains.filter((v) => !(v.hit && v.wobble > 20) && v.x < GAME_W + 60);
@@ -408,11 +422,45 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
       // draw spidey
       drawSpidey(s.spidey.x, s.spidey.y, s.spidey.swing);
 
+      // crosshair reticle
+      if (s.running && s.aim.active) {
+        const { x, y } = s.aim;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.85)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 14 + Math.sin(s.tick * 0.15) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "#f97316";
+        ctx.beginPath();
+        ctx.moveTo(x - 22, y);
+        ctx.lineTo(x - 8, y);
+        ctx.moveTo(x + 8, y);
+        ctx.lineTo(x + 22, y);
+        ctx.moveTo(x, y - 22);
+        ctx.lineTo(x, y - 8);
+        ctx.moveTo(x, y + 8);
+        ctx.lineTo(x, y + 22);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  // stable refs for callbacks used inside the mounted loop
+  const shootRef = useRef<(x: number, y: number) => void>(() => {});
+  shootRef.current = shootAt;
+  const beatTimer = useRef<number | null>(null);
+  const beatRef = useRef<(b: { who: string; text: string }) => void>(() => {});
+  beatRef.current = (b) => {
+    setBeat({ who: b.who, text: b.text });
+    if (beatTimer.current) window.clearTimeout(beatTimer.current);
+    beatTimer.current = window.setTimeout(() => setBeat(null), 4200);
+  };
 
   // level end handlers via refs (loop is mounted once)
   const onClearRef = useRef(() => {});
