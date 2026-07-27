@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X, Lock, Play, Infinity as InfinityIcon, Loader2 } from "lucide-react";
-import { LEVELS, ENDLESS_LEVEL, VILLAINS, type Level, type VillainKind } from "@/lib/game/levels";
+import {
+  LEVELS,
+  ENDLESS_LEVEL,
+  VILLAINS,
+  PROLOGUE,
+  EPILOGUE,
+  type Level,
+  type VillainKind,
+} from "@/lib/game/levels";
 import { loadProgress, saveProgress, EMPTY_PROGRESS, type GameProgress } from "@/lib/game/progress";
 
 type Villain = {
@@ -32,6 +40,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [endless, setEndless] = useState(false);
   const [speedInfo, setSpeedInfo] = useState(1);
+  const [beat, setBeat] = useState<{ who: string; text: string } | null>(null);
 
   const level: Level = endless ? ENDLESS_LEVEL : LEVELS[levelIndex];
 
@@ -48,6 +57,10 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     bossSpawned: false,
     level: LEVELS[0] as Level,
     endless: false,
+    aim: { x: GAME_W / 2, y: GAME_H / 2, active: false },
+    firing: false,
+    cooldown: 0,
+    beatsDone: new Set<number>(),
     spidey: { x: GAME_W - 90, y: 220, swing: 0 },
     idCounter: 1,
   });
@@ -90,24 +103,32 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     s.level = lvl;
     s.endless = isEndless;
     s.running = true;
+    s.firing = false;
+    s.cooldown = 0;
+    s.beatsDone = new Set<number>();
     setScore(0);
     setKills(0);
     setLives(lvl.lives);
     setSpeedInfo(1);
+    setBeat(null);
     setEndless(isEndless);
     setLevelIndex(index);
     setScreen("play");
   }, []);
 
-  const shoot = useCallback((clientX: number, clientY: number) => {
+  const toGame = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = GAME_W / rect.width;
-    const scaleY = GAME_H / rect.height;
-    const tx = (clientX - rect.left) * scaleX;
-    const ty = (clientY - rect.top) * scaleY;
+    return {
+      x: ((clientX - rect.left) * GAME_W) / rect.width,
+      y: ((clientY - rect.top) * GAME_H) / rect.height,
+    };
+  }, []);
+
+  const shootAt = useCallback((tx: number, ty: number) => {
     const s = stateRef.current;
+    if (!s.running) return;
     s.webs.push({
       id: s.idCounter++,
       x: s.spidey.x,
@@ -116,13 +137,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
       targetY: ty,
       t: 0,
     });
-    // hit detection — nearest villain within its radius (+ touch tolerance)
+    // hit detection — nearest villain within its radius (+ tolerance)
     let best: Villain | null = null;
     let bestD = Infinity;
     for (const v of s.villains) {
       if (v.hit) continue;
       const d = Math.hypot(v.x - tx, v.y - ty);
-      if (d < VILLAINS[v.kind].radius + 24 && d < bestD) {
+      if (d < VILLAINS[v.kind].radius + 30 && d < bestD) {
         best = v;
         bestD = d;
       }
@@ -295,6 +316,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
         if (s.tick % 30 === 0) setSpeedInfo(Math.round(s.ramp * 100) / 100);
       }
 
+      // hold-to-fire
+      if (s.cooldown > 0) s.cooldown--;
+      if (s.running && s.firing && s.cooldown === 0) {
+        s.cooldown = 9;
+        shootRef.current(s.aim.x, s.aim.y);
+      }
+
       // spawn villains
       if (s.running) {
         const lvl = s.level;
@@ -359,6 +387,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
           s.running = false;
           onClearRef.current();
         }
+        // story beats
+        for (const b of s.level.beats) {
+          if (s.kills >= b.at && !s.beatsDone.has(b.at)) {
+            s.beatsDone.add(b.at);
+            beatRef.current(b);
+          }
+        }
       }
       // cleanup
       s.villains = s.villains.filter((v) => !(v.hit && v.wobble > 20) && v.x < GAME_W + 60);
@@ -387,11 +422,45 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
       // draw spidey
       drawSpidey(s.spidey.x, s.spidey.y, s.spidey.swing);
 
+      // crosshair reticle
+      if (s.running && s.aim.active) {
+        const { x, y } = s.aim;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.85)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 14 + Math.sin(s.tick * 0.15) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "#f97316";
+        ctx.beginPath();
+        ctx.moveTo(x - 22, y);
+        ctx.lineTo(x - 8, y);
+        ctx.moveTo(x + 8, y);
+        ctx.lineTo(x + 22, y);
+        ctx.moveTo(x, y - 22);
+        ctx.lineTo(x, y - 8);
+        ctx.moveTo(x, y + 8);
+        ctx.lineTo(x, y + 22);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  // stable refs for callbacks used inside the mounted loop
+  const shootRef = useRef<(x: number, y: number) => void>(() => {});
+  shootRef.current = shootAt;
+  const beatTimer = useRef<number | null>(null);
+  const beatRef = useRef<(b: { who: string; text: string }) => void>(() => {});
+  beatRef.current = (b) => {
+    setBeat({ who: b.who, text: b.text });
+    if (beatTimer.current) window.clearTimeout(beatTimer.current);
+    beatTimer.current = window.setTimeout(() => setBeat(null), 4200);
+  };
 
   // level end handlers via refs (loop is mounted once)
   const onClearRef = useRef(() => {});
@@ -421,10 +490,37 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     setScreen("over");
   };
 
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const p = toGame(e.clientX, e.clientY);
+    if (!p) return;
+    const s = stateRef.current;
+    s.aim.x = p.x;
+    s.aim.y = p.y;
+    s.aim.active = true;
+  };
+
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
+    (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
     if (screen !== "play") return;
-    shoot(e.clientX, e.clientY);
+    const p = toGame(e.clientX, e.clientY);
+    if (!p) return;
+    const s = stateRef.current;
+    s.aim.x = p.x;
+    s.aim.y = p.y;
+    s.aim.active = true;
+    s.firing = true;
+    s.cooldown = 8;
+    shootAt(p.x, p.y);
+  };
+
+  const stopFiring = () => {
+    stateRef.current.firing = false;
+  };
+
+  const onPointerLeave = () => {
+    stateRef.current.firing = false;
+    stateRef.current.aim.active = false;
   };
 
   // lock body scroll while open (mobile UX)
@@ -481,6 +577,11 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
             width={GAME_W}
             height={GAME_H}
             onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={stopFiring}
+            onPointerCancel={stopFiring}
+            onPointerLeave={onPointerLeave}
+            onContextMenu={(e) => e.preventDefault()}
             className="w-full h-auto max-h-full rounded-lg cursor-crosshair touch-none select-none"
             style={{ aspectRatio: `${GAME_W} / ${GAME_H}` }}
           />
@@ -494,12 +595,25 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                 <div
                   className="h-full bg-orange-500 transition-all"
                   style={{
-                    width: endless ? "100%" : `${Math.min(100, (kills / level.target) * 100)}%`,
+                    width: endless
+                      ? `${Math.min(100, (speedInfo - 1) * 200)}%`
+                      : `${Math.min(100, (kills / level.target) * 100)}%`,
                   }}
                 />
               </div>
               <div className="text-[10px] font-mono text-white/80 whitespace-nowrap">
-                {endless ? `${kills} K.O.` : `${kills}/${level.target}`}
+                {endless ? `${kills} K.O. · ×${speedInfo.toFixed(2)}` : `${kills}/${level.target}`}
+              </div>
+            </div>
+          )}
+
+          {screen === "play" && beat && (
+            <div className="pointer-events-none absolute bottom-6 left-6 right-6 flex justify-center">
+              <div className="max-w-[90%] rounded-lg border-2 border-orange-500/70 bg-black/80 px-4 py-2 animate-fade-in">
+                <span className="text-orange-400 font-black text-[10px] uppercase tracking-[0.25em] mr-2">
+                  {beat.who}
+                </span>
+                <span className="text-white text-sm">{beat.text}</span>
               </div>
             </div>
           )}
@@ -515,10 +629,17 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                   <h2 className="text-orange-500 font-black text-xl sm:text-2xl tracking-wider mb-1">
                     MISSIONS-AUSWAHL
                   </h2>
-                  <p className="text-white/60 text-xs mb-4">
+                  <p className="text-white/60 text-xs mb-3">
                     Fortschritt gespeichert · Bestscore {progress.best_score} · Gesamt {progress.total_score}
                     {progress.endless_best > 0 && ` · Endlos-Best ${progress.endless_best}`}
                   </p>
+                  <div className="mb-4 border-l-2 border-orange-500/60 pl-3 space-y-1">
+                    {PROLOGUE.map((line, i) => (
+                      <p key={i} className="text-white/70 text-[12px] leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-2">
                     {LEVELS.map((l, i) => {
                       const locked = l.id > progress.unlocked_level;
@@ -542,6 +663,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                             Level {l.id}
                           </div>
                           <div className="font-black text-sm mt-1">{l.name}</div>
+                          <div className="text-[11px] text-white/40">{l.place}</div>
                           <div className="text-[11px] text-white/50 mt-0.5">
                             {l.boss ? "Bosskampf" : `${l.target} Gegner`} · Tempo ×{l.speedMul}
                           </div>
@@ -549,24 +671,19 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                       );
                     })}
                     <button
-                      disabled={!progress.endless_unlocked}
                       onClick={() => {
                         setEndless(true);
                         setScreen("story");
                       }}
-                      className={`text-left border-2 rounded-lg p-3 transition-colors ${
-                        progress.endless_unlocked
-                          ? "border-cyan-400/70 hover:bg-cyan-400/15"
-                          : "border-white/10 text-white/30 cursor-not-allowed"
-                      }`}
+                      className="text-left border-2 rounded-lg p-3 transition-colors border-cyan-400/70 hover:bg-cyan-400/15"
                     >
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-300">
-                        {progress.endless_unlocked ? <InfinityIcon className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                        <InfinityIcon className="w-3 h-3" />
                         Endlos
                       </div>
                       <div className="font-black text-sm mt-1">Endlosmodus</div>
                       <div className="text-[11px] text-white/50 mt-0.5">
-                        {progress.endless_unlocked ? "Immer schneller, kein Ende" : "Nach Level 6 freigeschaltet"}
+                        Immer offen · immer schneller · kein Ende
                       </div>
                     </button>
                   </div>
@@ -576,11 +693,18 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                   <div className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400">
                     {endless ? "Endlos" : `Kapitel ${level.id}`}
                   </div>
-                  <h2 className="font-black text-2xl tracking-wide mt-1 mb-3">{level.name}</h2>
-                  <p className="text-white/80 text-sm leading-relaxed mb-5">{level.intro}</p>
+                  <h2 className="font-black text-2xl tracking-wide mt-1">{level.name}</h2>
+                  <div className="text-white/40 text-[11px] uppercase tracking-widest mb-3">{level.place}</div>
+                  <div className="space-y-2 mb-5">
+                    {level.intro.map((line, i) => (
+                      <p key={i} className="text-white/80 text-sm leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
                   <div className="text-white/50 text-xs mb-5">
                     Ziel: {endless ? "so lange überleben wie möglich" : level.boss ? "Boss besiegen" : `${level.target} Gegner ausschalten`} ·
-                    Leben: {level.lives} · Gegner werden mit der Zeit schneller
+                    Leben: {level.lives} · Gegner werden mit der Zeit schneller · Maus bewegen zum Zielen, klicken/halten zum Netzschuss
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -600,7 +724,20 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
               ) : screen === "cleared" ? (
                 <div className="max-w-lg mx-auto h-full flex flex-col justify-center">
                   <h2 className="text-green-400 font-black text-3xl tracking-wider mb-2">LEVEL GESCHAFFT</h2>
-                  <p className="text-white/80 text-sm leading-relaxed mb-4">{level.outro}</p>
+                  <div className="space-y-2 mb-4">
+                    {(endless ? [] : level.outro).map((line, i) => (
+                      <p key={i} className="text-white/80 text-sm leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                    {!endless &&
+                      levelIndex + 1 >= LEVELS.length &&
+                      EPILOGUE.map((line, i) => (
+                        <p key={`ep-${i}`} className="text-orange-200/90 text-sm leading-relaxed">
+                          {line}
+                        </p>
+                      ))}
+                  </div>
                   <p className="text-white/60 text-xs mb-5">
                     Score {score} · Bestscore {progress.best_score} · Fortschritt gespeichert
                   </p>
