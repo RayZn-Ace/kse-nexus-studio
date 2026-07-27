@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X, Lock, Play, Infinity as InfinityIcon, Loader2 } from "lucide-react";
-import { LEVELS, ENDLESS_LEVEL, VILLAINS, type Level, type VillainKind } from "@/lib/game/levels";
+import {
+  LEVELS,
+  ENDLESS_LEVEL,
+  VILLAINS,
+  PROLOGUE,
+  EPILOGUE,
+  type Level,
+  type VillainKind,
+} from "@/lib/game/levels";
 import { loadProgress, saveProgress, EMPTY_PROGRESS, type GameProgress } from "@/lib/game/progress";
 
 type Villain = {
@@ -32,6 +40,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [endless, setEndless] = useState(false);
   const [speedInfo, setSpeedInfo] = useState(1);
+  const [beat, setBeat] = useState<{ who: string; text: string } | null>(null);
 
   const level: Level = endless ? ENDLESS_LEVEL : LEVELS[levelIndex];
 
@@ -48,6 +57,10 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     bossSpawned: false,
     level: LEVELS[0] as Level,
     endless: false,
+    aim: { x: GAME_W / 2, y: GAME_H / 2, active: false },
+    firing: false,
+    cooldown: 0,
+    beatsDone: new Set<number>(),
     spidey: { x: GAME_W - 90, y: 220, swing: 0 },
     idCounter: 1,
   });
@@ -90,24 +103,32 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     s.level = lvl;
     s.endless = isEndless;
     s.running = true;
+    s.firing = false;
+    s.cooldown = 0;
+    s.beatsDone = new Set<number>();
     setScore(0);
     setKills(0);
     setLives(lvl.lives);
     setSpeedInfo(1);
+    setBeat(null);
     setEndless(isEndless);
     setLevelIndex(index);
     setScreen("play");
   }, []);
 
-  const shoot = useCallback((clientX: number, clientY: number) => {
+  const toGame = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = GAME_W / rect.width;
-    const scaleY = GAME_H / rect.height;
-    const tx = (clientX - rect.left) * scaleX;
-    const ty = (clientY - rect.top) * scaleY;
+    return {
+      x: ((clientX - rect.left) * GAME_W) / rect.width,
+      y: ((clientY - rect.top) * GAME_H) / rect.height,
+    };
+  }, []);
+
+  const shootAt = useCallback((tx: number, ty: number) => {
     const s = stateRef.current;
+    if (!s.running) return;
     s.webs.push({
       id: s.idCounter++,
       x: s.spidey.x,
@@ -116,13 +137,13 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
       targetY: ty,
       t: 0,
     });
-    // hit detection — nearest villain within its radius (+ touch tolerance)
+    // hit detection — nearest villain within its radius (+ tolerance)
     let best: Villain | null = null;
     let bestD = Infinity;
     for (const v of s.villains) {
       if (v.hit) continue;
       const d = Math.hypot(v.x - tx, v.y - ty);
-      if (d < VILLAINS[v.kind].radius + 24 && d < bestD) {
+      if (d < VILLAINS[v.kind].radius + 30 && d < bestD) {
         best = v;
         bestD = d;
       }
