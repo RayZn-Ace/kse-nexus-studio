@@ -595,12 +595,14 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                 <div
                   className="h-full bg-orange-500 transition-all"
                   style={{
-                    width: endless ? "100%" : `${Math.min(100, (kills / level.target) * 100)}%`,
+                    width: endless
+                      ? `${Math.min(100, (speedInfo - 1) * 200)}%`
+                      : `${Math.min(100, (kills / level.target) * 100)}%`,
                   }}
                 />
               </div>
               <div className="text-[10px] font-mono text-white/80 whitespace-nowrap">
-                {endless ? `${kills} K.O.` : `${kills}/${level.target}`}
+                {endless ? `${kills} K.O. · ×${speedInfo.toFixed(2)}` : `${kills}/${level.target}`}
               </div>
             </div>
           )}
