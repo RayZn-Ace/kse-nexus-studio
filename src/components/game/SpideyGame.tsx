@@ -727,7 +727,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                         Highscores werden serverseitig gespeichert.
                       </p>
                     </div>
-                    <Leaderboard mode="best" refreshKey={boardKey} />
+                    <Leaderboard refreshKey={boardKey} />
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2">
                     <button
@@ -870,7 +870,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                     {endless && ` · Endlos-Best ${progress.endless_best}`}
                   </p>
                   <div className="mb-5">
-                    <Leaderboard mode={endless ? "endless" : "best"} refreshKey={boardKey} compact />
+                    <Leaderboard refreshKey={boardKey} compact />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <button
