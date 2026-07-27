@@ -121,6 +121,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
   const [screen, setScreen] = useState<Screen>("menu");
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<GameProgress>(EMPTY_PROGRESS);
+  const [boardKey, setBoardKey] = useState(0);
   const [levelIndex, setLevelIndex] = useState(0);
   const [endless, setEndless] = useState(false);
   const [speedInfo, setSpeedInfo] = useState(1);
