@@ -885,6 +885,9 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                     Score {score} · Bestscore {progress.best_score}
                     {endless && ` · Endlos-Best ${progress.endless_best}`}
                   </p>
+                  <div className="mb-5">
+                    <Leaderboard mode={endless ? "endless" : "best"} refreshKey={boardKey} compact />
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => startLevel(levelIndex, endless)}
