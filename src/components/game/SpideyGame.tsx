@@ -725,6 +725,26 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                       </p>
                     ))}
                   </div>
+                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                    <div className="border-2 border-white/15 rounded-lg p-3">
+                      <label className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-400 block mb-2">
+                        Heldenname für die Rangliste
+                      </label>
+                      <input
+                        value={progress.display_name ?? ""}
+                        onChange={(e) =>
+                          setProgress((p) => ({ ...p, display_name: e.target.value.slice(0, 24) }))
+                        }
+                        onBlur={() => persist({ display_name: progress.display_name ?? null })}
+                        placeholder="Anonymer Held"
+                        className="w-full bg-black/60 border-2 border-white/20 focus:border-orange-500 outline-none rounded px-2 py-1.5 text-sm"
+                      />
+                      <p className="text-white/40 text-[10px] mt-2">
+                        Highscores werden serverseitig gespeichert.
+                      </p>
+                    </div>
+                    <Leaderboard mode="best" refreshKey={boardKey} />
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-2">
                     <button
                       onClick={() => {
