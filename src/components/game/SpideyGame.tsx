@@ -577,6 +577,11 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
             width={GAME_W}
             height={GAME_H}
             onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={stopFiring}
+            onPointerCancel={stopFiring}
+            onPointerLeave={onPointerLeave}
+            onContextMenu={(e) => e.preventDefault()}
             className="w-full h-auto max-h-full rounded-lg cursor-crosshair touch-none select-none"
             style={{ aspectRatio: `${GAME_W} / ${GAME_H}` }}
           />
@@ -600,6 +605,17 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
+          {screen === "play" && beat && (
+            <div className="pointer-events-none absolute bottom-6 left-6 right-6 flex justify-center">
+              <div className="max-w-[90%] rounded-lg border-2 border-orange-500/70 bg-black/80 px-4 py-2 animate-fade-in">
+                <span className="text-orange-400 font-black text-[10px] uppercase tracking-[0.25em] mr-2">
+                  {beat.who}
+                </span>
+                <span className="text-white text-sm">{beat.text}</span>
+              </div>
+            </div>
+          )}
+
           {screen !== "play" && (
             <div className="absolute inset-2 sm:inset-3 rounded-lg bg-black/85 overflow-y-auto p-4 sm:p-6 text-white">
               {loading ? (
@@ -611,10 +627,17 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                   <h2 className="text-orange-500 font-black text-xl sm:text-2xl tracking-wider mb-1">
                     MISSIONS-AUSWAHL
                   </h2>
-                  <p className="text-white/60 text-xs mb-4">
+                  <p className="text-white/60 text-xs mb-3">
                     Fortschritt gespeichert · Bestscore {progress.best_score} · Gesamt {progress.total_score}
                     {progress.endless_best > 0 && ` · Endlos-Best ${progress.endless_best}`}
                   </p>
+                  <div className="mb-4 border-l-2 border-orange-500/60 pl-3 space-y-1">
+                    {PROLOGUE.map((line, i) => (
+                      <p key={i} className="text-white/70 text-[12px] leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-2">
                     {LEVELS.map((l, i) => {
                       const locked = l.id > progress.unlocked_level;
@@ -638,6 +661,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                             Level {l.id}
                           </div>
                           <div className="font-black text-sm mt-1">{l.name}</div>
+                          <div className="text-[11px] text-white/40">{l.place}</div>
                           <div className="text-[11px] text-white/50 mt-0.5">
                             {l.boss ? "Bosskampf" : `${l.target} Gegner`} · Tempo ×{l.speedMul}
                           </div>
@@ -645,24 +669,19 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                       );
                     })}
                     <button
-                      disabled={!progress.endless_unlocked}
                       onClick={() => {
                         setEndless(true);
                         setScreen("story");
                       }}
-                      className={`text-left border-2 rounded-lg p-3 transition-colors ${
-                        progress.endless_unlocked
-                          ? "border-cyan-400/70 hover:bg-cyan-400/15"
-                          : "border-white/10 text-white/30 cursor-not-allowed"
-                      }`}
+                      className="text-left border-2 rounded-lg p-3 transition-colors border-cyan-400/70 hover:bg-cyan-400/15"
                     >
                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan-300">
-                        {progress.endless_unlocked ? <InfinityIcon className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                        <InfinityIcon className="w-3 h-3" />
                         Endlos
                       </div>
                       <div className="font-black text-sm mt-1">Endlosmodus</div>
                       <div className="text-[11px] text-white/50 mt-0.5">
-                        {progress.endless_unlocked ? "Immer schneller, kein Ende" : "Nach Level 6 freigeschaltet"}
+                        Immer offen · immer schneller · kein Ende
                       </div>
                     </button>
                   </div>
@@ -672,11 +691,18 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
                   <div className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400">
                     {endless ? "Endlos" : `Kapitel ${level.id}`}
                   </div>
-                  <h2 className="font-black text-2xl tracking-wide mt-1 mb-3">{level.name}</h2>
-                  <p className="text-white/80 text-sm leading-relaxed mb-5">{level.intro}</p>
+                  <h2 className="font-black text-2xl tracking-wide mt-1">{level.name}</h2>
+                  <div className="text-white/40 text-[11px] uppercase tracking-widest mb-3">{level.place}</div>
+                  <div className="space-y-2 mb-5">
+                    {level.intro.map((line, i) => (
+                      <p key={i} className="text-white/80 text-sm leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
                   <div className="text-white/50 text-xs mb-5">
                     Ziel: {endless ? "so lange überleben wie möglich" : level.boss ? "Boss besiegen" : `${level.target} Gegner ausschalten`} ·
-                    Leben: {level.lives} · Gegner werden mit der Zeit schneller
+                    Leben: {level.lives} · Gegner werden mit der Zeit schneller · Maus bewegen zum Zielen, klicken/halten zum Netzschuss
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -696,7 +722,20 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
               ) : screen === "cleared" ? (
                 <div className="max-w-lg mx-auto h-full flex flex-col justify-center">
                   <h2 className="text-green-400 font-black text-3xl tracking-wider mb-2">LEVEL GESCHAFFT</h2>
-                  <p className="text-white/80 text-sm leading-relaxed mb-4">{level.outro}</p>
+                  <div className="space-y-2 mb-4">
+                    {(endless ? [] : level.outro).map((line, i) => (
+                      <p key={i} className="text-white/80 text-sm leading-relaxed">
+                        {line}
+                      </p>
+                    ))}
+                    {!endless &&
+                      levelIndex + 1 >= LEVELS.length &&
+                      EPILOGUE.map((line, i) => (
+                        <p key={`ep-${i}`} className="text-orange-200/90 text-sm leading-relaxed">
+                          {line}
+                        </p>
+                      ))}
+                  </div>
                   <p className="text-white/60 text-xs mb-5">
                     Score {score} · Bestscore {progress.best_score} · Fortschritt gespeichert
                   </p>
