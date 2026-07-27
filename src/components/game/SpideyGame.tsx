@@ -20,49 +20,33 @@ import {
 } from "@/lib/game/progress";
 
 function Leaderboard({
-  mode,
   refreshKey,
   compact = false,
 }: {
-  mode: "best" | "endless";
   refreshKey: number;
   compact?: boolean;
 }) {
   const [rows, setRows] = useState<LeaderboardEntry[] | null>(null);
-  const [tab, setTab] = useState<"best" | "endless">(mode);
   const me = typeof window !== "undefined" ? getPlayerKey() : "";
 
   useEffect(() => {
     let cancelled = false;
     setRows(null);
-    loadLeaderboard(tab, compact ? 5 : 10)
+    loadLeaderboard("endless", compact ? 5 : 10)
       .then((r) => !cancelled && setRows(r))
       .catch(() => !cancelled && setRows([]));
     return () => {
       cancelled = true;
     };
-  }, [tab, refreshKey, compact]);
+  }, [refreshKey, compact]);
 
   return (
     <div className="border-2 border-white/15 rounded-lg p-3">
       <div className="flex items-center gap-2 mb-2">
         <Trophy className="w-3.5 h-3.5 text-orange-400" />
         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-400">
-          Highscores
+          Highscores · Endlosmodus
         </span>
-        <div className="ml-auto flex gap-1">
-          {(["best", "endless"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
-                tab === t ? "bg-orange-500 text-black" : "text-white/50 hover:text-white"
-              }`}
-            >
-              {t === "best" ? "Story" : "Endlos"}
-            </button>
-          ))}
-        </div>
       </div>
       {rows === null ? (
         <div className="text-white/40 text-[11px] flex items-center gap-2">
@@ -85,7 +69,7 @@ function Leaderboard({
                 {r.player_key === me && " (du)"}
               </span>
               <span className="tabular-nums font-mono text-orange-400">
-                {tab === "endless" ? r.endless_best : r.best_score}
+                {r.endless_best}
               </span>
             </li>
           ))}
