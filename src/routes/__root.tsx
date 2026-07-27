@@ -155,6 +155,7 @@ function RootComponent() {
             <WhatsAppButton />
             <KseAgent />
             <CustomCursor />
+            <LiveVisitors />
             <CookieConsent />
           </>
         )}
