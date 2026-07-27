@@ -272,4 +272,13 @@
   html.kse-has-cursor .brutal-tile {
     cursor: none !important;
   }
+
+  html.kse-has-cursor .kse-game-modal,
+  html.kse-has-cursor .kse-game-modal * {
+    cursor: auto !important;
+  }
+
+  html.kse-has-cursor .kse-game-canvas {
+    cursor: crosshair !important;
+  }
 }
