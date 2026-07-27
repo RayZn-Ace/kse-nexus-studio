@@ -98,6 +98,51 @@ export type Database = {
         }
         Relationships: []
       }
+      game_progress: {
+        Row: {
+          best_score: number
+          created_at: string
+          display_name: string | null
+          endless_best: number
+          endless_unlocked: boolean
+          id: string
+          level: number
+          player_key: string
+          total_score: number
+          unlocked_level: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          best_score?: number
+          created_at?: string
+          display_name?: string | null
+          endless_best?: number
+          endless_unlocked?: boolean
+          id?: string
+          level?: number
+          player_key: string
+          total_score?: number
+          unlocked_level?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          best_score?: number
+          created_at?: string
+          display_name?: string | null
+          endless_best?: number
+          endless_unlocked?: boolean
+          id?: string
+          level?: number
+          player_key?: string
+          total_score?: number
+          unlocked_level?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       kseadsio_ad_accounts: {
         Row: {
           access_token_encrypted: string | null
