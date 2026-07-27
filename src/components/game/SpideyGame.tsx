@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Lock, Play, Infinity as InfinityIcon, Loader2 } from "lucide-react";
+import { X, Lock, Play, Infinity as InfinityIcon, Loader2, Trophy } from "lucide-react";
 import {
   LEVELS,
   ENDLESS_LEVEL,
