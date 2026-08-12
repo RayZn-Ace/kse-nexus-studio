@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { SIGNATURE_PEOPLE } from "@/lib/signature-people";
 import {
   DEFAULT_AVAILABILITY, bookableDays, slotsForDay, buildRoomUrl, formatDateLong,
   formatTime, icsFor, daysFromSlots, fixedSlotsForDay,
