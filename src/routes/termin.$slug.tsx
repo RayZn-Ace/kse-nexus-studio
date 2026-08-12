@@ -14,6 +14,7 @@ import {
   fieldConfig, type FieldKey,
   type Availability, type BookingLink, type MeetingType,
 } from "@/lib/booking";
+import { sendBookingConfirmation } from "@/lib/booking-mail.functions";
 
 export const Route = createFileRoute("/termin/$slug")({
   head: ({ params }) => ({
@@ -112,7 +113,7 @@ function BookingPage() {
       return toast.error("Bitte gib eine Telefonnummer an, unter der wir dich erreichen.");
     setSubmitting(true);
     const room_url = link.meeting_type === "video" ? buildRoomUrl(link.slug) : null;
-    const { error } = await db.from("bookings").insert({
+    const { data: inserted, error } = await db.from("bookings").insert({
       link_id: link.id,
       name: form.name.trim(),
       email: form.email.trim(),
@@ -123,10 +124,13 @@ function BookingPage() {
       duration_minutes: link.duration_minutes,
       meeting_type: link.meeting_type,
       room_url,
-    });
+    }).select("id").maybeSingle();
     setSubmitting(false);
     if (error) return toast.error(error.message);
     setDone({ starts_at: slot.toISOString(), room_url });
+    if (inserted?.id) {
+      sendBookingConfirmation({ data: { bookingId: inserted.id as string } }).catch(() => {});
+    }
   };
 
   if (loading) {
