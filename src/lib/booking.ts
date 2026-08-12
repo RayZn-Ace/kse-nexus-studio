@@ -1,5 +1,30 @@
 export type MeetingType = "video" | "phone" | "onsite";
 
+export type FieldKey = "name" | "email" | "phone" | "company" | "message";
+export type FieldMode = "required" | "optional" | "prefilled" | "hidden";
+export type FieldConfig = { mode: FieldMode; value?: string };
+export type FormFields = Partial<Record<FieldKey, FieldConfig>>;
+
+export const FORM_FIELDS: { key: FieldKey; label: string; defaultMode: FieldMode }[] = [
+  { key: "name", label: "Name", defaultMode: "required" },
+  { key: "email", label: "E-Mail", defaultMode: "required" },
+  { key: "phone", label: "Telefon", defaultMode: "optional" },
+  { key: "company", label: "Unternehmen", defaultMode: "optional" },
+  { key: "message", label: "Nachricht", defaultMode: "optional" },
+];
+
+export const FIELD_MODES: { id: FieldMode; label: string; hint: string }[] = [
+  { id: "required", label: "Pflicht", hint: "muss ausgefüllt werden" },
+  { id: "optional", label: "Optional", hint: "kann leer bleiben" },
+  { id: "prefilled", label: "Vorausgefüllt", hint: "Wert wird vorbelegt" },
+  { id: "hidden", label: "Irrelevant", hint: "Feld wird ausgeblendet" },
+];
+
+export function fieldConfig(ff: FormFields | undefined | null, key: FieldKey): FieldConfig {
+  const def = FORM_FIELDS.find((f) => f.key === key)!.defaultMode;
+  return { mode: def, value: "", ...(ff?.[key] ?? {}) };
+}
+
 export type Availability = {
   weekdays: number[]; // 0=So .. 6=Sa
   start: string; // "09:00"
@@ -23,6 +48,7 @@ export type BookingLink = {
   mode?: "recurring" | "onetime";
   fixed_slots?: string[]; // ISO datetimes for one-off appointments
   host_key?: string | null; // id aus SIGNATURE_PEOPLE
+  form_fields?: FormFields; // Feldsteuerung des Buchungsformulars
   is_active: boolean;
   created_at?: string;
 };
