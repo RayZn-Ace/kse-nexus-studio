@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Mail, Send } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { sendTerminMail, type MailSender } from "@/lib/termin-mail.functions";
+import { SIGNATURE_PEOPLE, abs, type SignaturePerson } from "@/lib/signature-people";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_AVAILABILITY, MEETING_TYPES, WEEKDAY_LABELS, slugify,
@@ -29,14 +30,7 @@ const db = supabase as any;
 
 const TYPE_ICON: Record<MeetingType, typeof Video> = { video: Video, phone: Phone, onsite: MapPin };
 
-const SENDERS: MailSender[] = [
-  {
-    name: "Kay Engelmann",
-    role: "Geschäftsführer · KSE GROUP",
-    email: "kay@ksegroup.eu",
-    phone: "+49 511 000000",
-  },
-];
+const SENDERS: MailSender[] = SIGNATURE_PEOPLE.map(({ id: _id, ...p }) => p);
 
 function TerminePage() {
   const [tab, setTab] = useState<"links" | "bookings">("links");
@@ -228,6 +222,19 @@ function MailModal({ link, url, onClose }: { link: BookingLink; url: string; onC
   );
   const [sender, setSender] = useState<MailSender>(SENDERS[0]);
   const [busy, setBusy] = useState(false);
+  const [gallery, setGallery] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.storage
+      .from("media")
+      .list("", { limit: 60, sortBy: { column: "created_at", order: "desc" } })
+      .then(({ data }) => {
+        const imgs = (data ?? [])
+          .filter((f) => /\.(png|jpe?g|webp|gif|avif)$/i.test(f.name))
+          .map((f) => `https://ksegroup.eu/api/public/media/${encodeURIComponent(f.name)}`);
+        setGallery(imgs);
+      });
+  }, []);
 
   const input = "w-full border-2 border-[#0a0a0a] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5722]";
   const label = "block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60 mb-1";
@@ -283,7 +290,52 @@ function MailModal({ link, url, onClose }: { link: BookingLink; url: string; onC
               <input className={input} value={sender.role} onChange={(e) => setSender({ ...sender, role: e.target.value })} placeholder="Position" />
               <input className={input} value={sender.email} onChange={(e) => setSender({ ...sender, email: e.target.value })} placeholder="absender@ksegroup.eu" />
               <input className={input} value={sender.phone ?? ""} onChange={(e) => setSender({ ...sender, phone: e.target.value })} placeholder="Telefon" />
-              <input className={`${input} sm:col-span-2`} value={sender.photo_url ?? ""} onChange={(e) => setSender({ ...sender, photo_url: e.target.value })} placeholder="Foto-URL (optional, rund in der Signatur)" />
+            </div>
+
+            <div className="mt-4">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60">Kollegen auswählen</div>
+              <div className="flex flex-wrap gap-3">
+                {SIGNATURE_PEOPLE.map((p: SignaturePerson) => {
+                  const active = sender.email === p.email && sender.name === p.name;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSender({ name: p.name, role: p.role, email: p.email, phone: p.phone, photo_url: p.photo_url })}
+                      className={`flex w-[124px] flex-col items-center gap-1 border-2 p-2 text-center ${active ? "border-[#ff5722] bg-white" : "border-[#0a0a0a]/20 hover:border-[#0a0a0a]"}`}
+                    >
+                      {p.photo_url ? (
+                        <img src={p.photo_url} alt={p.name} loading="lazy" width={56} height={56} className="h-14 w-14 rounded-full object-cover" />
+                      ) : (
+                        <span className="grid h-14 w-14 place-items-center rounded-full bg-[#0a0a0a] text-sm font-black text-white">
+                          {p.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                        </span>
+                      )}
+                      <span className="text-[10px] font-bold leading-tight">{p.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60">Signaturfoto</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSender({ ...sender, photo_url: "" })}
+                  className={`grid h-12 w-12 place-items-center rounded-full border-2 text-[9px] font-black uppercase ${!sender.photo_url ? "border-[#ff5722]" : "border-[#0a0a0a]/20"}`}
+                >
+                  Kein
+                </button>
+                {[...SIGNATURE_PEOPLE.map((p) => p.photo_url).filter(Boolean) as string[], ...gallery].map((u) => (
+                  <button key={u} type="button" onClick={() => setSender({ ...sender, photo_url: abs(u) })}
+                    className={`rounded-full border-2 p-0.5 ${sender.photo_url === abs(u) ? "border-[#ff5722]" : "border-transparent hover:border-[#0a0a0a]/30"}`}>
+                    <img src={u} alt="" loading="lazy" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[10px] text-[#0a0a0a]/50">Eigene Fotos kommen aus „Medien“ — dort hochladen, erscheint hier automatisch.</p>
             </div>
           </div>
           <div className="border-2 border-dashed border-[#0a0a0a]/30 px-3 py-2 font-mono text-[11px]">{url}</div>
