@@ -22,6 +22,7 @@ export type BookingLink = {
   availability: Availability;
   mode?: "recurring" | "onetime";
   fixed_slots?: string[]; // ISO datetimes for one-off appointments
+  host_key?: string | null; // id aus SIGNATURE_PEOPLE
   is_active: boolean;
   created_at?: string;
 };
