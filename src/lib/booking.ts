@@ -20,6 +20,8 @@ export type BookingLink = {
   info: string | null;
   color: string;
   availability: Availability;
+  mode?: "recurring" | "onetime";
+  fixed_slots?: string[]; // ISO datetimes for one-off appointments
   is_active: boolean;
   created_at?: string;
 };
@@ -120,6 +122,43 @@ export function slotsForDay(
 
 export function formatTime(d: Date) {
   return d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Distinct days (00:00 local) contained in a list of ISO slot strings. */
+export function daysFromSlots(slots: string[]): Date[] {
+  const map = new Map<string, Date>();
+  for (const iso of slots) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) continue;
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    map.set(dateKey(day), day);
+  }
+  return [...map.values()].sort((a, b) => a.getTime() - b.getTime());
+}
+
+/** Fixed slots for a given day, excluding taken slots and past times. */
+export function fixedSlotsForDay(day: Date, slots: string[], taken: string[] = [], now = new Date()): Date[] {
+  const takenSet = new Set(taken);
+  return slots
+    .map((s) => new Date(s))
+    .filter((d) => !isNaN(d.getTime()))
+    .filter((d) => dateKey(d) === dateKey(day))
+    .filter((d) => d.getTime() > now.getTime())
+    .filter((d) => !takenSet.has(d.toISOString()))
+    .sort((a, b) => a.getTime() - b.getTime());
+}
+
+/** Build candidate times (Date objects) for a day between two "HH:MM" bounds. */
+export function timeGrid(day: Date, start: string, end: string, step: number): Date[] {
+  const out: Date[] = [];
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const startM = sh * 60 + (sm || 0);
+  const endM = eh * 60 + (em || 0);
+  for (let m = startM; m <= endM - 1; m += Math.max(5, step)) {
+    out.push(new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(m / 60), m % 60, 0, 0));
+  }
+  return out;
 }
 
 export function formatDateLong(d: Date) {
