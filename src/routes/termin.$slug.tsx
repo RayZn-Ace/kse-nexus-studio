@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { SIGNATURE_PEOPLE } from "@/lib/signature-people";
 import {
   DEFAULT_AVAILABILITY, bookableDays, slotsForDay, buildRoomUrl, formatDateLong,
   formatTime, icsFor, daysFromSlots, fixedSlotsForDay,
@@ -89,6 +90,7 @@ function BookingPage() {
   }, [days, day]);
 
   const Icon = link ? TYPE_ICON[link.meeting_type] ?? Video : Video;
+  const host = link?.host_key ? SIGNATURE_PEOPLE.find((p) => p.id === link.host_key) ?? null : null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,68 +119,95 @@ function BookingPage() {
 
   if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-accent" />
+      <main className="grid min-h-screen place-items-center bg-[#f4f4f4]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#ff5722]" />
       </main>
     );
   }
 
   if (!link) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background px-6 text-center">
-        <div>
-          <h1 className="font-display text-3xl font-semibold">Termin nicht verfügbar</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Dieser Terminlink existiert nicht oder ist deaktiviert.</p>
-          <Link to="/" className="mt-6 inline-block rounded-full bg-accent px-5 py-2.5 text-sm text-accent-foreground">Zur Startseite</Link>
+      <main className="grid min-h-screen place-items-center bg-[#f4f4f4] px-6 text-center text-[#0a0a0a]">
+        <div className="border-4 border-[#0a0a0a] bg-white p-10 shadow-[10px_10px_0_0_#0a0a0a]">
+          <h1 className="text-3xl font-black uppercase tracking-tight">Termin nicht verfügbar</h1>
+          <p className="mt-2 text-sm text-[#0a0a0a]/60">Dieser Terminlink existiert nicht oder ist deaktiviert.</p>
+          <Link to="/" className="mt-6 inline-block border-2 border-[#0a0a0a] bg-[#ffeb3b] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em]">Zur Startseite</Link>
         </div>
       </main>
     );
   }
 
   const inputCls =
-    "w-full rounded-xl border border-border bg-card/40 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-accent/60 focus:outline-none transition-colors";
+    "w-full border-2 border-[#0a0a0a] bg-white px-4 py-3 text-sm text-[#0a0a0a] placeholder:text-[#0a0a0a]/40 focus:bg-[#ffeb3b]/20 focus:outline-none transition-colors";
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-10 sm:px-6 md:py-16">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
+    <main className="relative min-h-screen bg-[#f4f4f4] px-4 py-10 text-[#0a0a0a] sm:px-6 md:py-16">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{ backgroundImage: "linear-gradient(#0a0a0a 1px,transparent 1px),linear-gradient(90deg,#0a0a0a 1px,transparent 1px)", backgroundSize: "48px 48px" }}
+      />
 
-      <div className="mx-auto max-w-5xl">
-        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+      <div className="relative mx-auto max-w-5xl">
+        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 border-2 border-[#0a0a0a] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-[#ffeb3b]">
           <ArrowLeft className="h-3.5 w-3.5" /> ksegroup.eu
         </Link>
 
-        <div className="glass grid overflow-hidden rounded-3xl md:grid-cols-[320px_1fr]">
+        <div className="grid border-4 border-[#0a0a0a] bg-white shadow-[12px_12px_0_0_#0a0a0a] md:grid-cols-[340px_1fr]">
           {/* Sidebar */}
-          <aside className="border-b border-border/60 p-7 md:border-b-0 md:border-r">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">
+          <aside className="border-b-4 border-[#0a0a0a] bg-[#0a0a0a] p-7 text-white md:border-b-0 md:border-r-4">
+            <div className="inline-flex items-center gap-2 bg-[#ff5722] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-white">
               <Icon className="h-3 w-3" /> {TYPE_LABEL[link.meeting_type]}
             </div>
-            <h1 className="font-display mt-4 text-3xl font-semibold leading-tight">{link.title}</h1>
-            {link.description && <p className="mt-3 text-sm text-muted-foreground">{link.description}</p>}
+            <h1 className="mt-5 text-4xl font-black uppercase leading-[0.95] tracking-tight">{link.title}</h1>
+            <div className="mt-3 h-2 w-24 bg-[#ffeb3b]" />
+            {link.description && <p className="mt-4 text-sm leading-relaxed text-white/70">{link.description}</p>}
 
-            <ul className="mt-6 space-y-3 text-sm">
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <Clock className="h-4 w-4 text-accent" /> {link.duration_minutes} Minuten
+            {host && (
+              <div className="mt-7 border-2 border-white/20 p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ffeb3b]">/ Dein Ansprechpartner</div>
+                <div className="mt-3 flex items-center gap-3">
+                  {host.photo_url ? (
+                    <img src={host.photo_url} alt={host.name} className="h-16 w-16 rounded-full border-2 border-[#ff5722] object-cover" />
+                  ) : (
+                    <span className="grid h-16 w-16 place-items-center rounded-full border-2 border-[#ff5722] text-lg font-black">
+                      {host.name.split(" ").map((n) => n[0]).join("")}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-lg font-black uppercase leading-tight">{host.name}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">{host.role}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <ul className="mt-7 space-y-3 text-sm">
+              <li className="flex items-center gap-2.5 text-white/70">
+                <Clock className="h-4 w-4 text-[#ff5722]" /> {link.duration_minutes} Minuten
               </li>
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <Icon className="h-4 w-4 text-accent" />
+              <li className="flex items-center gap-2.5 text-white/70">
+                <Icon className="h-4 w-4 text-[#ff5722]" />
                 {link.meeting_type === "video" && "Video-Raum wird automatisch erstellt"}
                 {link.meeting_type === "phone" && "Wir rufen dich an"}
                 {link.meeting_type === "onsite" && (link.location || "Vor Ort")}
               </li>
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <CalendarDays className="h-4 w-4 text-accent" /> Zeitzone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+              <li className="flex items-center gap-2.5 text-white/70">
+                <CalendarDays className="h-4 w-4 text-[#ff5722]" /> {Intl.DateTimeFormat().resolvedOptions().timeZone}
               </li>
             </ul>
 
             {link.info && (
-              <div className="mt-6 rounded-2xl border border-border/60 bg-card/30 p-4">
-                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">
+              <div className="mt-6 border-2 border-[#ffeb3b] bg-[#ffeb3b]/10 p-4">
+                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[#ffeb3b]">
                   <Info className="h-3 w-3" /> Infos
                 </div>
-                <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">{link.info}</p>
+                <p className="whitespace-pre-wrap text-xs leading-relaxed text-white/70">{link.info}</p>
               </div>
             )}
+
+            <div className="mt-8 border-t-2 border-white/15 pt-4 text-[11px] leading-snug">
+              Wir bauen keine Marken. <span className="text-[#ff5722]">Wir bauen Charakter.</span>
+            </div>
           </aside>
 
           {/* Main */}
@@ -186,22 +215,25 @@ function BookingPage() {
             <AnimatePresence mode="wait">
               {done ? (
                 <motion.div key="done" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="py-6 text-center">
-                  <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
-                  <h2 className="font-display mt-4 text-2xl font-semibold">Termin bestätigt</h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="mx-auto h-12 w-12 text-[#ff5722]" />
+                  <h2 className="mt-4 text-3xl font-black uppercase tracking-tight">Termin bestätigt</h2>
+                  <p className="mt-2 text-sm text-[#0a0a0a]/60">
                     {formatDateLong(new Date(done.starts_at))} um {formatTime(new Date(done.starts_at))} Uhr
                   </p>
+                  {host && (
+                    <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-[#ff5722]">mit {host.name}</p>
+                  )}
                   {done.room_url && (
-                    <div className="mx-auto mt-5 flex max-w-md items-center gap-2 rounded-xl border border-border bg-card/40 px-3 py-2">
+                    <div className="mx-auto mt-5 flex max-w-md items-center gap-2 border-2 border-[#0a0a0a] bg-white px-3 py-2">
                       <span className="truncate font-mono text-xs">{done.room_url}</span>
-                      <button onClick={() => { navigator.clipboard.writeText(done.room_url!); toast.success("Link kopiert"); }} className="ml-auto text-accent">
+                      <button onClick={() => { navigator.clipboard.writeText(done.room_url!); toast.success("Link kopiert"); }} className="ml-auto text-[#ff5722]">
                         <Copy className="h-4 w-4" />
                       </button>
                     </div>
                   )}
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {done.room_url && (
-                      <a href={done.room_url} target="_blank" rel="noreferrer" className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground">
+                      <a href={done.room_url} target="_blank" rel="noreferrer" className="border-2 border-[#0a0a0a] bg-[#ff5722] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-white shadow-[5px_5px_0_0_#0a0a0a]">
                         Raum öffnen
                       </a>
                     )}
@@ -219,7 +251,7 @@ function BookingPage() {
                         a.href = url; a.download = "kse-termin.ics"; a.click();
                         URL.revokeObjectURL(url);
                       }}
-                      className="rounded-full border border-border px-5 py-2.5 text-sm"
+                      className="border-2 border-[#0a0a0a] bg-[#ffeb3b] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] shadow-[5px_5px_0_0_#0a0a0a]"
                     >
                       Zum Kalender hinzufügen
                     </button>
@@ -227,25 +259,26 @@ function BookingPage() {
                 </motion.div>
               ) : !slot ? (
                 <motion.div key="pick" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h2 className="font-display text-xl font-semibold">Wähle deinen Termin</h2>
-                  <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/40">/ Schritt 01</div>
+                  <h2 className="mt-1 text-2xl font-black uppercase tracking-tight">Wähle deinen Termin</h2>
+                  <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
                     {days.map((d) => {
                       const active = day && d.toDateString() === day.toDateString();
                       return (
                         <button
                           key={d.toISOString()}
                           onClick={() => setDay(d)}
-                          className={`min-w-[74px] shrink-0 rounded-2xl border px-3 py-2.5 text-center transition-colors ${
-                            active ? "border-accent bg-accent/15 text-foreground" : "border-border bg-card/30 text-muted-foreground hover:border-accent/50"
+                          className={`min-w-[78px] shrink-0 border-2 border-[#0a0a0a] px-3 py-2.5 text-center transition-all ${
+                            active ? "bg-[#ff5722] text-white shadow-[5px_5px_0_0_#0a0a0a]" : "bg-white hover:bg-[#ffeb3b]"
                           }`}
                         >
-                          <div className="text-[10px] uppercase tracking-widest">{d.toLocaleDateString("de-DE", { weekday: "short" })}</div>
-                          <div className="text-lg font-semibold">{d.getDate()}</div>
-                          <div className="text-[10px] uppercase">{d.toLocaleDateString("de-DE", { month: "short" })}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em]">{d.toLocaleDateString("de-DE", { weekday: "short" })}</div>
+                          <div className="text-2xl font-black leading-none">{d.getDate()}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em]">{d.toLocaleDateString("de-DE", { month: "short" })}</div>
                         </button>
                       );
                     })}
-                    {days.length === 0 && <p className="text-sm text-muted-foreground">Aktuell keine freien Tage.</p>}
+                    {days.length === 0 && <p className="text-sm text-[#0a0a0a]/50">Aktuell keine freien Tage.</p>}
                   </div>
 
                   <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -253,24 +286,25 @@ function BookingPage() {
                       <button
                         key={s.toISOString()}
                         onClick={() => setSlot(s)}
-                        className="group rounded-xl border border-border bg-card/30 px-3 py-3 text-sm font-medium transition-all hover:border-accent hover:bg-accent/10"
+                        className="group border-2 border-[#0a0a0a] bg-white px-3 py-3 text-sm font-black uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-[#ffeb3b] hover:shadow-[5px_5px_0_0_#0a0a0a]"
                       >
                         {formatTime(s)}
                         <ArrowRight className="ml-1 inline h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
                     ))}
                     {day && slots.length === 0 && (
-                      <p className="col-span-full text-sm text-muted-foreground">An diesem Tag ist nichts mehr frei.</p>
+                      <p className="col-span-full text-sm text-[#0a0a0a]/50">An diesem Tag ist nichts mehr frei.</p>
                     )}
                   </div>
                 </motion.div>
               ) : (
                 <motion.form key="form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} onSubmit={submit} className="space-y-3">
-                  <button type="button" onClick={() => setSlot(null)} className="mb-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                  <button type="button" onClick={() => setSlot(null)} className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-[#0a0a0a]/50 hover:text-[#ff5722]">
                     <ArrowLeft className="h-3.5 w-3.5" /> anderen Zeitpunkt wählen
                   </button>
-                  <div className="rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm">
-                    <strong className="font-semibold">{formatDateLong(slot)}</strong> · {formatTime(slot)} Uhr · {link.duration_minutes} Min
+                  <div className="border-2 border-[#0a0a0a] bg-[#ffeb3b] px-4 py-3 text-sm font-black uppercase tracking-wide">
+                    {formatDateLong(slot)} · {formatTime(slot)} Uhr · {link.duration_minutes} Min
+                    {host && <span className="block text-[10px] tracking-[0.2em] text-[#0a0a0a]/60">mit {host.name}</span>}
                   </div>
                   <input className={inputCls} placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
                   <input className={inputCls} type="email" placeholder="E-Mail *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
@@ -286,7 +320,7 @@ function BookingPage() {
                   <input className={inputCls} placeholder="Unternehmen (optional)" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} maxLength={120} />
                   <textarea className={inputCls} rows={4} placeholder="Worum geht's? (optional)" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={1000} />
                   <button type="submit" disabled={submitting}
-                    className="glow-orange inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-transform hover:scale-[1.01] disabled:opacity-60">
+                    className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#0a0a0a] bg-[#ff5722] px-6 py-4 text-xs font-black uppercase tracking-[0.25em] text-white shadow-[6px_6px_0_0_#0a0a0a] transition-transform hover:-translate-y-0.5 disabled:opacity-60">
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Termin verbindlich buchen"}
                   </button>
                 </motion.form>

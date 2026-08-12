@@ -70,6 +70,7 @@ function TerminePage() {
       availability: editing.availability || DEFAULT_AVAILABILITY,
       mode: editing.mode || "recurring",
       fixed_slots: editing.fixed_slots || [],
+      host_key: editing.host_key || null,
       is_active: editing.is_active ?? true,
     };
     const res = editing.id
@@ -472,6 +473,26 @@ function EditorModal({
               className={`w-full border-2 border-[#0a0a0a] px-3 py-2 text-xs font-black uppercase tracking-widest ${value.is_active ?? true ? "bg-emerald-500 text-white" : "bg-white"}`}>
               {value.is_active ?? true ? "Aktiv" : "Inaktiv"}
             </button>
+          </div>
+          <div className="md:col-span-2">
+            <label className={label}>Mit wem findet der Termin statt?</label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {SIGNATURE_PEOPLE.map((p) => {
+                const active = value.host_key === p.id;
+                return (
+                  <button key={p.id} onClick={() => onChange({ ...value, host_key: active ? null : p.id })}
+                    className={`flex items-center gap-2.5 border-2 border-[#0a0a0a] p-2 text-left ${active ? "bg-[#0a0a0a] text-white" : "bg-white"}`}>
+                    {p.photo_url
+                      ? <img src={p.photo_url} alt={p.name} className="h-9 w-9 rounded-full border-2 border-[#ff5722] object-cover" />
+                      : <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#ff5722] text-[11px] font-black">{p.name.split(" ").map((n) => n[0]).join("")}</span>}
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11px] font-black uppercase tracking-widest">{p.name}</span>
+                      <span className={`block truncate text-[10px] ${active ? "text-white/60" : "text-[#0a0a0a]/50"}`}>{p.role.split("·")[0]}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div className="md:col-span-2">
             <label className={label}>Beschreibung (Kunde sieht das)</label>
