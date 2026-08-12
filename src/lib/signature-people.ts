@@ -4,6 +4,8 @@ import female1 from "@/assets/signatures/female-1.jpg.asset.json";
 import female2 from "@/assets/signatures/female-2.jpg.asset.json";
 import maleYoung from "@/assets/signatures/male-young.jpg.asset.json";
 import femaleYoung from "@/assets/signatures/female-young.jpg.asset.json";
+import timPhoto from "@/assets/signatures/tim_bergmann.png";
+import ninaPhoto from "@/assets/signatures/nina_scholz.png";
 
 /** Absolute origin so signature photos load inside e-mail clients. */
 export const PUBLIC_ORIGIN = "https://ksegroup.eu";
@@ -75,5 +77,21 @@ export const SIGNATURE_PEOPLE: SignaturePerson[] = [
     email: "lena@ksegroup.eu",
     phone: "+49 511 000006",
     photo_url: abs(femaleYoung.url),
+  },
+  {
+    id: "tim",
+    name: "Tim Bergmann",
+    role: "Junior Consultant · KSE GROUP",
+    email: "tim@ksegroup.eu",
+    phone: "+49 511 000007",
+    photo_url: abs(timPhoto),
+  },
+  {
+    id: "nina",
+    name: "Nina Scholz",
+    role: "Junior Kundenbetreuung · KSE GROUP",
+    email: "nina@ksegroup.eu",
+    phone: "+49 511 000008",
+    photo_url: abs(ninaPhoto),
   },
 ];
