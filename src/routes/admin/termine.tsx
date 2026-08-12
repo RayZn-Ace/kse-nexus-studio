@@ -578,6 +578,68 @@ function EditorModal({
 function SlotPicker({
   slots, step, onChange,
 }: { slots: string[]; step: number; onChange: (slots: string[]) => void }) {
+  return <SlotPickerInner slots={slots} step={step} onChange={onChange} />;
+}
+
+function FieldConfigEditor({
+  value, onChange,
+}: { value: FormFields; onChange: (v: FormFields) => void }) {
+  const label = "block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60 mb-1";
+  const set = (key: string, patch: { mode?: FieldMode; value?: string }) =>
+    onChange({ ...value, [key]: { ...fieldConfig(value, key as never), ...patch } });
+
+  return (
+    <div className="mt-6 border-t-2 border-[#0a0a0a] pt-4">
+      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/50">/ Formularfelder</div>
+      <p className="mt-1 text-[11px] text-[#0a0a0a]/50">
+        Felder vorausfüllen oder als irrelevant markieren — der Kunde sieht dann nur noch das Nötigste.
+      </p>
+      <div className="mt-3 space-y-2">
+        {FORM_FIELDS.map((f) => {
+          const cfg = fieldConfig(value, f.key);
+          return (
+            <div key={f.key} className="border-2 border-[#0a0a0a] bg-white p-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="min-w-[110px] text-[11px] font-black uppercase tracking-widest">{f.label}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {FIELD_MODES.map((m) => (
+                    <button
+                      key={m.id}
+                      title={m.hint}
+                      onClick={() => set(f.key, { mode: m.id })}
+                      className={`border-2 border-[#0a0a0a] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                        cfg.mode === m.id
+                          ? m.id === "hidden" ? "bg-[#0a0a0a] text-white" : "bg-[#ff5722] text-white"
+                          : "bg-white"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {cfg.mode === "prefilled" && (
+                <div className="mt-2">
+                  <label className={label}>Vorbelegter Wert</label>
+                  <input
+                    className="w-full border-2 border-[#0a0a0a] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5722]"
+                    value={cfg.value || ""}
+                    placeholder={`${f.label} vorausfüllen`}
+                    onChange={(e) => set(f.key, { value: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SlotPickerInner({
+  slots, step, onChange,
+}: { slots: string[]; step: number; onChange: (slots: string[]) => void }) {
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [range, setRange] = useState({ start: "08:00", end: "18:00", step });
   const set = new Set(slots);
