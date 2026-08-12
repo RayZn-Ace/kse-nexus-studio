@@ -397,3 +397,113 @@ function EditorModal({
     </div>
   );
 }
+function SlotPicker({
+  slots, step, onChange,
+}: { slots: string[]; step: number; onChange: (slots: string[]) => void }) {
+  const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
+  const [range, setRange] = useState({ start: "08:00", end: "18:00", step });
+  const set = new Set(slots);
+  const selectedDays = daysFromSlots(slots);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const firstDow = (month.getDay() + 6) % 7; // Monday-first
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells: (Date | null)[] = [
+    ...Array.from({ length: firstDow }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1)),
+  ];
+
+  const toggleSlot = (d: Date) => {
+    const iso = d.toISOString();
+    const next = set.has(iso) ? slots.filter((s) => s !== iso) : [...slots, iso];
+    onChange(next.sort());
+  };
+  const toggleDay = (day: Date) => {
+    const has = slots.some((s) => dateKey(new Date(s)) === dateKey(day));
+    if (has) onChange(slots.filter((s) => dateKey(new Date(s)) !== dateKey(day)));
+    else onChange([...slots, timeGrid(day, range.start, range.end, range.step)[0]?.toISOString()].filter(Boolean).sort() as string[]);
+  };
+
+  const cell = "border-2 border-[#0a0a0a] px-2 py-1.5 text-[11px] font-black uppercase";
+  return (
+    <div className="border-2 border-[#0a0a0a] bg-white p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/50">/ Tage & Uhrzeiten wählen</div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className={cell}>‹</button>
+          <span className="min-w-[130px] text-center text-[11px] font-black uppercase tracking-widest">
+            {month.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}
+          </span>
+          <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className={cell}>›</button>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-7 gap-1 text-center">
+        {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((d) => (
+          <div key={d} className="text-[10px] font-black uppercase tracking-widest text-[#0a0a0a]/40">{d}</div>
+        ))}
+        {cells.map((d, i) => {
+          if (!d) return <div key={`e${i}`} />;
+          const active = slots.some((s) => dateKey(new Date(s)) === dateKey(d));
+          const past = d < today;
+          return (
+            <button key={d.toISOString()} disabled={past} onClick={() => toggleDay(d)}
+              className={`border-2 border-[#0a0a0a] py-1.5 text-[11px] font-black ${
+                active ? "bg-[#ff5722] text-white" : past ? "border-[#0a0a0a]/20 text-[#0a0a0a]/25" : "bg-white hover:bg-[#0a0a0a] hover:text-white"
+              }`}>
+              {d.getDate()}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <div>
+          <label className="mb-1 block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60">Zeitfenster von</label>
+          <input type="time" value={range.start} onChange={(e) => setRange({ ...range, start: e.target.value })} className="w-full border-2 border-[#0a0a0a] px-2 py-1.5 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60">bis</label>
+          <input type="time" value={range.end} onChange={(e) => setRange({ ...range, end: e.target.value })} className="w-full border-2 border-[#0a0a0a] px-2 py-1.5 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60">Raster (Min)</label>
+          <input type="number" min={5} step={5} value={range.step} onChange={(e) => setRange({ ...range, step: Number(e.target.value) || 30 })} className="w-full border-2 border-[#0a0a0a] px-2 py-1.5 text-sm" />
+        </div>
+      </div>
+
+      {selectedDays.length === 0 ? (
+        <p className="mt-4 text-xs text-[#0a0a0a]/50">Tippe oben einen Tag an — danach wählst du hier die Uhrzeiten (Mehrfachauswahl).</p>
+      ) : (
+        <div className="mt-4 space-y-4">
+          {selectedDays.map((day) => {
+            const grid = timeGrid(day, range.start, range.end, range.step);
+            const count = slots.filter((s) => dateKey(new Date(s)) === dateKey(day)).length;
+            return (
+              <div key={dateKey(day)} className="border-2 border-dashed border-[#0a0a0a]/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] font-black uppercase tracking-widest">{formatDateLong(day)} · {count} Slots</div>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => onChange([...new Set([...slots, ...grid.map((g) => g.toISOString())])].sort())} className={cell}>Alle</button>
+                    <button onClick={() => onChange(slots.filter((s) => dateKey(new Date(s)) !== dateKey(day)))} className={cell}>Tag entfernen</button>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {grid.map((g) => {
+                    const on = set.has(g.toISOString());
+                    return (
+                      <button key={g.toISOString()} onClick={() => toggleSlot(g)}
+                        className={`border-2 border-[#0a0a0a] px-2.5 py-1 text-[11px] font-black ${on ? "bg-[#0a0a0a] text-white" : "bg-white"}`}>
+                        {formatTime(g)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
