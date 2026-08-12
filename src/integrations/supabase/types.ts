@@ -32,6 +32,110 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_links: {
+        Row: {
+          availability: Json
+          color: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          info: string | null
+          is_active: boolean
+          location: string | null
+          meeting_type: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          availability?: Json
+          color?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          info?: string | null
+          is_active?: boolean
+          location?: string | null
+          meeting_type?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          availability?: Json
+          color?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          info?: string | null
+          is_active?: boolean
+          location?: string | null
+          meeting_type?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          company: string | null
+          created_at: string
+          duration_minutes: number
+          email: string
+          id: string
+          link_id: string
+          meeting_type: string
+          message: string | null
+          name: string
+          phone: string | null
+          room_url: string | null
+          starts_at: string
+          status: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          duration_minutes?: number
+          email: string
+          id?: string
+          link_id: string
+          meeting_type?: string
+          message?: string | null
+          name: string
+          phone?: string | null
+          room_url?: string | null
+          starts_at: string
+          status?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          duration_minutes?: number
+          email?: string
+          id?: string
+          link_id?: string
+          meeting_type?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+          room_url?: string | null
+          starts_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "booking_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chatbot_config: {
         Row: {
           key: string
