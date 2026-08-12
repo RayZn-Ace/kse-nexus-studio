@@ -5,6 +5,9 @@ import {
   Users, Check, X, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Mail, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { sendTerminMail, type MailSender } from "@/lib/termin-mail.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_AVAILABILITY, MEETING_TYPES, WEEKDAY_LABELS, slugify,
@@ -26,12 +29,22 @@ const db = supabase as any;
 
 const TYPE_ICON: Record<MeetingType, typeof Video> = { video: Video, phone: Phone, onsite: MapPin };
 
+const SENDERS: MailSender[] = [
+  {
+    name: "Kay Engelmann",
+    role: "Geschäftsführer · KSE GROUP",
+    email: "kay@ksegroup.eu",
+    phone: "+49 511 000000",
+  },
+];
+
 function TerminePage() {
   const [tab, setTab] = useState<"links" | "bookings">("links");
   const [links, setLinks] = useState<BookingLink[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<BookingLink> | null>(null);
+  const [mailFor, setMailFor] = useState<BookingLink | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -171,6 +184,9 @@ function TerminePage() {
                 </div>
                 <div className="mt-4 flex gap-2">
                   <button onClick={() => setEditing(l)} className="border-2 border-[#0a0a0a] px-3 py-1.5 text-[11px] font-black uppercase tracking-widest hover:bg-[#0a0a0a] hover:text-white">Bearbeiten</button>
+                  <button onClick={() => setMailFor(l)} className="inline-flex items-center gap-1.5 border-2 border-[#0a0a0a] bg-[#ff5722] px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-white">
+                    <Mail className="h-3.5 w-3.5" /> Mailen
+                  </button>
                   <button onClick={() => remove(l.id)} className="border-2 border-[#0a0a0a] px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#ff5722] hover:bg-[#ff5722] hover:text-white">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -194,7 +210,90 @@ function TerminePage() {
           onSave={save}
         />
       )}
+
+      {mailFor && (
+        <MailModal link={mailFor} url={`${origin}/termin/${mailFor.slug}`} onClose={() => setMailFor(null)} />
+      )}
     </main>
+  );
+}
+
+function MailModal({ link, url, onClose }: { link: BookingLink; url: string; onClose: () => void }) {
+  const send = useServerFn(sendTerminMail);
+  const [to, setTo] = useState("");
+  const [cc, setCc] = useState("");
+  const [subject, setSubject] = useState(`Terminvorschlag: ${link.title}`);
+  const [message, setMessage] = useState(
+    `Guten Tag,\n\nanbei mein Terminvorschlag für "${link.title}" (${link.duration_minutes} Minuten).\nBitte wählen Sie einfach einen passenden Zeitpunkt aus.\n\nBeste Grüße`,
+  );
+  const [sender, setSender] = useState<MailSender>(SENDERS[0]);
+  const [busy, setBusy] = useState(false);
+
+  const input = "w-full border-2 border-[#0a0a0a] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5722]";
+  const label = "block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60 mb-1";
+  const split = (s: string) => s.split(/[,;\s]+/).map((x) => x.trim()).filter(Boolean);
+
+  const submit = async () => {
+    const toList = split(to);
+    if (!toList.length) return toast.error("Empfänger fehlt");
+    setBusy(true);
+    try {
+      await send({
+        data: { to: toList, cc: split(cc), subject, message, bookingUrl: url, linkTitle: link.title, sender },
+      });
+      toast.success("Mail versendet");
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Versand fehlgeschlagen");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/60 p-4">
+      <div className="my-8 w-full max-w-xl border-2 border-[#0a0a0a] bg-[#f5f2ea] p-6" style={{ boxShadow: "10px 10px 0 0 #ff5722" }}>
+        <div className="flex items-center justify-between border-b-2 border-[#0a0a0a] pb-3">
+          <h2 className="text-2xl font-black uppercase tracking-tight">Termin per Mail senden</h2>
+          <button onClick={onClose}><X className="h-5 w-5" /></button>
+        </div>
+        <div className="mt-5 grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>An (Komma-getrennt)</label>
+              <input className={input} value={to} onChange={(e) => setTo(e.target.value)} placeholder="kunde@firma.de" />
+            </div>
+            <div>
+              <label className={label}>CC (optional)</label>
+              <input className={input} value={cc} onChange={(e) => setCc(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className={label}>Betreff</label>
+            <input className={input} value={subject} onChange={(e) => setSubject(e.target.value)} />
+          </div>
+          <div>
+            <label className={label}>Nachricht</label>
+            <textarea rows={7} className={input} value={message} onChange={(e) => setMessage(e.target.value)} />
+          </div>
+          <div className="border-t-2 border-[#0a0a0a] pt-4">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/50">/ Absender & Signatur</div>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <input className={input} value={sender.name} onChange={(e) => setSender({ ...sender, name: e.target.value })} placeholder="Name" />
+              <input className={input} value={sender.role} onChange={(e) => setSender({ ...sender, role: e.target.value })} placeholder="Position" />
+              <input className={input} value={sender.email} onChange={(e) => setSender({ ...sender, email: e.target.value })} placeholder="absender@ksegroup.eu" />
+              <input className={input} value={sender.phone ?? ""} onChange={(e) => setSender({ ...sender, phone: e.target.value })} placeholder="Telefon" />
+              <input className={`${input} sm:col-span-2`} value={sender.photo_url ?? ""} onChange={(e) => setSender({ ...sender, photo_url: e.target.value })} placeholder="Foto-URL (optional, rund in der Signatur)" />
+            </div>
+          </div>
+          <div className="border-2 border-dashed border-[#0a0a0a]/30 px-3 py-2 font-mono text-[11px]">{url}</div>
+          <button onClick={submit} disabled={busy}
+            className="inline-flex items-center justify-center gap-2 border-2 border-[#0a0a0a] bg-[#ff5722] px-4 py-3 text-xs font-black uppercase tracking-widest text-white disabled:opacity-60">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Senden
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
