@@ -52,8 +52,7 @@ function BookingPage() {
       const { data } = await db.from("booking_links").select("*").eq("slug", slug).eq("is_active", true).maybeSingle();
       if (data) {
         setLink(data as BookingLink);
-        const { data: bs } = await db
-          .from("bookings").select("starts_at").eq("link_id", data.id).neq("status", "cancelled");
+        const { data: bs } = await db.rpc("taken_slots", { _link_id: data.id });
         setTaken(((bs ?? []) as { starts_at: string }[]).map((b) => new Date(b.starts_at).toISOString()));
       }
       setLoading(false);
