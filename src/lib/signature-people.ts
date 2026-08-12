@@ -78,4 +78,20 @@ export const SIGNATURE_PEOPLE: SignaturePerson[] = [
     phone: "+49 511 000006",
     photo_url: abs(femaleYoung.url),
   },
+  {
+    id: "tim",
+    name: "Tim Bergmann",
+    role: "Junior Consultant · KSE GROUP",
+    email: "tim@ksegroup.eu",
+    phone: "+49 511 000007",
+    photo_url: abs(timPhoto),
+  },
+  {
+    id: "nina",
+    name: "Nina Scholz",
+    role: "Junior Kundenbetreuung · KSE GROUP",
+    email: "nina@ksegroup.eu",
+    phone: "+49 511 000008",
+    photo_url: abs(ninaPhoto),
+  },
 ];
