@@ -29,6 +29,7 @@ export const SIGNATURE_PEOPLE: SignaturePerson[] = [
     role: "Geschäftsführer · KSE GROUP",
     email: "k.engelmann@ksegroup.eu",
     phone: "+49 157 57971457",
+    photo_url: "https://ksegroup.eu/api/public/media/1780590656231-kay_frame_clean.png",
   },
   {
     id: "jonas",
