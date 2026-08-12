@@ -25,6 +25,7 @@ import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as TerminSlugRouteImport } from './routes/termin.$slug'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
@@ -145,6 +146,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const TerminSlugRoute = TerminSlugRouteImport.update({
+  id: '/termin/$slug',
+  path: '/termin/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -455,6 +462,7 @@ export interface FileRoutesByTo {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -514,6 +522,7 @@ export interface FileRoutesById {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -574,6 +583,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -631,6 +641,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -689,6 +700,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -728,6 +740,7 @@ export interface RootRouteChildren {
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  TerminSlugRoute: typeof TerminSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
@@ -852,6 +865,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/termin/$slug': {
+      id: '/termin/$slug'
+      path: '/termin/$slug'
+      fullPath: '/termin/$slug'
+      preLoaderRoute: typeof TerminSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/share/$token': {
       id: '/share/$token'
@@ -1225,6 +1245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
+  TerminSlugRoute: TerminSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
