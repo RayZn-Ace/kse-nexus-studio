@@ -22,11 +22,13 @@ function randomVisitors() {
 }
 
 export function LiveVisitors() {
-  const [count, setCount] = useState(() => randomVisitors());
+  // Fixed initial value so SSR and client markup match; randomized after mount.
+  const [count, setCount] = useState(14);
   const [cityIdx, setCityIdx] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
+    setCount(randomVisitors());
     const t1 = setInterval(() => {
       setCount((c) => {
         const delta = Math.random() < 0.5 ? -1 : 1;

@@ -25,6 +25,7 @@ import { Route as AgentSwarmRouteImport } from './routes/agent-swarm'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as TerminSlugRouteImport } from './routes/termin.$slug'
 import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as MissionTokenRouteImport } from './routes/mission.$token'
 import { Route as ApiWebsiteAuditRouteImport } from './routes/api/website-audit'
@@ -35,6 +36,7 @@ import { Route as ApiAgentSwarmRouteImport } from './routes/api/agent-swarm'
 import { Route as ApiAdminAiRouteImport } from './routes/api/admin-ai'
 import { Route as AdminWarroomRouteImport } from './routes/admin/warroom'
 import { Route as AdminTutorialsRouteImport } from './routes/admin/tutorials'
+import { Route as AdminTermineRouteImport } from './routes/admin/termine'
 import { Route as AdminSpyRouteImport } from './routes/admin/spy'
 import { Route as AdminShopRouteImport } from './routes/admin/shop'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
@@ -145,6 +147,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const TerminSlugRoute = TerminSlugRouteImport.update({
+  id: '/termin/$slug',
+  path: '/termin/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
@@ -193,6 +200,11 @@ const AdminWarroomRoute = AdminWarroomRouteImport.update({
 const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
   id: '/tutorials',
   path: '/tutorials',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTermineRoute = AdminTermineRouteImport.update({
+  id: '/termine',
+  path: '/termine',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminSpyRoute = AdminSpyRouteImport.update({
@@ -381,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/admin/report': typeof AdminReportRoute
   '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
+  '/admin/termine': typeof AdminTermineRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -391,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -437,6 +451,7 @@ export interface FileRoutesByTo {
   '/admin/report': typeof AdminReportRoute
   '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
+  '/admin/termine': typeof AdminTermineRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -447,6 +462,7 @@ export interface FileRoutesByTo {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -495,6 +511,7 @@ export interface FileRoutesById {
   '/admin/report': typeof AdminReportRoute
   '/admin/shop': typeof AdminShopRoute
   '/admin/spy': typeof AdminSpyRoute
+  '/admin/termine': typeof AdminTermineRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/warroom': typeof AdminWarroomRoute
   '/api/admin-ai': typeof ApiAdminAiRoute
@@ -505,6 +522,7 @@ export interface FileRoutesById {
   '/api/website-audit': typeof ApiWebsiteAuditRoute
   '/mission/$token': typeof MissionTokenRoute
   '/share/$token': typeof ShareTokenRoute
+  '/termin/$slug': typeof TerminSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -554,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/report'
     | '/admin/shop'
     | '/admin/spy'
+    | '/admin/termine'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -564,6 +583,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -610,6 +630,7 @@ export interface FileRouteTypes {
     | '/admin/report'
     | '/admin/shop'
     | '/admin/spy'
+    | '/admin/termine'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -620,6 +641,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -667,6 +689,7 @@ export interface FileRouteTypes {
     | '/admin/report'
     | '/admin/shop'
     | '/admin/spy'
+    | '/admin/termine'
     | '/admin/tutorials'
     | '/admin/warroom'
     | '/api/admin-ai'
@@ -677,6 +700,7 @@ export interface FileRouteTypes {
     | '/api/website-audit'
     | '/mission/$token'
     | '/share/$token'
+    | '/termin/$slug'
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -716,6 +740,7 @@ export interface RootRouteChildren {
   ApiWebsiteAuditRoute: typeof ApiWebsiteAuditRoute
   MissionTokenRoute: typeof MissionTokenRoute
   ShareTokenRoute: typeof ShareTokenRoute
+  TerminSlugRoute: typeof TerminSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiKayiParseCommandRoute: typeof ApiKayiParseCommandRoute
@@ -841,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/termin/$slug': {
+      id: '/termin/$slug'
+      path: '/termin/$slug'
+      fullPath: '/termin/$slug'
+      preLoaderRoute: typeof TerminSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share/$token': {
       id: '/share/$token'
       path: '/share/$token'
@@ -909,6 +941,13 @@ declare module '@tanstack/react-router' {
       path: '/tutorials'
       fullPath: '/admin/tutorials'
       preLoaderRoute: typeof AdminTutorialsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/termine': {
+      id: '/admin/termine'
+      path: '/termine'
+      fullPath: '/admin/termine'
+      preLoaderRoute: typeof AdminTermineRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/spy': {
@@ -1147,6 +1186,7 @@ interface AdminRouteChildren {
   AdminReportRoute: typeof AdminReportRoute
   AdminShopRoute: typeof AdminShopRoute
   AdminSpyRoute: typeof AdminSpyRoute
+  AdminTermineRoute: typeof AdminTermineRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminWarroomRoute: typeof AdminWarroomRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1170,6 +1210,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReportRoute: AdminReportRoute,
   AdminShopRoute: AdminShopRoute,
   AdminSpyRoute: AdminSpyRoute,
+  AdminTermineRoute: AdminTermineRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminWarroomRoute: AdminWarroomRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -1204,6 +1245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebsiteAuditRoute: ApiWebsiteAuditRoute,
   MissionTokenRoute: MissionTokenRoute,
   ShareTokenRoute: ShareTokenRoute,
+  TerminSlugRoute: TerminSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiKayiParseCommandRoute: ApiKayiParseCommandRoute,
