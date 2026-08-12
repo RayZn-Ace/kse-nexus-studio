@@ -14,6 +14,7 @@ import {
   DEFAULT_AVAILABILITY, MEETING_TYPES, WEEKDAY_LABELS, slugify,
   type Availability, type Booking, type BookingLink, type MeetingType,
   formatDateLong, formatTime, dateKey, timeGrid, daysFromSlots,
+  FORM_FIELDS, FIELD_MODES, fieldConfig, type FormFields, type FieldMode,
 } from "@/lib/booking";
 
 export const Route = createFileRoute("/admin/termine")({
@@ -71,6 +72,7 @@ function TerminePage() {
       mode: editing.mode || "recurring",
       fixed_slots: editing.fixed_slots || [],
       host_key: editing.host_key || null,
+      form_fields: editing.form_fields || {},
       is_active: editing.is_active ?? true,
     };
     const res = editing.id
