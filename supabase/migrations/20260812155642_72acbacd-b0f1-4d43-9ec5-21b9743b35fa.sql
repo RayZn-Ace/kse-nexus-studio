@@ -1,0 +1,1 @@
+ALTER TABLE public.booking_links ADD COLUMN IF NOT EXISTS form_fields jsonb NOT NULL DEFAULT '{}'::jsonb;

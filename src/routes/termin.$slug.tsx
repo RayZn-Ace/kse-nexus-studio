@@ -11,6 +11,7 @@ import { SIGNATURE_PEOPLE } from "@/lib/signature-people";
 import {
   DEFAULT_AVAILABILITY, bookableDays, slotsForDay, buildRoomUrl, formatDateLong,
   formatTime, icsFor, daysFromSlots, fixedSlotsForDay,
+  fieldConfig, type FieldKey,
   type Availability, type BookingLink, type MeetingType,
 } from "@/lib/booking";
 
@@ -53,6 +54,15 @@ function BookingPage() {
       const { data } = await db.from("booking_links").select("*").eq("slug", slug).eq("is_active", true).maybeSingle();
       if (data) {
         setLink(data as BookingLink);
+        const ff = (data as BookingLink).form_fields ?? {};
+        setForm((f) => ({
+          ...f,
+          name: ff.name?.value || "",
+          email: ff.email?.value || "",
+          phone: ff.phone?.value || "",
+          company: ff.company?.value || "",
+          message: ff.message?.value || "",
+        }));
         const { data: bs } = await db.rpc("taken_slots", { _link_id: data.id });
         setTaken(((bs ?? []) as { starts_at: string }[]).map((b) => new Date(b.starts_at).toISOString()));
       }
@@ -95,8 +105,10 @@ function BookingPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!link || !slot) return;
-    if (!form.name.trim() || !form.email.trim()) return toast.error("Name und E-Mail sind Pflicht.");
-    if (link.meeting_type === "phone" && !form.phone.trim())
+    const cfg = (k: FieldKey) => fieldConfig(link.form_fields, k);
+    if (cfg("name").mode !== "hidden" && !form.name.trim()) return toast.error("Bitte gib deinen Namen an.");
+    if (cfg("email").mode !== "hidden" && !form.email.trim()) return toast.error("Bitte gib deine E-Mail an.");
+    if (link.meeting_type === "phone" && cfg("phone").mode !== "hidden" && !form.phone.trim())
       return toast.error("Bitte gib eine Telefonnummer an, unter der wir dich erreichen.");
     setSubmitting(true);
     const room_url = link.meeting_type === "video" ? buildRoomUrl(link.slug) : null;
@@ -306,19 +318,29 @@ function BookingPage() {
                     {formatDateLong(slot)} · {formatTime(slot)} Uhr · {link.duration_minutes} Min
                     {host && <span className="block text-[10px] tracking-[0.2em] text-[#0a0a0a]/60">mit {host.name}</span>}
                   </div>
-                  <input className={inputCls} placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
-                  <input className={inputCls} type="email" placeholder="E-Mail *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
-                  <input
-                    className={inputCls}
-                    type="tel"
-                    placeholder={link.meeting_type === "phone" ? "Telefonnummer für den Rückruf *" : "Telefon (optional)"}
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    required={link.meeting_type === "phone"}
-                    maxLength={40}
-                  />
-                  <input className={inputCls} placeholder="Unternehmen (optional)" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} maxLength={120} />
-                  <textarea className={inputCls} rows={4} placeholder="Worum geht's? (optional)" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={1000} />
+                  {fieldConfig(link.form_fields, "name").mode !== "hidden" && (
+                    <input className={inputCls} placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
+                  )}
+                  {fieldConfig(link.form_fields, "email").mode !== "hidden" && (
+                    <input className={inputCls} type="email" placeholder="E-Mail *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
+                  )}
+                  {fieldConfig(link.form_fields, "phone").mode !== "hidden" && (
+                    <input
+                      className={inputCls}
+                      type="tel"
+                      placeholder={link.meeting_type === "phone" ? "Telefonnummer für den Rückruf *" : "Telefon (optional)"}
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      required={link.meeting_type === "phone"}
+                      maxLength={40}
+                    />
+                  )}
+                  {fieldConfig(link.form_fields, "company").mode !== "hidden" && (
+                    <input className={inputCls} placeholder={`Unternehmen${fieldConfig(link.form_fields, "company").mode === "required" ? " *" : " (optional)"}`} value={form.company} required={fieldConfig(link.form_fields, "company").mode === "required"} onChange={(e) => setForm({ ...form, company: e.target.value })} maxLength={120} />
+                  )}
+                  {fieldConfig(link.form_fields, "message").mode !== "hidden" && (
+                    <textarea className={inputCls} rows={4} placeholder={`Worum geht's?${fieldConfig(link.form_fields, "message").mode === "required" ? " *" : " (optional)"}`} value={form.message} required={fieldConfig(link.form_fields, "message").mode === "required"} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={1000} />
+                  )}
                   <button type="submit" disabled={submitting}
                     className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#0a0a0a] bg-[#ff5722] px-6 py-4 text-xs font-black uppercase tracking-[0.25em] text-white shadow-[6px_6px_0_0_#0a0a0a] transition-transform hover:-translate-y-0.5 disabled:opacity-60">
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Termin verbindlich buchen"}
