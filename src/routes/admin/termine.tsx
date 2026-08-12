@@ -271,6 +271,7 @@ function EditorModal({
   const setAv = (patch: Partial<Availability>) => onChange({ ...value, availability: { ...av, ...patch } });
   const input = "w-full border-2 border-[#0a0a0a] bg-white px-3 py-2 text-sm outline-none focus:border-[#ff5722]";
   const label = "block text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0a]/60 mb-1";
+  const mode = value.mode || "recurring";
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 overflow-y-auto">
@@ -340,7 +341,28 @@ function EditorModal({
 
           <div className="md:col-span-2 border-t-2 border-[#0a0a0a] pt-4">
             <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/50">/ Verfügbarkeit</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {([["recurring", "Wiederkehrend", "Wochentage + Zeitfenster"], ["onetime", "Einmalig", "Tage & Uhrzeiten einzeln antippen"]] as const).map(([id, t, hint]) => (
+                <button key={id} onClick={() => onChange({ ...value, mode: id })}
+                  className={`border-2 border-[#0a0a0a] p-3 text-left ${mode === id ? "bg-[#0a0a0a] text-white" : "bg-white"}`}>
+                  <div className="text-[11px] font-black uppercase tracking-widest">{t}</div>
+                  <div className={`text-[10px] ${mode === id ? "text-white/60" : "text-[#0a0a0a]/50"}`}>{hint}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {mode === "onetime" ? (
+            <div className="md:col-span-2">
+              <SlotPicker
+                slots={value.fixed_slots ?? []}
+                step={av.slot || 30}
+                onChange={(fixed_slots) => onChange({ ...value, fixed_slots })}
+              />
+            </div>
+          ) : (
+          <div className="md:col-span-2">
+            <div className="flex flex-wrap gap-1.5">
               {WEEKDAY_LABELS.map((w, i) => {
                 const on = av.weekdays.includes(i);
                 return (
@@ -359,6 +381,7 @@ function EditorModal({
               <div><label className={label}>Buchbar (Tage)</label><input type="number" min={1} className={input} value={av.days_ahead} onChange={(e) => setAv({ days_ahead: Number(e.target.value) })} /></div>
             </div>
           </div>
+          )}
         </div>
 
         <div className="mt-6 flex gap-2 border-t-2 border-[#0a0a0a] pt-4">
