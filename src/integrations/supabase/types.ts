@@ -40,6 +40,7 @@ export type Database = {
           description: string | null
           duration_minutes: number
           fixed_slots: Json
+          host_key: string | null
           id: string
           info: string | null
           is_active: boolean
@@ -57,6 +58,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           fixed_slots?: Json
+          host_key?: string | null
           id?: string
           info?: string | null
           is_active?: boolean
@@ -74,6 +76,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           fixed_slots?: Json
+          host_key?: string | null
           id?: string
           info?: string | null
           is_active?: boolean
