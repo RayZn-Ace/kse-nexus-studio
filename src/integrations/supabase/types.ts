@@ -964,6 +964,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      taken_slots: {
+        Args: { _link_id: string }
+        Returns: {
+          starts_at: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
