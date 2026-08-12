@@ -27,8 +27,8 @@ export const SIGNATURE_PEOPLE: SignaturePerson[] = [
     id: "kay",
     name: "Kay Engelmann",
     role: "Geschäftsführer · KSE GROUP",
-    email: "kay@ksegroup.eu",
-    phone: "+49 511 000000",
+    email: "k.engelmann@ksegroup.eu",
+    phone: "+49 157 57971457",
   },
   {
     id: "jonas",
