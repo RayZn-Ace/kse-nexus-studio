@@ -533,6 +533,10 @@ function EditorModal({
                 step={av.slot || 30}
                 onChange={(fixed_slots) => onChange({ ...value, fixed_slots })}
               />
+              <FieldConfigEditor
+                value={value.form_fields ?? {}}
+                onChange={(form_fields) => onChange({ ...value, form_fields })}
+              />
             </div>
           ) : (
           <div className="md:col-span-2">
