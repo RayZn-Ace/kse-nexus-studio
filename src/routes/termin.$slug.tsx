@@ -215,22 +215,25 @@ function BookingPage() {
             <AnimatePresence mode="wait">
               {done ? (
                 <motion.div key="done" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="py-6 text-center">
-                  <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
-                  <h2 className="font-display mt-4 text-2xl font-semibold">Termin bestätigt</h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="mx-auto h-12 w-12 text-[#ff5722]" />
+                  <h2 className="mt-4 text-3xl font-black uppercase tracking-tight">Termin bestätigt</h2>
+                  <p className="mt-2 text-sm text-[#0a0a0a]/60">
                     {formatDateLong(new Date(done.starts_at))} um {formatTime(new Date(done.starts_at))} Uhr
                   </p>
+                  {host && (
+                    <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-[#ff5722]">mit {host.name}</p>
+                  )}
                   {done.room_url && (
-                    <div className="mx-auto mt-5 flex max-w-md items-center gap-2 rounded-xl border border-border bg-card/40 px-3 py-2">
+                    <div className="mx-auto mt-5 flex max-w-md items-center gap-2 border-2 border-[#0a0a0a] bg-white px-3 py-2">
                       <span className="truncate font-mono text-xs">{done.room_url}</span>
-                      <button onClick={() => { navigator.clipboard.writeText(done.room_url!); toast.success("Link kopiert"); }} className="ml-auto text-accent">
+                      <button onClick={() => { navigator.clipboard.writeText(done.room_url!); toast.success("Link kopiert"); }} className="ml-auto text-[#ff5722]">
                         <Copy className="h-4 w-4" />
                       </button>
                     </div>
                   )}
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {done.room_url && (
-                      <a href={done.room_url} target="_blank" rel="noreferrer" className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground">
+                      <a href={done.room_url} target="_blank" rel="noreferrer" className="border-2 border-[#0a0a0a] bg-[#ff5722] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-white shadow-[5px_5px_0_0_#0a0a0a]">
                         Raum öffnen
                       </a>
                     )}
@@ -248,7 +251,7 @@ function BookingPage() {
                         a.href = url; a.download = "kse-termin.ics"; a.click();
                         URL.revokeObjectURL(url);
                       }}
-                      className="rounded-full border border-border px-5 py-2.5 text-sm"
+                      className="border-2 border-[#0a0a0a] bg-[#ffeb3b] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] shadow-[5px_5px_0_0_#0a0a0a]"
                     >
                       Zum Kalender hinzufügen
                     </button>
@@ -256,25 +259,26 @@ function BookingPage() {
                 </motion.div>
               ) : !slot ? (
                 <motion.div key="pick" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h2 className="font-display text-xl font-semibold">Wähle deinen Termin</h2>
-                  <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0a0a0a]/40">/ Schritt 01</div>
+                  <h2 className="mt-1 text-2xl font-black uppercase tracking-tight">Wähle deinen Termin</h2>
+                  <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
                     {days.map((d) => {
                       const active = day && d.toDateString() === day.toDateString();
                       return (
                         <button
                           key={d.toISOString()}
                           onClick={() => setDay(d)}
-                          className={`min-w-[74px] shrink-0 rounded-2xl border px-3 py-2.5 text-center transition-colors ${
-                            active ? "border-accent bg-accent/15 text-foreground" : "border-border bg-card/30 text-muted-foreground hover:border-accent/50"
+                          className={`min-w-[78px] shrink-0 border-2 border-[#0a0a0a] px-3 py-2.5 text-center transition-all ${
+                            active ? "bg-[#ff5722] text-white shadow-[5px_5px_0_0_#0a0a0a]" : "bg-white hover:bg-[#ffeb3b]"
                           }`}
                         >
-                          <div className="text-[10px] uppercase tracking-widest">{d.toLocaleDateString("de-DE", { weekday: "short" })}</div>
-                          <div className="text-lg font-semibold">{d.getDate()}</div>
-                          <div className="text-[10px] uppercase">{d.toLocaleDateString("de-DE", { month: "short" })}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em]">{d.toLocaleDateString("de-DE", { weekday: "short" })}</div>
+                          <div className="text-2xl font-black leading-none">{d.getDate()}</div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.2em]">{d.toLocaleDateString("de-DE", { month: "short" })}</div>
                         </button>
                       );
                     })}
-                    {days.length === 0 && <p className="text-sm text-muted-foreground">Aktuell keine freien Tage.</p>}
+                    {days.length === 0 && <p className="text-sm text-[#0a0a0a]/50">Aktuell keine freien Tage.</p>}
                   </div>
 
                   <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -282,24 +286,25 @@ function BookingPage() {
                       <button
                         key={s.toISOString()}
                         onClick={() => setSlot(s)}
-                        className="group rounded-xl border border-border bg-card/30 px-3 py-3 text-sm font-medium transition-all hover:border-accent hover:bg-accent/10"
+                        className="group border-2 border-[#0a0a0a] bg-white px-3 py-3 text-sm font-black uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-[#ffeb3b] hover:shadow-[5px_5px_0_0_#0a0a0a]"
                       >
                         {formatTime(s)}
                         <ArrowRight className="ml-1 inline h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
                     ))}
                     {day && slots.length === 0 && (
-                      <p className="col-span-full text-sm text-muted-foreground">An diesem Tag ist nichts mehr frei.</p>
+                      <p className="col-span-full text-sm text-[#0a0a0a]/50">An diesem Tag ist nichts mehr frei.</p>
                     )}
                   </div>
                 </motion.div>
               ) : (
                 <motion.form key="form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} onSubmit={submit} className="space-y-3">
-                  <button type="button" onClick={() => setSlot(null)} className="mb-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                  <button type="button" onClick={() => setSlot(null)} className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-[#0a0a0a]/50 hover:text-[#ff5722]">
                     <ArrowLeft className="h-3.5 w-3.5" /> anderen Zeitpunkt wählen
                   </button>
-                  <div className="rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm">
-                    <strong className="font-semibold">{formatDateLong(slot)}</strong> · {formatTime(slot)} Uhr · {link.duration_minutes} Min
+                  <div className="border-2 border-[#0a0a0a] bg-[#ffeb3b] px-4 py-3 text-sm font-black uppercase tracking-wide">
+                    {formatDateLong(slot)} · {formatTime(slot)} Uhr · {link.duration_minutes} Min
+                    {host && <span className="block text-[10px] tracking-[0.2em] text-[#0a0a0a]/60">mit {host.name}</span>}
                   </div>
                   <input className={inputCls} placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required maxLength={100} />
                   <input className={inputCls} type="email" placeholder="E-Mail *" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
@@ -315,7 +320,7 @@ function BookingPage() {
                   <input className={inputCls} placeholder="Unternehmen (optional)" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} maxLength={120} />
                   <textarea className={inputCls} rows={4} placeholder="Worum geht's? (optional)" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={1000} />
                   <button type="submit" disabled={submitting}
-                    className="glow-orange inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition-transform hover:scale-[1.01] disabled:opacity-60">
+                    className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#0a0a0a] bg-[#ff5722] px-6 py-4 text-xs font-black uppercase tracking-[0.25em] text-white shadow-[6px_6px_0_0_#0a0a0a] transition-transform hover:-translate-y-0.5 disabled:opacity-60">
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Termin verbindlich buchen"}
                   </button>
                 </motion.form>
