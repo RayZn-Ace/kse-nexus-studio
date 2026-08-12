@@ -39,11 +39,13 @@ export type Database = {
           created_at: string
           description: string | null
           duration_minutes: number
+          fixed_slots: Json
           id: string
           info: string | null
           is_active: boolean
           location: string | null
           meeting_type: string
+          mode: string
           slug: string
           title: string
           updated_at: string
@@ -54,11 +56,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number
+          fixed_slots?: Json
           id?: string
           info?: string | null
           is_active?: boolean
           location?: string | null
           meeting_type?: string
+          mode?: string
           slug: string
           title: string
           updated_at?: string
@@ -69,11 +73,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number
+          fixed_slots?: Json
           id?: string
           info?: string | null
           is_active?: boolean
           location?: string | null
           meeting_type?: string
+          mode?: string
           slug?: string
           title?: string
           updated_at?: string
@@ -199,6 +205,42 @@ export type Database = {
           source?: string | null
           subject?: string | null
           timeline?: string | null
+        }
+        Relationships: []
+      }
+      email_senders: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          is_default: boolean
+          name: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_default?: boolean
+          name: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

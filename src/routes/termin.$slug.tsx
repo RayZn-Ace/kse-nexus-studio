@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_AVAILABILITY, bookableDays, slotsForDay, buildRoomUrl, formatDateLong,
-  formatTime, icsFor, type Availability, type BookingLink, type MeetingType,
+  formatTime, icsFor, daysFromSlots, fixedSlotsForDay,
+  type Availability, type BookingLink, type MeetingType,
 } from "@/lib/booking";
 
 export const Route = createFileRoute("/termin/$slug")({
@@ -63,10 +64,25 @@ function BookingPage() {
     () => ({ ...DEFAULT_AVAILABILITY, ...(link?.availability || {}) }),
     [link],
   );
-  const days = useMemo(() => (link ? bookableDays(av) : []), [link, av]);
+  const oneTime = link?.mode === "onetime";
+  const days = useMemo(() => {
+    if (!link) return [];
+    if (oneTime) {
+      const now = new Date();
+      return daysFromSlots(link.fixed_slots ?? []).filter(
+        (d) => fixedSlotsForDay(d, link.fixed_slots ?? [], taken, now).length > 0,
+      );
+    }
+    return bookableDays(av);
+  }, [link, av, oneTime, taken]);
   const slots = useMemo(
-    () => (link && day ? slotsForDay(day, av, link.duration_minutes, taken) : []),
-    [link, day, av, taken],
+    () =>
+      link && day
+        ? oneTime
+          ? fixedSlotsForDay(day, link.fixed_slots ?? [], taken)
+          : slotsForDay(day, av, link.duration_minutes, taken)
+        : [],
+    [link, day, av, taken, oneTime],
   );
 
   useEffect(() => {
