@@ -40,6 +40,7 @@ export type Database = {
           description: string | null
           duration_minutes: number
           fixed_slots: Json
+          form_fields: Json
           host_key: string | null
           id: string
           info: string | null
@@ -58,6 +59,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           fixed_slots?: Json
+          form_fields?: Json
           host_key?: string | null
           id?: string
           info?: string | null
@@ -76,6 +78,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           fixed_slots?: Json
+          form_fields?: Json
           host_key?: string | null
           id?: string
           info?: string | null
