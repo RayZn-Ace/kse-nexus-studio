@@ -260,7 +260,6 @@ function BookingTable({
 }
 
 function EditorModal({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   value, onChange, onClose, onSave,
 }: {
   value: Partial<BookingLink>;
