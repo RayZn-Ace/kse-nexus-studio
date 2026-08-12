@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_AVAILABILITY, MEETING_TYPES, WEEKDAY_LABELS, slugify,
   type Availability, type Booking, type BookingLink, type MeetingType,
-  formatDateLong, formatTime,
+  formatDateLong, formatTime, dateKey, timeGrid, daysFromSlots,
 } from "@/lib/booking";
 
 export const Route = createFileRoute("/admin/termine")({
@@ -61,6 +61,8 @@ function TerminePage() {
       location: editing.location || null,
       info: editing.info || null,
       availability: editing.availability || DEFAULT_AVAILABILITY,
+      mode: editing.mode || "recurring",
+      fixed_slots: editing.fixed_slots || [],
       is_active: editing.is_active ?? true,
     };
     const res = editing.id
@@ -155,7 +157,10 @@ function TerminePage() {
                   </span>
                 </div>
                 <h3 className="mt-3 text-xl font-black uppercase leading-tight">{l.title}</h3>
-                <p className="mt-1 text-xs text-[#0a0a0a]/60">{l.duration_minutes} Min · {count} Buchungen</p>
+                <p className="mt-1 text-xs text-[#0a0a0a]/60">
+                  {l.duration_minutes} Min · {count} Buchungen
+                  {l.mode === "onetime" && ` · ${(l.fixed_slots ?? []).length} feste Slots`}
+                </p>
                 {l.description && <p className="mt-2 text-sm text-[#0a0a0a]/70">{l.description}</p>}
                 <div className="mt-4 flex items-center gap-2 border-2 border-dashed border-[#0a0a0a]/30 px-2 py-1.5">
                   <span className="truncate font-mono text-[11px]">{url}</span>
