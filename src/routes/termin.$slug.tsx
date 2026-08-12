@@ -90,6 +90,7 @@ function BookingPage() {
   }, [days, day]);
 
   const Icon = link ? TYPE_ICON[link.meeting_type] ?? Video : Video;
+  const host = link?.host_key ? SIGNATURE_PEOPLE.find((p) => p.id === link.host_key) ?? null : null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,68 +119,95 @@ function BookingPage() {
 
   if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-accent" />
+      <main className="grid min-h-screen place-items-center bg-[#f4f4f4]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#ff5722]" />
       </main>
     );
   }
 
   if (!link) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background px-6 text-center">
-        <div>
-          <h1 className="font-display text-3xl font-semibold">Termin nicht verfügbar</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Dieser Terminlink existiert nicht oder ist deaktiviert.</p>
-          <Link to="/" className="mt-6 inline-block rounded-full bg-accent px-5 py-2.5 text-sm text-accent-foreground">Zur Startseite</Link>
+      <main className="grid min-h-screen place-items-center bg-[#f4f4f4] px-6 text-center text-[#0a0a0a]">
+        <div className="border-4 border-[#0a0a0a] bg-white p-10 shadow-[10px_10px_0_0_#0a0a0a]">
+          <h1 className="text-3xl font-black uppercase tracking-tight">Termin nicht verfügbar</h1>
+          <p className="mt-2 text-sm text-[#0a0a0a]/60">Dieser Terminlink existiert nicht oder ist deaktiviert.</p>
+          <Link to="/" className="mt-6 inline-block border-2 border-[#0a0a0a] bg-[#ffeb3b] px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em]">Zur Startseite</Link>
         </div>
       </main>
     );
   }
 
   const inputCls =
-    "w-full rounded-xl border border-border bg-card/40 px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus:border-accent/60 focus:outline-none transition-colors";
+    "w-full border-2 border-[#0a0a0a] bg-white px-4 py-3 text-sm text-[#0a0a0a] placeholder:text-[#0a0a0a]/40 focus:bg-[#ffeb3b]/20 focus:outline-none transition-colors";
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-10 sm:px-6 md:py-16">
-      <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
+    <main className="relative min-h-screen bg-[#f4f4f4] px-4 py-10 text-[#0a0a0a] sm:px-6 md:py-16">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{ backgroundImage: "linear-gradient(#0a0a0a 1px,transparent 1px),linear-gradient(90deg,#0a0a0a 1px,transparent 1px)", backgroundSize: "48px 48px" }}
+      />
 
-      <div className="mx-auto max-w-5xl">
-        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+      <div className="relative mx-auto max-w-5xl">
+        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 border-2 border-[#0a0a0a] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] hover:bg-[#ffeb3b]">
           <ArrowLeft className="h-3.5 w-3.5" /> ksegroup.eu
         </Link>
 
-        <div className="glass grid overflow-hidden rounded-3xl md:grid-cols-[320px_1fr]">
+        <div className="grid border-4 border-[#0a0a0a] bg-white shadow-[12px_12px_0_0_#0a0a0a] md:grid-cols-[340px_1fr]">
           {/* Sidebar */}
-          <aside className="border-b border-border/60 p-7 md:border-b-0 md:border-r">
-            <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">
+          <aside className="border-b-4 border-[#0a0a0a] bg-[#0a0a0a] p-7 text-white md:border-b-0 md:border-r-4">
+            <div className="inline-flex items-center gap-2 bg-[#ff5722] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.25em] text-white">
               <Icon className="h-3 w-3" /> {TYPE_LABEL[link.meeting_type]}
             </div>
-            <h1 className="font-display mt-4 text-3xl font-semibold leading-tight">{link.title}</h1>
-            {link.description && <p className="mt-3 text-sm text-muted-foreground">{link.description}</p>}
+            <h1 className="mt-5 text-4xl font-black uppercase leading-[0.95] tracking-tight">{link.title}</h1>
+            <div className="mt-3 h-2 w-24 bg-[#ffeb3b]" />
+            {link.description && <p className="mt-4 text-sm leading-relaxed text-white/70">{link.description}</p>}
 
-            <ul className="mt-6 space-y-3 text-sm">
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <Clock className="h-4 w-4 text-accent" /> {link.duration_minutes} Minuten
+            {host && (
+              <div className="mt-7 border-2 border-white/20 p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ffeb3b]">/ Dein Ansprechpartner</div>
+                <div className="mt-3 flex items-center gap-3">
+                  {host.photo_url ? (
+                    <img src={host.photo_url} alt={host.name} className="h-16 w-16 rounded-full border-2 border-[#ff5722] object-cover" />
+                  ) : (
+                    <span className="grid h-16 w-16 place-items-center rounded-full border-2 border-[#ff5722] text-lg font-black">
+                      {host.name.split(" ").map((n) => n[0]).join("")}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-lg font-black uppercase leading-tight">{host.name}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">{host.role}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <ul className="mt-7 space-y-3 text-sm">
+              <li className="flex items-center gap-2.5 text-white/70">
+                <Clock className="h-4 w-4 text-[#ff5722]" /> {link.duration_minutes} Minuten
               </li>
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <Icon className="h-4 w-4 text-accent" />
+              <li className="flex items-center gap-2.5 text-white/70">
+                <Icon className="h-4 w-4 text-[#ff5722]" />
                 {link.meeting_type === "video" && "Video-Raum wird automatisch erstellt"}
                 {link.meeting_type === "phone" && "Wir rufen dich an"}
                 {link.meeting_type === "onsite" && (link.location || "Vor Ort")}
               </li>
-              <li className="flex items-center gap-2.5 text-muted-foreground">
-                <CalendarDays className="h-4 w-4 text-accent" /> Zeitzone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+              <li className="flex items-center gap-2.5 text-white/70">
+                <CalendarDays className="h-4 w-4 text-[#ff5722]" /> {Intl.DateTimeFormat().resolvedOptions().timeZone}
               </li>
             </ul>
 
             {link.info && (
-              <div className="mt-6 rounded-2xl border border-border/60 bg-card/30 p-4">
-                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">
+              <div className="mt-6 border-2 border-[#ffeb3b] bg-[#ffeb3b]/10 p-4">
+                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[#ffeb3b]">
                   <Info className="h-3 w-3" /> Infos
                 </div>
-                <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">{link.info}</p>
+                <p className="whitespace-pre-wrap text-xs leading-relaxed text-white/70">{link.info}</p>
               </div>
             )}
+
+            <div className="mt-8 border-t-2 border-white/15 pt-4 text-[11px] leading-snug">
+              Wir bauen keine Marken. <span className="text-[#ff5722]">Wir bauen Charakter.</span>
+            </div>
           </aside>
 
           {/* Main */}
