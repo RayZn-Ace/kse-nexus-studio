@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { ENDLESS_LEVEL, LEVELS, VILLAINS, isLevelCleared, type Level, type VillainKind } from "./levels";
+import {
+  ENDLESS_LEVEL,
+  LEVELS,
+  VILLAINS,
+  isLevelCleared,
+  type Level,
+  type VillainKind,
+} from "./levels";
 
 // Minimal mirror of SpideyGame's damage/reach bookkeeping.
 type V = { kind: VillainKind; hp: number; hit: boolean };
@@ -20,7 +27,8 @@ function reach(s: ReturnType<typeof makeState>, v: V) {
   s.lives -= v.kind === "boss" ? 3 : 1;
 }
 const spawn = (kind: VillainKind): V => ({ kind, hp: VILLAINS[kind].hp, hit: false });
-const cleared = (s: ReturnType<typeof makeState>) => isLevelCleared(s.level, s.kills, s.bossDefeated);
+const cleared = (s: ReturnType<typeof makeState>) =>
+  isLevelCleared(s.level, s.kills, s.bossDefeated);
 const BOSS = LEVELS.find((l) => l.boss)!;
 
 describe("boss stage clearance", () => {
