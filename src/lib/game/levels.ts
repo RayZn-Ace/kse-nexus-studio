@@ -212,3 +212,8 @@ export const ENDLESS_LEVEL: Level = {
   spawnBase: 60,
   kinds: ["grunt", "runner", "tank"],
 };
+/** Boss stages clear only when the boss was defeated by damage; other stages by kill target. */
+export function isLevelCleared(level: Level, kills: number, bossDefeated: boolean): boolean {
+  if (level.boss) return bossDefeated;
+  return kills >= level.target;
+}
