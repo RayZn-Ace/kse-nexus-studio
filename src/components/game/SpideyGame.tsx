@@ -124,6 +124,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     running: false,
     ramp: 1,
     bossSpawned: false,
+    bossDefeated: false,
     level: LEVELS[0] as Level,
     endless: false,
     aim: { x: GAME_W / 2, y: GAME_H / 2, active: false },
@@ -169,6 +170,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     s.lives = lvl.lives;
     s.ramp = 1;
     s.bossSpawned = false;
+    s.bossDefeated = false;
     s.level = lvl;
     s.endless = isEndless;
     s.running = true;
@@ -222,6 +224,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     best.flash = 8;
     if (best.hp <= 0) {
       best.hit = true;
+      if (best.kind === "boss") s.bossDefeated = true;
       s.score += VILLAINS[best.kind].points;
       s.kills += 1;
       setScore(s.score);
@@ -452,7 +455,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
           }
         }
         // level cleared?
-        if (s.running && s.kills >= s.level.target) {
+        if (s.running && isLevelCleared(s.level, s.kills, s.bossDefeated)) {
           s.running = false;
           onClearRef.current();
         }
