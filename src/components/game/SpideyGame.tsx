@@ -8,6 +8,7 @@ import {
   EPILOGUE,
   type Level,
   type VillainKind,
+  isLevelCleared,
 } from "@/lib/game/levels";
 import {
   loadProgress,
