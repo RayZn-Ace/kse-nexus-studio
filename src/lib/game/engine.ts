@@ -296,8 +296,7 @@ export function stepGame(s: GameState) {
       if (!open && phase >= 2 && cycle >= 2.3 && cycle - STEP < 2.3) {
         boss.warningTargetLane = Math.floor(s.elapsed / 6) % 2 === 0 ? 0 : 2;
       }
-      boss.warning =
-        !open && boss.warningTargetLane !== null ? (3 - cycle) / 0.7 : 0;
+      boss.warning = !open && boss.warningTargetLane !== null ? (3 - cycle) / 0.7 : 0;
     }
   }
   s.cooldown = Math.max(0, s.cooldown - dt);
