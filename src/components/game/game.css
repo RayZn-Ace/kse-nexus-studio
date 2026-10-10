@@ -1,0 +1,121 @@
+.kse-game-modal {
+  --game-surface: #141e26;
+  --game-panel: #101920f2;
+  --game-ink: #eff5f3;
+  --game-muted: #a9b9c1;
+  --game-accent: #ffca73;
+  --game-cyan: #6ddfdc;
+  --game-border: #42525d;
+  --game-overlay: #060c14d9;
+  --game-shadow: 0 24px 90px #00000080;
+  background: var(--game-overlay);
+  color: var(--game-ink);
+  font-family: system-ui, sans-serif;
+  letter-spacing: 0;
+}
+.kse-game-modal .game-shell {
+  background: var(--game-surface);
+  border-color: var(--game-accent);
+  border-radius: 8px;
+  box-shadow: var(--game-shadow);
+}
+.kse-game-modal header,
+.kse-game-modal [class*="border-b"] {
+  border-color: var(--game-border);
+}
+.kse-game-modal button {
+  color: var(--game-ink);
+  background: transparent;
+  border-color: var(--game-border);
+  white-space: normal;
+  height: auto;
+  letter-spacing: 0;
+}
+.kse-game-modal button:hover {
+  background: var(--game-border);
+}
+.kse-game-modal button:disabled {
+  opacity: 0.4;
+}
+.kse-game-modal button:focus-visible,
+.kse-game-modal input:focus-visible {
+  outline: 2px solid var(--game-cyan);
+  outline-offset: 3px;
+}
+.kse-game-modal button:has(svg) {
+  justify-content: flex-start;
+}
+.kse-game-modal button > div {
+  width: 100%;
+}
+.kse-game-modal button[class*="text-left"] {
+  display: block;
+}
+.kse-game-modal h2,
+.kse-game-modal [class*="font-black"] {
+  color: var(--game-accent);
+  letter-spacing: 0;
+}
+.kse-game-modal p {
+  color: var(--game-muted);
+}
+.kse-game-modal input {
+  background: var(--game-overlay);
+  border-color: var(--game-border);
+  color: var(--game-ink);
+}
+.kse-game-modal [class*="border-2"] {
+  border-color: var(--game-border);
+}
+.kse-game-modal .game-shell {
+  border-color: var(--game-accent);
+}
+.kse-game-modal [class*="absolute inset-2"] {
+  background: var(--game-panel);
+}
+.kse-game-modal [class*="pointer-events-none"] > [class*="border-2"] {
+  background: var(--game-panel);
+  border-color: var(--game-accent);
+}
+.kse-game-modal .game-brief {
+  border-left: 3px solid var(--game-cyan);
+  padding: 8px 12px;
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--game-ink);
+}
+.kse-game-modal .kse-game-canvas {
+  aspect-ratio: 3 / 2;
+  display: block;
+  border-radius: 4px;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+.kse-game-modal [class*="h-2 flex-1"] {
+  background: var(--game-border);
+}
+.kse-game-modal [class*="h-full transition-all"] {
+  background: var(--game-cyan);
+}
+@media (max-width: 639px) {
+  .kse-game-modal .game-shell {
+    max-height: 96dvh;
+  }
+  .kse-game-modal [class*="absolute inset-2"] {
+    padding: 12px;
+  }
+  .kse-game-modal [class*="justify-center"][class*="h-full"] {
+    justify-content: flex-start;
+  }
+  .kse-game-modal [class*="text-3xl"] {
+    font-size: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kse-game-modal *,
+  .kse-game-modal {
+    animation: none !important;
+    transition: none !important;
+  }
+}

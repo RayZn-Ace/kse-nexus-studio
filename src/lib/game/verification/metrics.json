@@ -1,0 +1,44 @@
+[
+  {
+    "level": 1,
+    "cacheMs": 5.900000000023283,
+    "drawMedianMs": 0.19999999995343387,
+    "drawP95Ms": 0.5,
+    "enemies": 16
+  },
+  {
+    "level": 2,
+    "cacheMs": 8,
+    "drawMedianMs": 0.19999999995343387,
+    "drawP95Ms": 0.5,
+    "enemies": 16
+  },
+  {
+    "level": 3,
+    "cacheMs": 8,
+    "drawMedianMs": 0.19999999995343387,
+    "drawP95Ms": 0.5999999999767169,
+    "enemies": 16
+  },
+  {
+    "level": 4,
+    "cacheMs": 4.700000000069849,
+    "drawMedianMs": 0.19999999995343387,
+    "drawP95Ms": 0.9000000000232831,
+    "enemies": 16
+  },
+  {
+    "level": 5,
+    "cacheMs": 5.400000000023283,
+    "drawMedianMs": 0.2000000000698492,
+    "drawP95Ms": 0.5,
+    "enemies": 16
+  },
+  {
+    "level": 6,
+    "cacheMs": 6.900000000023283,
+    "drawMedianMs": 0.19999999995343387,
+    "drawP95Ms": 0.5999999999767169,
+    "enemies": 16
+  }
+]

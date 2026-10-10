@@ -1,0 +1,102 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 80,
+        "kills": 8,
+        "lives": 3,
+        "elapsed": 13.666666666666666,
+        "enemies": [],
+        "open": false
+      }
+    },
+    {
+      "level": 2,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 160,
+        "kills": 12,
+        "lives": 3,
+        "elapsed": 18.05,
+        "enemies": [],
+        "open": false
+      }
+    },
+    {
+      "level": 3,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 413,
+        "kills": 14,
+        "lives": 3,
+        "elapsed": 20.316666666666666,
+        "enemies": [],
+        "open": false
+      }
+    },
+    {
+      "level": 4,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 414,
+        "kills": 18,
+        "lives": 3,
+        "elapsed": 21.916666666666668,
+        "enemies": [],
+        "open": false
+      }
+    },
+    {
+      "level": 5,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 487,
+        "kills": 22,
+        "lives": 2,
+        "elapsed": 26.383333333333333,
+        "enemies": [
+          {
+            "x": 37.22000000000028,
+            "y": 340,
+            "kind": "tank",
+            "hp": 2
+          }
+        ],
+        "open": false
+      }
+    },
+    {
+      "level": 6,
+      "state": {
+        "running": false,
+        "outcome": "cleared",
+        "score": 314,
+        "kills": 6,
+        "lives": 3,
+        "elapsed": 10.25,
+        "enemies": [
+          {
+            "x": 279.6000000000006,
+            "y": 150,
+            "kind": "runner",
+            "hp": 1
+          }
+        ],
+        "open": true
+      }
+    }
+  ],
+  "errors": [
+    "Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <MatchImpl matchId=\"//\">\n      <MatchView router={{...}} matchId=\"//\" resetKey={0} matchState={{routeId:\"/\", ...}}>\n        <SafeFragment>\n          <SafeFragment fallback={null}>\n            <SafeFragment getResetKey={function getResetKey} errorComponent={function ErrorComponent} ...>\n              <SafeFragment fallback={function fallback}>\n                <MatchInnerImpl matchId=\"//\">\n                  <Lazy>\n                    <Index>\n                      <div className=\"min-h-scre...\" data-tsd-source=\"/src/route...\">\n                        <TrustBar>\n                        <Nav>\n                        <CornerSpiderman>\n                        <main data-tsd-source=\"/src/route...\">\n                          <BentoHero>\n                          <Marquee data-tsd-source=\"/src/route...\">\n                            <div className=\"border-y-4...\" data-tsd-source=\"/src/route...\">\n                              <div\n+                               className=\"flex gap-12 py-4 px-4\"\n-                               className=\"marquee py-4\"\n                                style={{fontFamily:\"var(--font...\"}}\n                                data-tsd-source=\"/src/routes/index.tsx:297:7\"\n                              >\n                          ...\n                            <div className=\"brutal-til...\" onMouseMove={function handleMove} ...>\n                              <Label>\n                              <div className=\"text-7xl m...\" style={{...}} data-tsd-source=\"/src/route...\">\n                                <CountUp target={1} data-tsd-source=\"/src/route...\">\n                                  <span ref={{current:null}} data-tsd-source=\"/src/routes/index.tsx:138:10\">\n+                                   1\n-                                   0\n                                ...\n                              ...\n                          ...\n                        ...\n          ...\n"
+  ],
+  "mock_writes": 6,
+  "mobile_overflow": false,
+  "blocked_external_requests": 4
+}

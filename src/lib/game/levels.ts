@@ -80,7 +80,7 @@ export const LEVELS: Level[] = [
     intro: [
       "Am Hafenbecken laufen die Kräne noch, obwohl kein Schiff da ist. Container werden bewegt, in denen keine Ware liegt — nur Technik.",
       "KayI: „Sie verlegen Rechenleistung. Wer so viel Hardware versteckt, baut etwas Großes.“",
-      "Und diesmal haben sie Sprinter dabei. Schnell, dünn, ohne jedes Zeitgefühl.",
+      "Die Sprinter nutzen die Wartungsstege. KayI: „Wenn die gelben Pfeile auftauchen, wechseln sie gleich die Spur. Folge ihnen mit dem Netz.“",
     ],
     outro: [
       "Der letzte Sprinter geht zu Boden, sein Headset piept noch: „Chef, er ist im Hafen …“",
@@ -102,7 +102,7 @@ export const LEVELS: Level[] = [
     place: "Containerreihe C · 02:40",
     intro: [
       "Zwischen den Containern stampfen gepanzerte Schläger — Exoskelette aus Baustellentechnik und geklauten Akkus.",
-      "KayI: „Ein Netzschuss reicht da nicht. Drei Treffer pro Panzer, mindestens. Und pass auf die Kleinen dazwischen auf.“",
+      "KayI: „Drei Treffer pro Panzer. Zwischen ihnen kommen Sprinter durch die Gassen. Fang die Schnellen ab, dann knack die Rüstung.“",
     ],
     outro: [
       "Der letzte Panzer kippt in ein Hafenbecken. Auf der Rückenplatte klebt ein Logo: ein zerrissenes Netz.",
@@ -116,7 +116,7 @@ export const LEVELS: Level[] = [
     lives: 3,
     speedMul: 1.25,
     spawnBase: 58,
-    kinds: ["grunt", "tank"],
+    kinds: ["tank", "runner"],
   },
   {
     id: 4,
@@ -125,7 +125,7 @@ export const LEVELS: Level[] = [
     intro: [
       "Halb Linden liegt im Dunkeln. Ampeln blinken orange, ein Straßenbahnzug steht quer, überall Sirenen.",
       "KayI: „Er testet die Stadt. Wenn er den Verteilerknoten kriegt, ist ganz Hannover offline.“",
-      "Alles, was die Bande hat, ist unterwegs. Gleichzeitig.",
+      "KayI: „Sie kommen in Dreierwellen: Sprinter als Ablenkung, Panzer als Deckung, Handlanger im Windschatten. Brich ihre Reihenfolge.“",
     ],
     outro: [
       "Die Sirenen verstummen, die Ampeln atmen wieder grün.",
@@ -148,7 +148,7 @@ export const LEVELS: Level[] = [
     intro: [
       "Das rote Signal war eine Falle. Kaum stehst du auf dem Dach, klappen die Lüftungsschächte auf.",
       "KayI: „Ich zähle zu viele Signaturen. Du hast heute nur zwei Leben, Chief — verhalt dich entsprechend.“",
-      "Kein Fehler erlaubt.",
+      "Die Angreifer springen zwischen den Schächten. KayI: „Gelbe Pfeile kündigen ihre Ausweichspur an. Du hast Zeit – nicht blind auf die alte Position feuern.“",
     ],
     outro: [
       "Du hältst stand. Der letzte Angreifer rutscht die Dachschräge hinunter und bleibt liegen.",
@@ -171,7 +171,7 @@ export const LEVELS: Level[] = [
     intro: [
       "Er steht am Antennenmast, Kabel wie Adern im Panzer, und lächelt, als hätte er dich selbst hergerufen.",
       "„Diese Stadt läuft auf Leitungen“, sagt er. „Und Leitungen gehören mir.“",
-      "KayI: „Achtzehn Treffer, dann fällt seine Hülle. Seine Leute decken ihn — lass dich nicht ablenken.“",
+      "KayI: „18 Treffer. Sein Schild lädt drei Sekunden, dann ist es drei Sekunden offen. Grün heißt feuern. Bei 12 und 6 HP zieht er an – aber der Rhythmus bleibt. Er darf den Antennenknoten nicht erreichen.“",
     ],
     outro: [
       "Der Netzbrecher stürzt — und bleibt in deinem Netz hängen, drei Meter unter der Dachkante.",
