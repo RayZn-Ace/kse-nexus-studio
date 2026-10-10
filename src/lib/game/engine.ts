@@ -22,6 +22,7 @@ export type Enemy = {
   deadAge: number;
   switched: boolean;
   warning: number;
+  warningTargetLane: number | null;
 };
 export type Web = { x: number; y: number; targetX: number; targetY: number; age: number };
 export type Particle = { x: number; y: number; vx: number; vy: number; age: number };
@@ -148,6 +149,7 @@ export function spawnEnemy(s: GameState, kind: VillainKind, lane: number, offset
     deadAge: 0,
     switched: false,
     warning: 0,
+    warningTargetLane: null,
   };
   s.villains.push(enemy);
   return enemy;
@@ -277,6 +279,10 @@ export function stepGame(s: GameState) {
       );
     }
     if (s.bossOpen !== open) {
+      if (boss && open && boss.warningTargetLane !== null) {
+        boss.lane = boss.warningTargetLane;
+      }
+      if (boss) boss.warningTargetLane = null;
       s.bossOpen = open;
       announce(
         s,
@@ -285,9 +291,13 @@ export function stepGame(s: GameState) {
           : "Schild lädt. Adds abfangen, nächstes Fenster in drei Sekunden.",
       );
     }
-    if (boss && phase >= 2) {
-      boss.warning = !open && cycle >= 2.3 ? (3 - cycle) / 0.7 : 0;
-      if (open) boss.lane = Math.floor(s.elapsed / 6) % 2 === 0 ? 0 : 2;
+    if (boss) {
+      // Arm only at the beginning of the full 0.7-second warning, never on an HP change.
+      if (!open && phase >= 2 && cycle >= 2.3 && cycle - STEP < 2.3) {
+        boss.warningTargetLane = Math.floor(s.elapsed / 6) % 2 === 0 ? 0 : 2;
+      }
+      boss.warning =
+        !open && boss.warningTargetLane !== null ? (3 - cycle) / 0.7 : 0;
     }
   }
   s.cooldown = Math.max(0, s.cooldown - dt);

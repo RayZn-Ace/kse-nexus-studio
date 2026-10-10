@@ -132,7 +132,7 @@ export function SpideyGame({ onClose }: { onClose: () => void }) {
     setSaveStatus("Wird gespeichert …");
     void saveProgress(next)
       .then(() => {
-        setSaveStatus("Gespeichert");
+        setSaveStatus("Speichern angefragt");
         setBoardKey((k) => k + 1);
       })
       .catch(() => setSaveStatus("Speichern fehlgeschlagen"));

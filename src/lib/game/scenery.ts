@@ -407,7 +407,8 @@ function drawEnemy(c: CanvasRenderingContext2D, v: Enemy, s: GameState, reduced:
   if (v.warning > 0 && !v.hit) {
     c.save();
     c.setLineDash([5, 5]);
-    line(c, [v.x, v.y, v.x + 50, [150, 245, 340][(v.lane + 1) % 3]], INK.amber, 2);
+    const targetLane = v.warningTargetLane ?? (v.lane + 1) % 3;
+    line(c, [v.x, v.y, v.x + 50, [150, 245, 340][targetLane]], INK.amber, 2);
     c.setLineDash([]);
     label(c, "↕", v.x + 16, v.y - 45, INK.amber, 22);
     c.restore();
