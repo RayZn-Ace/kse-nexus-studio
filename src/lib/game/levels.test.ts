@@ -283,3 +283,32 @@ test("boss phase 2 repositions and phase 3 adds a second attacker", () => {
   expect(s.bossPhase).toBe(3);
   expect(s.villains.length - count).toBe(2);
 });
+
+test("phase 1 to 2 during open shield waits for the next fully warned opening", () => {
+  const s = createGame(BOSS);
+  for (let i = 0; i < 240; i++) stepGame(s);
+  const b = s.villains[0];
+  expect(s.bossOpen).toBe(true);
+  expect(b.lane).toBe(1);
+  for (let i = 0; i < 6; i++) damageEnemy(s, b);
+  expect(b.hp).toBe(12);
+  stepGame(s);
+  expect(s.bossPhase).toBe(2);
+  expect(b.lane).toBe(1);
+  expect(b.warningTargetLane).toBe(null);
+  while (s.tick < 498) stepGame(s);
+  expect(s.elapsed).toBe(8.3);
+  expect(s.bossOpen).toBe(false);
+  expect(b.warning > 0).toBe(true);
+  expect(b.warningTargetLane).toBe(2);
+  expect(b.lane).toBe(1);
+  while (s.tick < 539) stepGame(s);
+  expect(b.lane).toBe(1);
+  expect(b.warningTargetLane).toBe(2);
+  stepGame(s);
+  expect(s.elapsed).toBe(9);
+  expect(s.bossOpen).toBe(true);
+  expect(b.lane).toBe(2);
+  expect(b.warning).toBe(0);
+  expect(b.warningTargetLane).toBe(null);
+});
